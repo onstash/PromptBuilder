@@ -1,118 +1,750 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { useState, type ReactNode } from "react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useForm } from "@tanstack/react-form";
+import { motion } from "motion/react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import {
-  Zap,
-  Server,
-  Route as RouteIcon,
-  Shield,
-  Waves,
-  Sparkles,
-} from 'lucide-react'
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+// import { searchParamsSchema, type SearchParams } from "../utils/search-params";
+import {
+  instructionSchema,
+  defaultValues,
+  type InstructionFormData,
+} from "../utils/instruction-schema";
 
-export const Route = createFileRoute('/')({ component: App })
+const AnimatePresence = ({ children }: { children: ReactNode }) => (
+  <>{children}</>
+);
 
-function App() {
-  const features = [
-    {
-      icon: <Zap className="w-12 h-12 text-cyan-400" />,
-      title: 'Powerful Server Functions',
-      description:
-        'Write server-side code that seamlessly integrates with your client components. Type-safe, secure, and simple.',
+export const Route = createFileRoute("/")({
+  component: InstructionBuilderPage,
+  validateSearch: (search: Record<string, unknown>): InstructionFormData => {
+    // validate and parse the search params into a typed state
+    // return {
+    //   page: Number(search?.page ?? 1),
+    //   filter: (search.filter as string) || '',
+    //   sort: (search.sort as ProductSearchSortOptions) || 'newest',
+    // }
+    const result = instructionSchema.safeParse(search);
+    if (!result.success || result.error) {
+      console.log("[validateSearch] result", result);
+      console.log("[validateSearch] search", search);
+      return defaultValues as InstructionFormData;
+    }
+    return result.data as InstructionFormData;
+  },
+});
+
+export function InstructionBuilderPage() {
+  const searchParams = Route.useSearch();
+  const navigate = useNavigate({ from: Route.fullPath });
+  // const [instructionType, setInstructionType] = useState<
+  //   InstructionFormData["instruction_type"]
+  // >(searchParams.instruction_type || "General Purpose");
+  const [optionalSettingsOpen, setOptionalSettingsOpen] = useState(false);
+
+  const form = useForm({
+    defaultValues: searchParams,
+    validators: {
+      onChange: instructionSchema,
     },
-    {
-      icon: <Server className="w-12 h-12 text-cyan-400" />,
-      title: 'Flexible Server Side Rendering',
-      description:
-        'Full-document SSR, streaming, and progressive enhancement out of the box. Control exactly what renders where.',
+    onSubmit: async ({ value }) => {
+      navigate({
+        search: (prev) => ({ ...prev, ...value }),
+      });
     },
-    {
-      icon: <RouteIcon className="w-12 h-12 text-cyan-400" />,
-      title: 'API Routes',
-      description:
-        'Build type-safe API endpoints alongside your application. No separate backend needed.',
-    },
-    {
-      icon: <Shield className="w-12 h-12 text-cyan-400" />,
-      title: 'Strongly Typed Everything',
-      description:
-        'End-to-end type safety from server to client. Catch errors before they reach production.',
-    },
-    {
-      icon: <Waves className="w-12 h-12 text-cyan-400" />,
-      title: 'Full Streaming Support',
-      description:
-        'Stream data from server to client progressively. Perfect for AI applications and real-time updates.',
-    },
-    {
-      icon: <Sparkles className="w-12 h-12 text-cyan-400" />,
-      title: 'Next Generation Ready',
-      description:
-        'Built from the ground up for modern web applications. Deploy anywhere JavaScript runs.',
-    },
-  ]
+  });
+
+  const handleInstructionTypeChange = (
+    value: InstructionFormData["instruction_type"]
+  ) => {
+    // setInstructionType(value);
+    form.setFieldValue("instruction_type", value);
+  };
+
+  const renderErrors = (errors: any[]) => {
+    if (!errors) return null;
+    return errors
+      .map((err) =>
+        typeof err === "string" ? err : err.message || "Unknown error"
+      )
+      .join(", ");
+  };
+
+  const isFieldFilled = (value: string | undefined) =>
+    value && value.trim().length > 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
-      <section className="relative py-20 px-6 text-center overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 via-blue-500/10 to-purple-500/10"></div>
-        <div className="relative max-w-5xl mx-auto">
-          <div className="flex items-center justify-center gap-6 mb-6">
-            <img
-              src="/tanstack-circle-logo.png"
-              alt="TanStack Logo"
-              className="w-24 h-24 md:w-32 md:h-32"
-            />
-            <h1 className="text-6xl md:text-7xl font-black text-white [letter-spacing:-0.08em]">
-              <span className="text-gray-300">TANSTACK</span>{' '}
-              <span className="bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
-                START
-              </span>
-            </h1>
-          </div>
-          <p className="text-2xl md:text-3xl text-gray-300 mb-4 font-light">
-            The framework for next generation AI applications
-          </p>
-          <p className="text-lg text-gray-400 max-w-3xl mx-auto mb-8">
-            Full-stack framework powered by TanStack Router for React and Solid.
-            Build modern applications with server functions, streaming, and type
-            safety.
-          </p>
-          <div className="flex flex-col items-center gap-4">
-            <a
-              href="https://tanstack.com/start"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-8 py-3 bg-cyan-500 hover:bg-cyan-600 text-white font-semibold rounded-lg transition-colors shadow-lg shadow-cyan-500/50"
+    <div className="min-h-screen bg-background p-4 md:p-8 lg:p-12">
+      <div className="mx-auto max-w-4xl">
+        <Card className="border-2 shadow-lg">
+          <CardHeader>
+            <CardTitle className="text-2xl md:text-3xl font-bold">
+              AI Instruction Builder
+            </CardTitle>
+            <CardDescription className="text-base">
+              Customize how your AI assistant behaves and responds
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                form.handleSubmit();
+              }}
+              className="space-y-6"
             >
-              Documentation
-            </a>
-            <p className="text-gray-400 text-sm mt-2">
-              Begin your TanStack Start journey by editing{' '}
-              <code className="px-2 py-1 bg-slate-700 rounded text-cyan-400">
-                /src/routes/index.tsx
-              </code>
-            </p>
-          </div>
-        </div>
-      </section>
+              <form.Field name="instruction_type">
+                {(field) => (
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="instruction_type"
+                      className="text-sm font-semibold"
+                    >
+                      Instruction Type
+                    </Label>
+                    <Select
+                      value={field.state.value}
+                      onValueChange={handleInstructionTypeChange}
+                    >
+                      <SelectTrigger
+                        id="instruction_type"
+                        className={`border-2 transition-colors ${
+                          isFieldFilled(field.state.value)
+                            ? "border-[#38AC5F] bg-[#38AC5F]/5"
+                            : "border-border"
+                        }`}
+                      >
+                        <SelectValue placeholder="Select instruction type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="General Purpose">
+                          General Purpose
+                        </SelectItem>
+                        <SelectItem value="Frontend Engineering">
+                          Frontend Engineering
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <AnimatePresence>
+                      {field.state.meta.isTouched &&
+                        field.state.meta.errors && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -8 }}
+                            transition={{ duration: 0.2 }}
+                          >
+                            <p className="text-sm text-destructive">
+                              {renderErrors(field.state.meta.errors)}
+                            </p>
+                          </motion.div>
+                        )}
+                    </AnimatePresence>
+                  </div>
+                )}
+              </form.Field>
 
-      <section className="py-16 px-6 max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {features.map((feature, index) => (
-            <div
-              key={index}
-              className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6 hover:border-cyan-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/10"
-            >
-              <div className="mb-4">{feature.icon}</div>
-              <h3 className="text-xl font-semibold text-white mb-3">
-                {feature.title}
-              </h3>
-              <p className="text-gray-400 leading-relaxed">
-                {feature.description}
-              </p>
-            </div>
-          ))}
-        </div>
-      </section>
+              <form.Field name="context_gathering">
+                {(field) => (
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="context_gathering"
+                      className="text-sm font-semibold"
+                    >
+                      Context Gathering
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      What background info should the AI pick up before giving
+                      an answer?
+                    </p>
+                    <Textarea
+                      id="context_gathering"
+                      value={field.state.value}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      onBlur={field.handleBlur}
+                      className={`min-h-[100px] border-2 resize-y transition-colors ${
+                        isFieldFilled(field.state.value)
+                          ? "border-[#38AC5F] bg-[#38AC5F]/5"
+                          : "border-border"
+                      }`}
+                      placeholder="Describe how the AI should gather context..."
+                    />
+                    <AnimatePresence>
+                      {field.state.meta.isTouched &&
+                        field.state.meta.errors && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -8 }}
+                            transition={{ duration: 0.2 }}
+                          >
+                            <p className="text-sm text-destructive">
+                              {renderErrors(field.state.meta.errors)}
+                            </p>
+                          </motion.div>
+                        )}
+                    </AnimatePresence>
+                  </div>
+                )}
+              </form.Field>
+
+              <Accordion
+                type="single"
+                collapsible
+                className="w-full border-2"
+                value={optionalSettingsOpen ? "optional-fields" : ""}
+                onValueChange={(value) =>
+                  setOptionalSettingsOpen(value === "optional-fields")
+                }
+              >
+                <AccordionItem value="optional-fields">
+                  <AccordionTrigger className="px-4 font-semibold hover:no-underline">
+                    Optional Settings
+                  </AccordionTrigger>
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <AccordionContent className="space-y-6 px-4 py-4">
+                      <form.Field name="persistence">
+                        {(field) => (
+                          <div className="space-y-2">
+                            <Label
+                              htmlFor="persistence"
+                              className="text-sm font-semibold"
+                            >
+                              Persistence
+                            </Label>
+                            <p className="text-sm text-muted-foreground">
+                              What should the AI remember as the conversation
+                              continues?
+                            </p>
+                            <Textarea
+                              id="persistence"
+                              value={field.state.value}
+                              onChange={(e) =>
+                                field.handleChange(e.target.value)
+                              }
+                              onBlur={field.handleBlur}
+                              className={`min-h-[100px] border-2 resize-y transition-colors ${
+                                isFieldFilled(field.state.value)
+                                  ? "border-[#38AC5F] bg-[#38AC5F]/5"
+                                  : "border-border"
+                              }`}
+                              placeholder="Describe what should persist..."
+                            />
+                            <AnimatePresence>
+                              {field.state.meta.isTouched &&
+                                field.state.meta.errors && (
+                                  <motion.div
+                                    initial={{ opacity: 0, y: -8 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -8 }}
+                                    transition={{ duration: 0.2 }}
+                                  >
+                                    <p className="text-sm text-destructive">
+                                      {renderErrors(field.state.meta.errors)}
+                                    </p>
+                                  </motion.div>
+                                )}
+                            </AnimatePresence>
+                          </div>
+                        )}
+                      </form.Field>
+
+                      <form.Field name="tool_preambles">
+                        {(field) => (
+                          <div className="space-y-2">
+                            <Label
+                              htmlFor="tool_preambles"
+                              className="text-sm font-semibold"
+                            >
+                              Tool Preambles
+                            </Label>
+                            <p className="text-sm text-muted-foreground">
+                              The starting instructions the AI needs before
+                              using any tools.
+                            </p>
+                            <Textarea
+                              id="tool_preambles"
+                              value={field.state.value}
+                              onChange={(e) =>
+                                field.handleChange(e.target.value)
+                              }
+                              onBlur={field.handleBlur}
+                              className={`min-h-[100px] border-2 resize-y transition-colors ${
+                                isFieldFilled(field.state.value)
+                                  ? "border-[#38AC5F] bg-[#38AC5F]/5"
+                                  : "border-border"
+                              }`}
+                              placeholder="Describe tool usage instructions..."
+                            />
+                            <AnimatePresence>
+                              {field.state.meta.isTouched &&
+                                field.state.meta.errors && (
+                                  <motion.div
+                                    initial={{ opacity: 0, y: -8 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -8 }}
+                                    transition={{ duration: 0.2 }}
+                                  >
+                                    <p className="text-sm text-destructive">
+                                      {renderErrors(field.state.meta.errors)}
+                                    </p>
+                                  </motion.div>
+                                )}
+                            </AnimatePresence>
+                          </div>
+                        )}
+                      </form.Field>
+
+                      <form.Field name="maximize_context_understanding">
+                        {(field) => (
+                          <div className="space-y-2">
+                            <Label
+                              htmlFor="maximize_context_understanding"
+                              className="text-sm font-semibold"
+                            >
+                              Maximize Context Understanding
+                            </Label>
+                            <p className="text-sm text-muted-foreground">
+                              How the AI tries its best to understand what you
+                              really mean.
+                            </p>
+                            <Textarea
+                              id="maximize_context_understanding"
+                              value={field.state.value}
+                              onChange={(e) =>
+                                field.handleChange(e.target.value)
+                              }
+                              onBlur={field.handleBlur}
+                              className={`min-h-[100px] border-2 resize-y transition-colors ${
+                                isFieldFilled(field.state.value)
+                                  ? "border-[#38AC5F] bg-[#38AC5F]/5"
+                                  : "border-border"
+                              }`}
+                              placeholder="Describe context maximization..."
+                            />
+                            <AnimatePresence>
+                              {field.state.meta.isTouched &&
+                                field.state.meta.errors && (
+                                  <motion.div
+                                    initial={{ opacity: 0, y: -8 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -8 }}
+                                    transition={{ duration: 0.2 }}
+                                  >
+                                    <p className="text-sm text-destructive">
+                                      {renderErrors(field.state.meta.errors)}
+                                    </p>
+                                  </motion.div>
+                                )}
+                            </AnimatePresence>
+                          </div>
+                        )}
+                      </form.Field>
+
+                      <form.Field name="context_understanding">
+                        {(field) => (
+                          <div className="space-y-2">
+                            <Label
+                              htmlFor="context_understanding"
+                              className="text-sm font-semibold"
+                            >
+                              Context Understanding
+                            </Label>
+                            <p className="text-sm text-muted-foreground">
+                              How the AI understands the meaning of your message
+                              in general.
+                            </p>
+                            <Textarea
+                              id="context_understanding"
+                              value={field.state.value}
+                              onChange={(e) =>
+                                field.handleChange(e.target.value)
+                              }
+                              onBlur={field.handleBlur}
+                              className={`min-h-[100px] border-2 resize-y transition-colors ${
+                                isFieldFilled(field.state.value)
+                                  ? "border-[#38AC5F] bg-[#38AC5F]/5"
+                                  : "border-border"
+                              }`}
+                              placeholder="Describe general understanding approach..."
+                            />
+                            <AnimatePresence>
+                              {field.state.meta.isTouched &&
+                                field.state.meta.errors && (
+                                  <motion.div
+                                    initial={{ opacity: 0, y: -8 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -8 }}
+                                    transition={{ duration: 0.2 }}
+                                  >
+                                    <p className="text-sm text-destructive">
+                                      {renderErrors(field.state.meta.errors)}
+                                    </p>
+                                  </motion.div>
+                                )}
+                            </AnimatePresence>
+                          </div>
+                        )}
+                      </form.Field>
+                    </AccordionContent>
+                  </motion.div>
+                </AccordionItem>
+              </Accordion>
+
+              <form.Field name="reasoning_effort">
+                {(field) => (
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="reasoning_effort"
+                      className="text-sm font-semibold"
+                    >
+                      Reasoning Effort
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      How hard should the AI think — short answer or deep
+                      explanation?
+                    </p>
+                    <Select
+                      value={field.state.value}
+                      onValueChange={(value) => field.handleChange(value)}
+                    >
+                      <SelectTrigger
+                        id="reasoning_effort"
+                        className={`border-2 transition-colors ${
+                          isFieldFilled(field.state.value)
+                            ? "border-[#38AC5F] bg-[#38AC5F]/5"
+                            : "border-border"
+                        }`}
+                      >
+                        <SelectValue placeholder="Select reasoning effort" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="low">
+                          Low - Quick, concise answers
+                        </SelectItem>
+                        <SelectItem value="moderate">
+                          Moderate - Balanced depth
+                        </SelectItem>
+                        <SelectItem value="high">
+                          High - Deep, thorough analysis
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <AnimatePresence>
+                      {field.state.meta.isTouched &&
+                        field.state.meta.errors && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -8 }}
+                            transition={{ duration: 0.2 }}
+                          >
+                            <p className="text-sm text-destructive">
+                              {renderErrors(field.state.meta.errors)}
+                            </p>
+                          </motion.div>
+                        )}
+                    </AnimatePresence>
+                  </div>
+                )}
+              </form.Field>
+
+              <form.Field name="self_reflection">
+                {(field) => (
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="self_reflection"
+                      className="text-sm font-semibold"
+                    >
+                      Self Reflection
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      How the AI checks its own answer for mistakes.
+                    </p>
+                    <Select
+                      value={field.state.value}
+                      onValueChange={(value) => field.handleChange(value)}
+                    >
+                      <SelectTrigger
+                        id="self_reflection"
+                        className={`border-2 transition-colors ${
+                          isFieldFilled(field.state.value)
+                            ? "border-[#38AC5F] bg-[#38AC5F]/5"
+                            : "border-border"
+                        }`}
+                      >
+                        <SelectValue placeholder="Select self reflection" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="enabled">
+                          Enabled - Always review answers
+                        </SelectItem>
+                        <SelectItem value="standard">
+                          Standard - Review complex responses
+                        </SelectItem>
+                        <SelectItem value="minimal">
+                          Minimal - Basic checks only
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <AnimatePresence>
+                      {field.state.meta.isTouched &&
+                        field.state.meta.errors && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -8 }}
+                            transition={{ duration: 0.2 }}
+                          >
+                            <p className="text-sm text-destructive">
+                              {renderErrors(field.state.meta.errors)}
+                            </p>
+                          </motion.div>
+                        )}
+                    </AnimatePresence>
+                  </div>
+                )}
+              </form.Field>
+
+              <AnimatePresence>
+                {form.state.values.instruction_type === "Frontend Engineering" && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -16 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <div className="space-y-6 rounded-lg border-2 border-accent p-4 md:p-6">
+                      <h3 className="text-lg font-semibold text-accent-foreground bg-accent px-3 py-2 -mx-4 -mt-4 md:-mx-6 md:-mt-6 mb-4">
+                        Frontend Engineering Settings
+                      </h3>
+
+                      <form.Field name="code_editing_rules">
+                        {(field) => (
+                          <div className="space-y-2">
+                            <Label
+                              htmlFor="code_editing_rules"
+                              className="text-sm font-semibold"
+                            >
+                              Code Editing Rules
+                            </Label>
+                            <p className="text-sm text-muted-foreground">
+                              How the AI should change or improve code safely.
+                            </p>
+                            <Textarea
+                              id="code_editing_rules"
+                              value={field.state.value || ""}
+                              onChange={(e) =>
+                                field.handleChange(e.target.value)
+                              }
+                              onBlur={field.handleBlur}
+                              className={`min-h-[100px] border-2 resize-y transition-colors ${
+                                isFieldFilled(field.state.value)
+                                  ? "border-[#38AC5F] bg-[#38AC5F]/5"
+                                  : "border-border"
+                              }`}
+                              placeholder="Describe code editing guidelines..."
+                            />
+                            <AnimatePresence>
+                              {field.state.meta.isTouched &&
+                                field.state.meta.errors && (
+                                  <motion.div
+                                    initial={{ opacity: 0, y: -8 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -8 }}
+                                    transition={{ duration: 0.2 }}
+                                  >
+                                    <p className="text-sm text-destructive">
+                                      {renderErrors(field.state.meta.errors)}
+                                    </p>
+                                  </motion.div>
+                                )}
+                            </AnimatePresence>
+                          </div>
+                        )}
+                      </form.Field>
+
+                      <form.Field name="guiding_principles">
+                        {(field) => (
+                          <div className="space-y-2">
+                            <Label
+                              htmlFor="guiding_principles"
+                              className="text-sm font-semibold"
+                            >
+                              Guiding Principles
+                            </Label>
+                            <p className="text-sm text-muted-foreground">
+                              Core rules like readability, performance, and
+                              correctness.
+                            </p>
+                            <Textarea
+                              id="guiding_principles"
+                              value={field.state.value || ""}
+                              onChange={(e) =>
+                                field.handleChange(e.target.value)
+                              }
+                              onBlur={field.handleBlur}
+                              className={`min-h-[100px] border-2 resize-y transition-colors ${
+                                isFieldFilled(field.state.value)
+                                  ? "border-[#38AC5F] bg-[#38AC5F]/5"
+                                  : "border-border"
+                              }`}
+                              placeholder="Describe core principles..."
+                            />
+                            <AnimatePresence>
+                              {field.state.meta.isTouched &&
+                                field.state.meta.errors && (
+                                  <motion.div
+                                    initial={{ opacity: 0, y: -8 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -8 }}
+                                    transition={{ duration: 0.2 }}
+                                  >
+                                    <p className="text-sm text-destructive">
+                                      {renderErrors(field.state.meta.errors)}
+                                    </p>
+                                  </motion.div>
+                                )}
+                            </AnimatePresence>
+                          </div>
+                        )}
+                      </form.Field>
+
+                      <form.Field name="frontend_stack_defaults">
+                        {(field) => (
+                          <div className="space-y-2">
+                            <Label
+                              htmlFor="frontend_stack_defaults"
+                              className="text-sm font-semibold"
+                            >
+                              Frontend Stack Defaults
+                            </Label>
+                            <p className="text-sm text-muted-foreground">
+                              The default tech choices the AI should assume.
+                            </p>
+                            <Textarea
+                              id="frontend_stack_defaults"
+                              value={field.state.value || ""}
+                              onChange={(e) =>
+                                field.handleChange(e.target.value)
+                              }
+                              onBlur={field.handleBlur}
+                              className={`min-h-[100px] border-2 resize-y transition-colors ${
+                                isFieldFilled(field.state.value)
+                                  ? "border-[#38AC5F] bg-[#38AC5F]/5"
+                                  : "border-border"
+                              }`}
+                              placeholder="Describe default stack..."
+                            />
+                            <AnimatePresence>
+                              {field.state.meta.isTouched &&
+                                field.state.meta.errors && (
+                                  <motion.div
+                                    initial={{ opacity: 0, y: -8 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -8 }}
+                                    transition={{ duration: 0.2 }}
+                                  >
+                                    <p className="text-sm text-destructive">
+                                      {renderErrors(field.state.meta.errors)}
+                                    </p>
+                                  </motion.div>
+                                )}
+                            </AnimatePresence>
+                          </div>
+                        )}
+                      </form.Field>
+
+                      <form.Field name="ui_ux_best_practices">
+                        {(field) => (
+                          <div className="space-y-2">
+                            <Label
+                              htmlFor="ui_ux_best_practices"
+                              className="text-sm font-semibold"
+                            >
+                              UI/UX Best Practices
+                            </Label>
+                            <p className="text-sm text-muted-foreground">
+                              Good design rules to keep apps clear, usable, and
+                              responsive.
+                            </p>
+                            <Textarea
+                              id="ui_ux_best_practices"
+                              value={field.state.value || ""}
+                              onChange={(e) =>
+                                field.handleChange(e.target.value)
+                              }
+                              onBlur={field.handleBlur}
+                              className={`min-h-[100px] border-2 resize-y transition-colors ${
+                                isFieldFilled(field.state.value)
+                                  ? "border-[#38AC5F] bg-[#38AC5F]/5"
+                                  : "border-border"
+                              }`}
+                              placeholder="Describe UI/UX guidelines..."
+                            />
+                            <AnimatePresence>
+                              {field.state.meta.isTouched &&
+                                field.state.meta.errors && (
+                                  <motion.div
+                                    initial={{ opacity: 0, y: -8 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -8 }}
+                                    transition={{ duration: 0.2 }}
+                                  >
+                                    <p className="text-sm text-destructive">
+                                      {renderErrors(field.state.meta.errors)}
+                                    </p>
+                                  </motion.div>
+                                )}
+                            </AnimatePresence>
+                          </div>
+                        )}
+                      </form.Field>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <div className="flex justify-end pt-4">
+                <Button
+                  type="submit"
+                  size="lg"
+                  className="border-2 shadow-md font-semibold"
+                >
+                  Save Instructions
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
     </div>
-  )
+  );
 }
