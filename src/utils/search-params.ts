@@ -1,54 +1,44 @@
 // utils/search-params.ts
-import * as LZ from "lz-string";
 import {
   defaultValues,
   type InstructionFormData,
   instructionSchema,
 } from "./instruction-schema";
 
-export type SearchParamsCompressed = string;
-
-export const decompressCompressedSearchParams = (search: Record<string, unknown>): SearchParamsCompressed => {
+export const validateSearchParams = (
+  search: Record<string, unknown>
+): InstructionFormData => {
   try {
-    const compressed = search?.["data"] as string | undefined;
-    if (!compressed) {
-      return '';
+    const data = search?.["data"] as string | undefined;
+    if (!data) {
+      return defaultValues;
     }
-    const jsonStr = LZ.decompressFromEncodedURIComponent(compressed);
-    if (!jsonStr || !jsonStr.length) return '';
-    const json = JSON.parse(jsonStr);
+    const json = JSON.parse(data);
     const result = instructionSchema.safeParse(json);
     if (!result.success || result.error) {
-      throw new Error(`[decompressCompressedSearchParams] err ${result.error}`);
-    }
-    return jsonStr;
-  } catch (err) {
-    console.error("[decompressCompressedSearchParams] err", err);
-    return '';
-  }
-};
-
-export const parseCompressedSearchParamsStr = (jsonStr: string): InstructionFormData => {
-  try {
-    const json = JSON.parse(jsonStr);
-    const result = instructionSchema.safeParse(json);
-    if (!result.success || result.error) {
-      throw new Error(`[decompressCompressedSearchParams] err ${result.error}`);
+      throw new Error(`[validateSearchParams] err ${result.error}`);
     }
     return result.data;
   } catch (err) {
-    console.error("[decompressCompressedSearchParams] err", err);
+    console.error("[validateSearchParams] err", err);
     return defaultValues;
   }
+};
+
+export function decodeFromBinary(str: string): string {
+  return decodeURIComponent(
+    Array.prototype.map
+      .call(atob(str), function (c) {
+        return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+      })
+      .join("")
+  );
 }
 
-export const compressSearchParams = (data: InstructionFormData): string => {
-  try {
-    const json = JSON.stringify(data);
-    const compressed = LZ.compressToEncodedURIComponent(json);
-    return compressed;
-  } catch (error) {
-    console.error("Failed to compressSearchParams search params:", error);
-    return '';
-  }
-};
+export function encodeToBinary(str: string): string {
+  return btoa(
+    encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function (match, p1) {
+      return String.fromCharCode(parseInt(p1, 16));
+    })
+  );
+}

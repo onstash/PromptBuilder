@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useForm } from "@tanstack/react-form";
 import { useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
@@ -27,7 +27,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
-import { decompressCompressedSearchParams, parseCompressedSearchParamsStr, compressSearchParams, type SearchParamsCompressed } from "@/utils/search-params";
+import { validateSearchParams } from "@/utils/search-params";
 import {
   instructionSchema,
   type InstructionFormData,
@@ -35,10 +35,15 @@ import {
 
 export const Route = createFileRoute("/")({
   component: InstructionBuilderPage,
-  validateSearch: (search: Record<string, unknown>): {data: SearchParamsCompressed} => {
-    const result = decompressCompressedSearchParams(search);
-    return {data: result};
+  validateSearch: (search: Record<string, unknown>): InstructionFormData => {
+    const id = performance.now();
+    console.log(`[${id}][validateSearch] search`, search);
+    const result = validateSearchParams(search);
+    console.log(`[${id}][validateSearch] result`, result);
+    return result;
   },
+  shouldReload: false,
+  ssr: true,
 });
 
 export function InstructionBuilderPage() {
@@ -47,20 +52,20 @@ export function InstructionBuilderPage() {
   const [optionalSettingsOpen, setOptionalSettingsOpen] = useState(false);
 
   const form = useForm({
-    defaultValues: parseCompressedSearchParamsStr(searchParams.data),
+    defaultValues: searchParams,
     validators: {
       onChange: instructionSchema,
     },
     onSubmit: async ({ value }) => {
-      const compressed = compressSearchParams(value);
-      if (!compressed) {
-        console.error("Failed to compressSearchParams form data");
-        return;
-      }
-      navigate({
-        search: { data: compressed },
-        replace: true,
-      });
+      // const compressed = compressSearchParams(value);
+      // if (!compressed) {
+      //   console.error("Failed to compressSearchParams form data");
+      //   return;
+      // }
+      // navigate({
+      //   search: { data: compressed },
+      //   replace: true,
+      // });
     },
   });
 
