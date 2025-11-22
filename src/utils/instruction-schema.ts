@@ -58,7 +58,62 @@ export const instructionSchema = z
 
 export type InstructionFormData = z.infer<typeof instructionSchema>;
 
-export const defaultValues: InstructionFormData = {
+export type InstructionFormDataShortened = Partial<{
+  ctxg: InstructionFormData["context_gathering"];
+  p: InstructionFormData["persistence"];
+  tp: InstructionFormData["tool_preambles"];
+  re: InstructionFormData["reasoning_effort"];
+  sr: InstructionFormData["self_reflection"];
+  ctxu: InstructionFormData["context_understanding"];
+  mctxu: InstructionFormData["maximize_context_understanding"];
+  it: InstructionFormData["instruction_type"];
+  cer: InstructionFormData["code_editing_rules"];
+  gp: InstructionFormData["guiding_principles"];
+  fsd: InstructionFormData["frontend_stack_defaults"];
+  uixbp: InstructionFormData["ui_ux_best_practices"];
+}>;
+
+
+export const searchParamsLongToShort = (
+  data: Partial<InstructionFormData>
+): InstructionFormDataShortened => {
+  return {
+    ctxg: data["context_gathering"],
+    p: data["persistence"],
+    tp: data["tool_preambles"],
+    re: data["reasoning_effort"],
+    sr: data["self_reflection"],
+    ctxu: data["context_understanding"],
+    mctxu: data["maximize_context_understanding"],
+    it: data["instruction_type"],
+    cer: data["code_editing_rules"],
+    gp: data["guiding_principles"],
+    fsd: data["frontend_stack_defaults"],
+    uixbp: data["ui_ux_best_practices"],
+  };
+};
+
+export const searchParamsShortToLong = (
+  data: InstructionFormDataShortened
+): InstructionFormData => {
+  return {
+    context_gathering: data["ctxg"]!,
+    persistence: data["p"],
+    tool_preambles: data["tp"],
+    reasoning_effort: data["re"]!,
+    self_reflection: data["sr"]!,
+    context_understanding: data["ctxu"],
+    maximize_context_understanding: data["mctxu"],
+    instruction_type: data["it"]!,
+    code_editing_rules: data["cer"],
+    guiding_principles: data["gp"],
+    frontend_stack_defaults: data["fsd"],
+    ui_ux_best_practices: data["uixbp"],
+  };
+};
+
+
+export const defaultValues: Partial<InstructionFormData> = {
   context_gathering: "",
   persistence: "",
   tool_preambles: "",
@@ -72,3 +127,9 @@ export const defaultValues: InstructionFormData = {
   frontend_stack_defaults: "",
   ui_ux_best_practices: "",
 };
+
+export const defaultValuesShortened = searchParamsLongToShort({
+  reasoning_effort: defaultValues["reasoning_effort"],
+  instruction_type: defaultValues["instruction_type"],
+  self_reflection: defaultValues["self_reflection"]
+});

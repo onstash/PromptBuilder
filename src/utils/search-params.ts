@@ -1,29 +1,33 @@
 // utils/search-params.ts
 import {
-  defaultValues,
-  type InstructionFormData,
+  defaultValuesShortened,
+  InstructionFormDataShortened,
   instructionSchema,
+  searchParamsLongToShort,
 } from "./instruction-schema";
 
 export const validateSearchParams = (
   search: Record<string, unknown>
-): InstructionFormData => {
+): InstructionFormDataShortened => {
   try {
     const data = search?.["data"] as string | undefined;
     if (!data) {
-      return defaultValues;
+      return {} as InstructionFormDataShortened;
+      return defaultValuesShortened;
     }
     const json = JSON.parse(data);
     const result = instructionSchema.safeParse(json);
     if (!result.success || result.error) {
       throw new Error(`[validateSearchParams] err ${result.error}`);
     }
-    return result.data;
+    return searchParamsLongToShort(result.data);
   } catch (err) {
     console.error("[validateSearchParams] err", err);
-    return defaultValues;
+    return {} as InstructionFormDataShortened;
+    return defaultValuesShortened;
   }
 };
+
 
 export function decodeFromBinary(str: string): string {
   return decodeURIComponent(
