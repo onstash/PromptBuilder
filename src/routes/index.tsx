@@ -1,7 +1,9 @@
-import { useState, type ReactNode } from "react";
+import { useState } from "react";
+
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useForm } from "@tanstack/react-form";
-import { motion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
+
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -25,42 +27,25 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-// import { searchParamsSchema, type SearchParams } from "../utils/search-params";
+
+import { compressedSearchParamValidator } from "@/utils/search-params";
+
 import {
   instructionSchema,
-  defaultValues,
   type InstructionFormData,
 } from "../utils/instruction-schema";
-
-const AnimatePresence = ({ children }: { children: ReactNode }) => (
-  <>{children}</>
-);
 
 export const Route = createFileRoute("/")({
   component: InstructionBuilderPage,
   validateSearch: (search: Record<string, unknown>): InstructionFormData => {
     // validate and parse the search params into a typed state
-    // return {
-    //   page: Number(search?.page ?? 1),
-    //   filter: (search.filter as string) || '',
-    //   sort: (search.sort as ProductSearchSortOptions) || 'newest',
-    // }
-    const result = instructionSchema.safeParse(search);
-    if (!result.success || result.error) {
-      console.log("[validateSearch] result", result);
-      console.log("[validateSearch] search", search);
-      return defaultValues as InstructionFormData;
-    }
-    return result.data as InstructionFormData;
+    return compressedSearchParamValidator.safeParse(search);
   },
 });
 
 export function InstructionBuilderPage() {
   const searchParams = Route.useSearch();
   const navigate = useNavigate({ from: Route.fullPath });
-  // const [instructionType, setInstructionType] = useState<
-  //   InstructionFormData["instruction_type"]
-  // >(searchParams.instruction_type || "General Purpose");
   const [optionalSettingsOpen, setOptionalSettingsOpen] = useState(false);
 
   const form = useForm({
@@ -69,8 +54,12 @@ export function InstructionBuilderPage() {
       onChange: instructionSchema,
     },
     onSubmit: async ({ value }) => {
+      const compressed = compressedSearchParamValidator.stringify(value);
+      if (!compressed) {
+        return;
+      }
       navigate({
-        search: (prev) => ({ ...prev, ...value }),
+        search: () => ({ data: compressed }),
       });
     },
   });
@@ -534,7 +523,8 @@ export function InstructionBuilderPage() {
               </form.Field>
 
               <AnimatePresence>
-                {form.state.values.instruction_type === "Frontend Engineering" && (
+                {form.state.values.instruction_type ===
+                  "Frontend Engineering" && (
                   <motion.div
                     initial={{ opacity: 0, y: -16 }}
                     animate={{ opacity: 1, y: 0 }}
