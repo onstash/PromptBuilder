@@ -1,7 +1,6 @@
-import { useState } from "react";
-
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useForm } from "@tanstack/react-form";
+import { useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 
 import { Button } from "@/components/ui/button";
@@ -28,8 +27,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
-import { compressedSearchParamValidator } from "@/utils/search-params";
-
+import { decompressCompressedSearchParams, parseCompressedSearchParamsStr, compressSearchParams, type SearchParamsCompressed } from "@/utils/search-params";
 import {
   instructionSchema,
   type InstructionFormData,
@@ -37,29 +35,31 @@ import {
 
 export const Route = createFileRoute("/")({
   component: InstructionBuilderPage,
-  validateSearch: (search: Record<string, unknown>): InstructionFormData => {
-    // validate and parse the search params into a typed state
-    return compressedSearchParamValidator.safeParse(search);
+  validateSearch: (search: Record<string, unknown>): {data: SearchParamsCompressed} => {
+    const result = decompressCompressedSearchParams(search);
+    return {data: result};
   },
 });
 
 export function InstructionBuilderPage() {
   const searchParams = Route.useSearch();
-  const navigate = useNavigate({ from: Route.fullPath });
+  const navigate = Route.useNavigate();
   const [optionalSettingsOpen, setOptionalSettingsOpen] = useState(false);
 
   const form = useForm({
-    defaultValues: searchParams,
+    defaultValues: parseCompressedSearchParamsStr(searchParams.data),
     validators: {
       onChange: instructionSchema,
     },
     onSubmit: async ({ value }) => {
-      const compressed = compressedSearchParamValidator.stringify(value);
+      const compressed = compressSearchParams(value);
       if (!compressed) {
+        console.error("Failed to compressSearchParams form data");
         return;
       }
       navigate({
-        search: () => ({ data: compressed }),
+        search: { data: compressed },
+        replace: true,
       });
     },
   });
@@ -67,7 +67,6 @@ export function InstructionBuilderPage() {
   const handleInstructionTypeChange = (
     value: InstructionFormData["instruction_type"]
   ) => {
-    // setInstructionType(value);
     form.setFieldValue("instruction_type", value);
   };
 
@@ -104,6 +103,7 @@ export function InstructionBuilderPage() {
               }}
               className="space-y-6"
             >
+              {/* Instruction Type Field */}
               <form.Field name="instruction_type">
                 {(field) => (
                   <div className="space-y-2">
@@ -155,6 +155,7 @@ export function InstructionBuilderPage() {
                 )}
               </form.Field>
 
+              {/* Context Gathering Field */}
               <form.Field name="context_gathering">
                 {(field) => (
                   <div className="space-y-2">
@@ -199,6 +200,7 @@ export function InstructionBuilderPage() {
                 )}
               </form.Field>
 
+              {/* Optional Settings Accordion */}
               <Accordion
                 type="single"
                 collapsible
@@ -219,6 +221,7 @@ export function InstructionBuilderPage() {
                     transition={{ duration: 0.3 }}
                   >
                     <AccordionContent className="space-y-6 px-4 py-4">
+                      {/* Persistence */}
                       <form.Field name="persistence">
                         {(field) => (
                           <div className="space-y-2">
@@ -265,6 +268,7 @@ export function InstructionBuilderPage() {
                         )}
                       </form.Field>
 
+                      {/* Tool Preambles */}
                       <form.Field name="tool_preambles">
                         {(field) => (
                           <div className="space-y-2">
@@ -311,6 +315,7 @@ export function InstructionBuilderPage() {
                         )}
                       </form.Field>
 
+                      {/* Maximize Context Understanding */}
                       <form.Field name="maximize_context_understanding">
                         {(field) => (
                           <div className="space-y-2">
@@ -357,6 +362,7 @@ export function InstructionBuilderPage() {
                         )}
                       </form.Field>
 
+                      {/* Context Understanding */}
                       <form.Field name="context_understanding">
                         {(field) => (
                           <div className="space-y-2">
@@ -407,6 +413,7 @@ export function InstructionBuilderPage() {
                 </AccordionItem>
               </Accordion>
 
+              {/* Reasoning Effort */}
               <form.Field name="reasoning_effort">
                 {(field) => (
                   <div className="space-y-2">
@@ -465,6 +472,7 @@ export function InstructionBuilderPage() {
                 )}
               </form.Field>
 
+              {/* Self Reflection */}
               <form.Field name="self_reflection">
                 {(field) => (
                   <div className="space-y-2">
@@ -522,6 +530,7 @@ export function InstructionBuilderPage() {
                 )}
               </form.Field>
 
+              {/* Frontend Engineering Conditional Section */}
               <AnimatePresence>
                 {form.state.values.instruction_type ===
                   "Frontend Engineering" && (
@@ -536,6 +545,7 @@ export function InstructionBuilderPage() {
                         Frontend Engineering Settings
                       </h3>
 
+                      {/* Code Editing Rules */}
                       <form.Field name="code_editing_rules">
                         {(field) => (
                           <div className="space-y-2">
@@ -581,6 +591,7 @@ export function InstructionBuilderPage() {
                         )}
                       </form.Field>
 
+                      {/* Guiding Principles */}
                       <form.Field name="guiding_principles">
                         {(field) => (
                           <div className="space-y-2">
@@ -627,6 +638,7 @@ export function InstructionBuilderPage() {
                         )}
                       </form.Field>
 
+                      {/* Frontend Stack Defaults */}
                       <form.Field name="frontend_stack_defaults">
                         {(field) => (
                           <div className="space-y-2">
@@ -672,6 +684,7 @@ export function InstructionBuilderPage() {
                         )}
                       </form.Field>
 
+                      {/* UI/UX Best Practices */}
                       <form.Field name="ui_ux_best_practices">
                         {(field) => (
                           <div className="space-y-2">
