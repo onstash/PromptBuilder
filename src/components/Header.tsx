@@ -73,7 +73,7 @@ export default function Header() {
           {/* Demo Links Start */}
 
           {/* <Link
-            to="/__demo/start/server-funcs"
+            to="/demo/start/server-funcs"
             onClick={() => setIsOpen(false)}
             className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
             activeProps={{
@@ -86,7 +86,7 @@ export default function Header() {
           </Link> */}
 
           {/* <Link
-            to="/__demo/start/api-request"
+            to="/demo/start/api-request"
             onClick={() => setIsOpen(false)}
             className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
             activeProps={{
@@ -100,7 +100,7 @@ export default function Header() {
 
           {/* <div className="flex flex-row justify-between">
             <Link
-              to="/__demo/start/ssr"
+              to="/demo/start/ssr"
               onClick={() => setIsOpen(false)}
               className="flex-1 flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
               activeProps={{
@@ -130,7 +130,7 @@ export default function Header() {
           {/* {groupedExpanded.StartSSRDemo && (
             <div className="flex flex-col ml-4">
               <Link
-                to="/__demo/start/ssr/spa-mode"
+                to="/demo/start/ssr/spa-mode"
                 onClick={() => setIsOpen(false)}
                 className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
                 activeProps={{
@@ -143,7 +143,7 @@ export default function Header() {
               </Link>
 
               <Link
-                to="/__demo/start/ssr/full-ssr"
+                to="/demo/start/ssr/full-ssr"
                 onClick={() => setIsOpen(false)}
                 className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
                 activeProps={{
@@ -156,7 +156,7 @@ export default function Header() {
               </Link>
 
               <Link
-                to="/__demo/start/ssr/data-only"
+                to="/demo/start/ssr/data-only"
                 onClick={() => setIsOpen(false)}
                 className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
                 activeProps={{
@@ -171,7 +171,7 @@ export default function Header() {
           )} */}
 
           {/* <Link
-            to="/__demo/form/simple"
+            to="/demo/form/simple"
             onClick={() => setIsOpen(false)}
             className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
             activeProps={{
@@ -184,7 +184,7 @@ export default function Header() {
           </Link> */}
 
           {/* <Link
-            to="/__demo/form/address"
+            to="/demo/form/address"
             onClick={() => setIsOpen(false)}
             className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
             activeProps={{

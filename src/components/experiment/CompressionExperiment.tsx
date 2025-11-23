@@ -23,13 +23,12 @@ import {
 import {
   Route,
 } from "@/routes/experiment/compression";
-import { stringifySearch } from "@/router";
 import { CompressionExperiment, compressionExperimentSchema } from "@/utils/experiment/compression";
+import { isFieldFilled } from "@/utils/forms/isFieldFilled";
 
 export function CompressionExperimentPage() {
   const searchParams = Route.useSearch();
   const navigate = Route.useNavigate();
-  const [optionalSettingsOpen, setOptionalSettingsOpen] = useState(false);
 
   const form = useForm({
     defaultValues: searchParams,
@@ -58,9 +57,6 @@ export function CompressionExperimentPage() {
       )
       .join(", ");
   };
-
-  const isFieldFilled = (value: string | undefined) =>
-    value && value.trim().length > 0;
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8 lg:p-12">

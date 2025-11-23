@@ -33,7 +33,7 @@ import {
   type InstructionFormData,
 } from "../utils/instruction-schema";
 import { Route } from "@/routes";
-import { stringifySearch } from "@/router";
+import { isFieldFilled } from "@/utils/forms/isFieldFilled";
 
 export function InstructionBuilderPage() {
   const searchParams = Route.useSearch();
@@ -46,26 +46,18 @@ export function InstructionBuilderPage() {
       onChange: instructionSchema,
     },
     onSubmit: async ({ value }) => {
-      // if (confirm(stringifySearch(searchParamsLongToShort(value)))) {
-      //   navigate({
-      //     search: (prev) => {
-      //       return {
-      //         data: stringifySearch(searchParamsLongToShort(value)),
-      //       };
-      //     },
-      //     // replace: true,
-      //   });
-      // } else {
-      //   alert("searchParams not updated");
-      // }
+      if (confirm(JSON.stringify(searchParamsLongToShort(value)))) {
+        navigate({
+          search: () => {
+            return searchParamsLongToShort(value);
+          },
+          // replace: true,
+        });
+      } else {
+        alert("searchParams not updated");
+      }
     },
   });
-
-  const handleInstructionTypeChange = (
-    value: InstructionFormData["instruction_type"]
-  ) => {
-    form.setFieldValue("instruction_type", value);
-  };
 
   const renderErrors = (errors: any[]) => {
     if (!errors) return null;
@@ -75,9 +67,6 @@ export function InstructionBuilderPage() {
       )
       .join(", ");
   };
-
-  const isFieldFilled = (value: string | undefined) =>
-    value && value.trim().length > 0;
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8 lg:p-12">
@@ -112,7 +101,9 @@ export function InstructionBuilderPage() {
                     </Label>
                     <Select
                       value={field.state.value}
-                      onValueChange={handleInstructionTypeChange}
+                      onValueChange={(
+                        value: InstructionFormData["instruction_type"]
+                      ) => form.setFieldValue("instruction_type", value)}
                     >
                       <SelectTrigger
                         id="instruction_type"

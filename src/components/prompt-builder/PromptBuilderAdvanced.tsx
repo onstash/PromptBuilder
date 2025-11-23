@@ -40,6 +40,7 @@ import {
   promptBuilderAdvancedFormSchema,
   PromptBuilderFormData,
 } from "@/utils/prompt-builder/advanced-schema";
+import { isFieldFilled } from "@/utils/forms/isFieldFilled";
 
 function generatePrompt(
   value: PromptBuilderFormData,
@@ -80,9 +81,10 @@ export function PromptBuilderAdvanced() {
       value = newValue;
       console.log("[promptGenerated] setState called", { updatedAt, newValue });
     };
-    generatePrompt((searchParams
-      ? searchParams
-      : defaultValues) as PromptBuilderFormData, setState);
+    generatePrompt(
+      (searchParams ? searchParams : defaultValues) as PromptBuilderFormData,
+      setState
+    );
     return {
       value,
       updatedAt,
@@ -94,11 +96,14 @@ export function PromptBuilderAdvanced() {
 
   const form = useForm({
     // defaultValues: searchParamsShortToLong(searchParams),
-    defaultValues: (searchParams
-      ? searchParams
-      : defaultValues) as PromptBuilderFormData,
+    // defaultValues: (searchParams
+    //   ? searchParams
+    //   : defaultValues) as PromptBuilderFormData,
+    defaultValues,
+    asyncDebounceMs: 500,
     validators: {
-      onChange: promptBuilderAdvancedFormSchema,
+      // @ts-expect-error TODO: Santosh fix
+      onChangeAsyncDebounceMs: promptBuilderAdvancedFormSchema,
       onBlurAsync: (opts) => {
         // navigate({
         //   search: (prev) => ({ ...prev, ...opts.value }),
@@ -124,10 +129,6 @@ export function PromptBuilderAdvanced() {
     },
   });
 
-  const handleAiRoleChange = (value: PromptBuilderFormData["ai_role"]) => {
-    form.setFieldValue("ai_role", value);
-  };
-
   const renderErrors = (errors: any[]) => {
     if (!errors) return null;
     return errors
@@ -136,8 +137,6 @@ export function PromptBuilderAdvanced() {
       )
       .join(", ");
   };
-  const isFieldFilled = (value: string | undefined) =>
-    value && value.trim().length > 0;
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8 lg:p-12">
@@ -464,7 +463,12 @@ export function PromptBuilderAdvanced() {
                               </p>
                               <Select
                                 value={field.state.value || ""}
-                                onValueChange={handleAiRoleChange}
+                                onValueChange={(value) =>
+                                  form.setFieldValue(
+                                    "ai_role",
+                                    value as PromptBuilderFormData["ai_role"]
+                                  )
+                                }
                               >
                                 <SelectTrigger
                                   id="ai_role"
