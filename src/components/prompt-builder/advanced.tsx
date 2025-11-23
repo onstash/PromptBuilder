@@ -840,7 +840,7 @@ export function PromptBuilderAdvanced() {
                 <Button
                   type="submit"
                   size="lg"
-                  className="border-2 shadow-md font-semibold"
+                  className="border-2 shadow-md font-semibold cursor-pointer"
                   onClick={form.handleSubmit}
                 >
                   Save Prompt
