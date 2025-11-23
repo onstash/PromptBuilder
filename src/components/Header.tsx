@@ -72,7 +72,7 @@ export default function Header() {
 
           {/* Demo Links Start */}
 
-          <Link
+          {/* <Link
             to="/__demo/start/server-funcs"
             onClick={() => setIsOpen(false)}
             className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
@@ -83,9 +83,9 @@ export default function Header() {
           >
             <SquareFunction size={20} />
             <span className="font-medium">Start - Server Functions</span>
-          </Link>
+          </Link> */}
 
-          <Link
+          {/* <Link
             to="/__demo/start/api-request"
             onClick={() => setIsOpen(false)}
             className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
@@ -96,9 +96,9 @@ export default function Header() {
           >
             <Network size={20} />
             <span className="font-medium">Start - API Request</span>
-          </Link>
+          </Link> */}
 
-          <div className="flex flex-row justify-between">
+          {/* <div className="flex flex-row justify-between">
             <Link
               to="/__demo/start/ssr"
               onClick={() => setIsOpen(false)}
@@ -126,8 +126,8 @@ export default function Header() {
                 <ChevronRight size={20} />
               )}
             </button>
-          </div>
-          {groupedExpanded.StartSSRDemo && (
+          </div> */}
+          {/* {groupedExpanded.StartSSRDemo && (
             <div className="flex flex-col ml-4">
               <Link
                 to="/__demo/start/ssr/spa-mode"
@@ -168,9 +168,9 @@ export default function Header() {
                 <span className="font-medium">Data Only</span>
               </Link>
             </div>
-          )}
+          )} */}
 
-          <Link
+          {/* <Link
             to="/__demo/form/simple"
             onClick={() => setIsOpen(false)}
             className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
@@ -181,9 +181,9 @@ export default function Header() {
           >
             <ClipboardType size={20} />
             <span className="font-medium">Simple Form</span>
-          </Link>
+          </Link> */}
 
-          <Link
+          {/* <Link
             to="/__demo/form/address"
             onClick={() => setIsOpen(false)}
             className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
@@ -194,7 +194,7 @@ export default function Header() {
           >
             <ClipboardType size={20} />
             <span className="font-medium">Address Form</span>
-          </Link>
+          </Link> */}
 
           {/* Demo Links End */}
         </nav>
