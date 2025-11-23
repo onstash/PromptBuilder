@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PromptBuilderBasicRouteImport } from './routes/prompt-builder/basic'
 import { Route as PromptBuilderAdvancedRouteImport } from './routes/prompt-builder/advanced'
 import { Route as ExperimentCompressionRouteImport } from './routes/experiment/compression'
 import { Route as DemoStartServerFuncsRouteImport } from './routes/demo/start.server-funcs'
@@ -25,6 +26,11 @@ import { Route as DemoStartSsrDataOnlyRouteImport } from './routes/demo/start.ss
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PromptBuilderBasicRoute = PromptBuilderBasicRouteImport.update({
+  id: '/prompt-builder/basic',
+  path: '/prompt-builder/basic',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PromptBuilderAdvancedRoute = PromptBuilderAdvancedRouteImport.update({
@@ -87,6 +93,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/experiment/compression': typeof ExperimentCompressionRoute
   '/prompt-builder/advanced': typeof PromptBuilderAdvancedRoute
+  '/prompt-builder/basic': typeof PromptBuilderBasicRoute
   '/demo/api/names': typeof DemoApiNamesRoute
   '/demo/form/address': typeof DemoFormAddressRoute
   '/demo/form/simple': typeof DemoFormSimpleRoute
@@ -101,6 +108,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/experiment/compression': typeof ExperimentCompressionRoute
   '/prompt-builder/advanced': typeof PromptBuilderAdvancedRoute
+  '/prompt-builder/basic': typeof PromptBuilderBasicRoute
   '/demo/api/names': typeof DemoApiNamesRoute
   '/demo/form/address': typeof DemoFormAddressRoute
   '/demo/form/simple': typeof DemoFormSimpleRoute
@@ -116,6 +124,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/experiment/compression': typeof ExperimentCompressionRoute
   '/prompt-builder/advanced': typeof PromptBuilderAdvancedRoute
+  '/prompt-builder/basic': typeof PromptBuilderBasicRoute
   '/demo/api/names': typeof DemoApiNamesRoute
   '/demo/form/address': typeof DemoFormAddressRoute
   '/demo/form/simple': typeof DemoFormSimpleRoute
@@ -132,6 +141,7 @@ export interface FileRouteTypes {
     | '/'
     | '/experiment/compression'
     | '/prompt-builder/advanced'
+    | '/prompt-builder/basic'
     | '/demo/api/names'
     | '/demo/form/address'
     | '/demo/form/simple'
@@ -146,6 +156,7 @@ export interface FileRouteTypes {
     | '/'
     | '/experiment/compression'
     | '/prompt-builder/advanced'
+    | '/prompt-builder/basic'
     | '/demo/api/names'
     | '/demo/form/address'
     | '/demo/form/simple'
@@ -160,6 +171,7 @@ export interface FileRouteTypes {
     | '/'
     | '/experiment/compression'
     | '/prompt-builder/advanced'
+    | '/prompt-builder/basic'
     | '/demo/api/names'
     | '/demo/form/address'
     | '/demo/form/simple'
@@ -175,6 +187,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ExperimentCompressionRoute: typeof ExperimentCompressionRoute
   PromptBuilderAdvancedRoute: typeof PromptBuilderAdvancedRoute
+  PromptBuilderBasicRoute: typeof PromptBuilderBasicRoute
   DemoApiNamesRoute: typeof DemoApiNamesRoute
   DemoFormAddressRoute: typeof DemoFormAddressRoute
   DemoFormSimpleRoute: typeof DemoFormSimpleRoute
@@ -193,6 +206,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/prompt-builder/basic': {
+      id: '/prompt-builder/basic'
+      path: '/prompt-builder/basic'
+      fullPath: '/prompt-builder/basic'
+      preLoaderRoute: typeof PromptBuilderBasicRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/prompt-builder/advanced': {
@@ -279,6 +299,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ExperimentCompressionRoute: ExperimentCompressionRoute,
   PromptBuilderAdvancedRoute: PromptBuilderAdvancedRoute,
+  PromptBuilderBasicRoute: PromptBuilderBasicRoute,
   DemoApiNamesRoute: DemoApiNamesRoute,
   DemoFormAddressRoute: DemoFormAddressRoute,
   DemoFormSimpleRoute: DemoFormSimpleRoute,

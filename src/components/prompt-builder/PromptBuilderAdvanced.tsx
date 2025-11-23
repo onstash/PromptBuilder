@@ -41,58 +41,16 @@ import {
   PromptBuilderFormData,
 } from "@/utils/prompt-builder/advanced-schema";
 import { isFieldFilled } from "@/utils/forms/isFieldFilled";
-
-function generatePrompt(
-  value: PromptBuilderFormData,
-  setStateCallback: (newValue: string) => void
-) {
-  const _arr = [];
-  for (const [key, _value] of Object.entries(value)) {
-    const _valueType = typeof _value;
-    switch (_valueType) {
-      case "boolean": {
-        if (_value) {
-          _arr.push(`${key}: \n${_value}`);
-        }
-        break;
-      }
-      case "string": {
-        if ((_value as string).length) {
-          _arr.push(`<${key}>\n\t${_value}\n</${key}>`);
-        }
-        break;
-      }
-    }
-  }
-  const promptGeneratedStr = _arr.join("\n");
-  setStateCallback(promptGeneratedStr);
-  window.localStorage.setItem("promptGeneratedStr", promptGeneratedStr);
-}
+import { PromptPreview } from "../common/PromptPreview";
+import { usePromptGenerated } from "@/hooks/usePromptGenerated";
 
 export function PromptBuilderAdvanced() {
   const searchParams = Route.useSearch();
   const navigate = Route.useNavigate();
   const [optionalSettingsOpen, setOptionalSettingsOpen] = useState(false);
-  const [promptGenerated, _setPromptGenerated] = useState(() => {
-    let updatedAt = Date.now();
-    let value = ``;
-    let setState = (newValue: string) => {
-      updatedAt = Date.now();
-      value = newValue;
-      console.log("[promptGenerated] setState called", { updatedAt, newValue });
-    };
-    generatePrompt(
-      (searchParams ? searchParams : defaultValues) as PromptBuilderFormData,
-      setState
-    );
-    return {
-      value,
-      updatedAt,
-    };
+  const [promptGenerated, generatePrompt] = usePromptGenerated({
+    initialValues: (searchParams ? searchParams : defaultValues),
   });
-  const setPromptGenerated = (newValue: string) => {
-    _setPromptGenerated({ value: newValue, updatedAt: Date.now() });
-  };
 
   const form = useForm({
     // defaultValues: searchParamsShortToLong(searchParams),
@@ -108,11 +66,11 @@ export function PromptBuilderAdvanced() {
         // navigate({
         //   search: (prev) => ({ ...prev, ...opts.value }),
         // });
-        generatePrompt(opts.value, setPromptGenerated);
+        generatePrompt(opts.value);
       },
     },
     onSubmit: async (opts) => {
-      generatePrompt(opts.value, setPromptGenerated);
+      generatePrompt(opts.value);
       // if (confirm(JSON.stringify(searchParamsLongToShort(value)))) {
       //   navigate({
       //     search: (prev) => {
@@ -823,53 +781,18 @@ export function PromptBuilderAdvanced() {
         </div>
 
         <div className="w-full lg:w-1/2">
-          <Card className="border-2 shadow-lg">
-            <CardHeader>
-              <CardTitle className="text-2xl md:text-3xl font-bold">
-                Preview
-              </CardTitle>
-              <CardDescription className="text-base">
-                Preview how your AI prompt looks like
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <AnimatePresence key={promptGenerated.updatedAt}>
-                <div className="flex justify-end pt-4">
-                  <Button
-                    type="submit"
-                    size="lg"
-                    className="border-2 shadow-md font-semibold cursor-pointer"
-                    onClick={() => {
-                      navigator.clipboard
-                        .writeText(promptGenerated.value)
-                        .then(() => {
-                          console.log("Copied!");
-                          alert("Copied prompt!");
-                        })
-                        .catch((err) => {
-                          console.error("Failed to copy: ", err);
-                          alert(`Failed to copy: ${err.message}`);
-                        });
-                    }}
-                  >
-                    Copy Prompt to clipboard
-                  </Button>
-                </div>
-                <Textarea
-                  id="generated_prompt"
-                  value={promptGenerated.value}
-                  onChange={(e) => {
-                    console.log(
-                      "[promptGenerated][textarea] e",
-                      e.target.value
-                    );
-                  }}
-                  className={`min-h-[100px] border-2 resize-y transition-colors border-[#38AC5F] bg-[#38AC5F]/5`}
-                  placeholder="Your generated prompt will appear here.."
-                />
-              </AnimatePresence>
-            </CardContent>
-          </Card>
+          <PromptPreview
+            value={promptGenerated.value}
+            updatedAt={promptGenerated.updatedAt}
+            onClipboardCopy={(error) => {
+              // if (error) {
+              //   console.error("Failed to copy prompt: ", error);
+              //   alert(`Failed to copy prompt: ${error.message}`);
+              // } else {
+              //   console.log("Prompt copied successfully!");
+              // }
+            }}
+          />
         </div>
       </div>
     </div>

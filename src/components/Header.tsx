@@ -2,33 +2,33 @@ import { Link } from '@tanstack/react-router'
 
 import { useState } from 'react'
 import {
-  ChevronDown,
-  ChevronRight,
-  ClipboardType,
+  // ChevronDown,
+  // ChevronRight,
+  // ClipboardType,
+  // Network,
+  // SquareFunction,
+  // StickyNote,
   Home,
   Menu,
-  Network,
-  SquareFunction,
-  StickyNote,
   X,
 } from 'lucide-react'
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false)
-  const [groupedExpanded, setGroupedExpanded] = useState<
-    Record<string, boolean>
-  >({})
+  // const [groupedExpanded, setGroupedExpanded] = useState<
+  //   Record<string, boolean>
+  // >({})
 
   return (
     <>
       <header className="p-4 flex items-center bg-gray-800 text-white shadow-lg">
-        {/* <button
+        <button
           onClick={() => setIsOpen(true)}
           className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
           aria-label="Open menu"
         >
           <Menu size={24} />
-        </button> */}
+        </button>
         <h1 className="ml-4 text-xl font-semibold">
           <Link to="/">
             {/* <img
@@ -36,6 +36,23 @@ export default function Header() {
               alt="TanStack Logo"
               className="h-10"
             /> */}
+            Home
+          </Link>
+          <Link to="/prompt-builder/basic" className="ml-6">
+            {/* <img
+              src="/tanstack-word-logo-white.svg"
+              alt="TanStack Logo"
+              className="h-10"
+            /> */}
+            Basic Prompt Builder
+          </Link>
+          <Link to="/prompt-builder/advanced" className="ml-6">
+            {/* <img
+              src="/tanstack-word-logo-white.svg"
+              alt="TanStack Logo"
+              className="h-10"
+            /> */}
+            Advanced Prompt Builder
           </Link>
         </h1>
       </header>

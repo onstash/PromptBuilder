@@ -5,4 +5,5 @@ import { PromptBuilderAdvanced } from "@/components/prompt-builder/PromptBuilder
 export const Route = createFileRoute("/prompt-builder/advanced")({
   component: PromptBuilderAdvanced,
   // validateSearch: validatePromptBuilderAdvancedSearchParams,
+  ssr: true,
 });
