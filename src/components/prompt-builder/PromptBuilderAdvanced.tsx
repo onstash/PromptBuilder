@@ -63,7 +63,9 @@ function generatePrompt(
       }
     }
   }
-  setStateCallback(_arr.join("\n"));
+  const promptGeneratedStr = _arr.join("\n");
+  setStateCallback(promptGeneratedStr);
+  window.localStorage.setItem("promptGeneratedStr", promptGeneratedStr);
 }
 
 export function PromptBuilderAdvanced() {
@@ -76,17 +78,19 @@ export function PromptBuilderAdvanced() {
     let setState = (newValue: string) => {
       updatedAt = Date.now();
       value = newValue;
-      console.log('[promptGenerated] setState called', {updatedAt, newValue});
+      console.log("[promptGenerated] setState called", { updatedAt, newValue });
     };
-    generatePrompt(searchParams, setState);
+    generatePrompt((searchParams
+      ? searchParams
+      : defaultValues) as PromptBuilderFormData, setState);
     return {
       value,
       updatedAt,
     };
   });
   const setPromptGenerated = (newValue: string) => {
-    _setPromptGenerated({value: newValue, updatedAt: Date.now()});
-  }
+    _setPromptGenerated({ value: newValue, updatedAt: Date.now() });
+  };
 
   const form = useForm({
     // defaultValues: searchParamsShortToLong(searchParams),
@@ -826,11 +830,35 @@ export function PromptBuilderAdvanced() {
             </CardHeader>
             <CardContent>
               <AnimatePresence key={promptGenerated.updatedAt}>
+                <div className="flex justify-end pt-4">
+                  <Button
+                    type="submit"
+                    size="lg"
+                    className="border-2 shadow-md font-semibold cursor-pointer"
+                    onClick={() => {
+                      navigator.clipboard
+                        .writeText(promptGenerated.value)
+                        .then(() => {
+                          console.log("Copied!");
+                          alert("Copied prompt!");
+                        })
+                        .catch((err) => {
+                          console.error("Failed to copy: ", err);
+                          alert(`Failed to copy: ${err.message}`);
+                        });
+                    }}
+                  >
+                    Copy Prompt to clipboard
+                  </Button>
+                </div>
                 <Textarea
                   id="generated_prompt"
                   value={promptGenerated.value}
                   onChange={(e) => {
-                    console.log('[promptGenerated][textarea] e', e.target.value);
+                    console.log(
+                      "[promptGenerated][textarea] e",
+                      e.target.value
+                    );
                   }}
                   className={`min-h-[100px] border-2 resize-y transition-colors border-[#38AC5F] bg-[#38AC5F]/5`}
                   placeholder="Your generated prompt will appear here.."
