@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PromptBuilderAdvancedRouteImport } from './routes/prompt-builder/advanced'
+import { Route as ExperimentCompressionRouteImport } from './routes/experiment/compression'
 import { Route as _demoStartServerFuncsRouteImport } from './routes/__demo/start.server-funcs'
 import { Route as _demoStartApiRequestRouteImport } from './routes/__demo/start.api-request'
 import { Route as _demoFormSimpleRouteImport } from './routes/__demo/form.simple'
@@ -29,6 +30,11 @@ const IndexRoute = IndexRouteImport.update({
 const PromptBuilderAdvancedRoute = PromptBuilderAdvancedRouteImport.update({
   id: '/prompt-builder/advanced',
   path: '/prompt-builder/advanced',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExperimentCompressionRoute = ExperimentCompressionRouteImport.update({
+  id: '/experiment/compression',
+  path: '/experiment/compression',
   getParentRoute: () => rootRouteImport,
 } as any)
 const _demoStartServerFuncsRoute = _demoStartServerFuncsRouteImport.update({
@@ -79,6 +85,7 @@ const _demoStartSsrDataOnlyRoute = _demoStartSsrDataOnlyRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/experiment/compression': typeof ExperimentCompressionRoute
   '/prompt-builder/advanced': typeof PromptBuilderAdvancedRoute
   '/api/names': typeof _demoApiNamesRoute
   '/form/address': typeof _demoFormAddressRoute
@@ -92,6 +99,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/experiment/compression': typeof ExperimentCompressionRoute
   '/prompt-builder/advanced': typeof PromptBuilderAdvancedRoute
   '/api/names': typeof _demoApiNamesRoute
   '/form/address': typeof _demoFormAddressRoute
@@ -106,6 +114,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/experiment/compression': typeof ExperimentCompressionRoute
   '/prompt-builder/advanced': typeof PromptBuilderAdvancedRoute
   '/__demo/api/names': typeof _demoApiNamesRoute
   '/__demo/form/address': typeof _demoFormAddressRoute
@@ -121,6 +130,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/experiment/compression'
     | '/prompt-builder/advanced'
     | '/api/names'
     | '/form/address'
@@ -134,6 +144,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/experiment/compression'
     | '/prompt-builder/advanced'
     | '/api/names'
     | '/form/address'
@@ -147,6 +158,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/experiment/compression'
     | '/prompt-builder/advanced'
     | '/__demo/api/names'
     | '/__demo/form/address'
@@ -161,6 +173,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ExperimentCompressionRoute: typeof ExperimentCompressionRoute
   PromptBuilderAdvancedRoute: typeof PromptBuilderAdvancedRoute
   _demoApiNamesRoute: typeof _demoApiNamesRoute
   _demoFormAddressRoute: typeof _demoFormAddressRoute
@@ -187,6 +200,13 @@ declare module '@tanstack/react-router' {
       path: '/prompt-builder/advanced'
       fullPath: '/prompt-builder/advanced'
       preLoaderRoute: typeof PromptBuilderAdvancedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/experiment/compression': {
+      id: '/experiment/compression'
+      path: '/experiment/compression'
+      fullPath: '/experiment/compression'
+      preLoaderRoute: typeof ExperimentCompressionRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/__demo/start/server-funcs': {
@@ -257,6 +277,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ExperimentCompressionRoute: ExperimentCompressionRoute,
   PromptBuilderAdvancedRoute: PromptBuilderAdvancedRoute,
   _demoApiNamesRoute: _demoApiNamesRoute,
   _demoFormAddressRoute: _demoFormAddressRoute,

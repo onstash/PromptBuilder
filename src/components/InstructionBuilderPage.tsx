@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useForm } from "@tanstack/react-form";
 import { AnimatePresence, motion } from "motion/react";
@@ -34,6 +33,7 @@ import {
   type InstructionFormData,
 } from "../utils/instruction-schema";
 import { Route } from "@/routes";
+import { stringifySearch } from "@/router";
 
 export function InstructionBuilderPage() {
   const searchParams = Route.useSearch();
@@ -46,19 +46,18 @@ export function InstructionBuilderPage() {
       onChange: instructionSchema,
     },
     onSubmit: async ({ value }) => {
-      if (confirm(JSON.stringify(searchParamsLongToShort(value)))) {
-        navigate({
-          search: (prev) => {
-            return {
-              ...prev,
-              ...searchParamsLongToShort(value)
-            };
-          },
-          // replace: true,
-        });
-      } else {
-        alert('searchParams not updated')
-      }
+      // if (confirm(stringifySearch(searchParamsLongToShort(value)))) {
+      //   navigate({
+      //     search: (prev) => {
+      //       return {
+      //         data: stringifySearch(searchParamsLongToShort(value)),
+      //       };
+      //     },
+      //     // replace: true,
+      //   });
+      // } else {
+      //   alert("searchParams not updated");
+      // }
     },
   });
 
