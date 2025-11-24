@@ -28,105 +28,45 @@ import {
 } from "@/components/ui/accordion";
 import { Checkbox } from "@/components/ui/checkbox";
 
-// import {
-//   instructionSchema,
-//   searchParamsLongToShort,
-//   searchParamsShortToLong,
-//   type InstructionFormData,
-// } from "../utils/instruction-schema";
 import { Route } from "@/routes/prompt-builder/advanced";
 import {
   defaultValues,
-  promptBuilderAdvancedFormSchema,
-  PromptBuilderFormData,
+  formSchema,
+  PromptBuilderAdvancedFormData,
+  searchParamsShortToLong,
 } from "@/utils/prompt-builder/advanced-schema";
-
-function generatePrompt(
-  value: PromptBuilderFormData,
-  setStateCallback: (newValue: string) => void
-) {
-  const _arr = [];
-  for (const [key, _value] of Object.entries(value)) {
-    const _valueType = typeof _value;
-    switch (_valueType) {
-      case "boolean": {
-        if (_value) {
-          _arr.push(`${key}: \n${_value}`);
-        }
-        break;
-      }
-      case "string": {
-        if ((_value as string).length) {
-          _arr.push(`<${key}>\n\t${_value}\n</${key}>`);
-        }
-        break;
-      }
-    }
-  }
-  const promptGeneratedStr = _arr.join("\n");
-  setStateCallback(promptGeneratedStr);
-  window.localStorage.setItem("promptGeneratedStr", promptGeneratedStr);
-}
+import { isFieldFilled } from "@/utils/forms/isFieldFilled";
+import { PromptPreview } from "../common/PromptPreview";
+import { usePromptGenerated } from "@/hooks/usePromptGenerated";
 
 export function PromptBuilderAdvanced() {
   const searchParams = Route.useSearch();
   const navigate = Route.useNavigate();
   const [optionalSettingsOpen, setOptionalSettingsOpen] = useState(false);
-  const [promptGenerated, _setPromptGenerated] = useState(() => {
-    let updatedAt = Date.now();
-    let value = ``;
-    let setState = (newValue: string) => {
-      updatedAt = Date.now();
-      value = newValue;
-      console.log("[promptGenerated] setState called", { updatedAt, newValue });
-    };
-    generatePrompt((searchParams
-      ? searchParams
-      : defaultValues) as PromptBuilderFormData, setState);
-    return {
-      value,
-      updatedAt,
-    };
+  const [promptGenerated, generatePrompt] = usePromptGenerated({
+    initialValues: searchParamsShortToLong(searchParams),
   });
-  const setPromptGenerated = (newValue: string) => {
-    _setPromptGenerated({ value: newValue, updatedAt: Date.now() });
-  };
 
   const form = useForm({
-    // defaultValues: searchParamsShortToLong(searchParams),
-    defaultValues: (searchParams
-      ? searchParams
-      : defaultValues) as PromptBuilderFormData,
+    defaultValues: searchParamsShortToLong(searchParams),
+    asyncDebounceMs: 500,
     validators: {
-      onChange: promptBuilderAdvancedFormSchema,
+      // @ts-expect-error TODO: Santosh fix
+      onChangeAsyncDebounceMs: formSchema,
       onBlurAsync: (opts) => {
-        // navigate({
-        //   search: (prev) => ({ ...prev, ...opts.value }),
-        // });
-        generatePrompt(opts.value, setPromptGenerated);
+        navigate({
+          search: (prev) => ({ ...prev, ...opts.value }),
+        });
+        generatePrompt(opts.value);
       },
     },
     onSubmit: async (opts) => {
-      generatePrompt(opts.value, setPromptGenerated);
-      // if (confirm(JSON.stringify(searchParamsLongToShort(value)))) {
-      //   navigate({
-      //     search: (prev) => {
-      //       return {
-      //         ...prev,
-      //         ...searchParamsLongToShort(value)
-      //       };
-      //     },
-      //     // replace: true,
-      //   });
-      // } else {
-      //   alert('searchParams not updated')
-      // }
+      navigate({
+        search: (prev) => ({ ...prev, ...opts.value }),
+      });
+      generatePrompt(opts.value);
     },
   });
-
-  const handleAiRoleChange = (value: PromptBuilderFormData["ai_role"]) => {
-    form.setFieldValue("ai_role", value);
-  };
 
   const renderErrors = (errors: any[]) => {
     if (!errors) return null;
@@ -136,8 +76,6 @@ export function PromptBuilderAdvanced() {
       )
       .join(", ");
   };
-  const isFieldFilled = (value: string | undefined) =>
-    value && value.trim().length > 0;
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8 lg:p-12">
@@ -253,7 +191,7 @@ export function PromptBuilderAdvanced() {
                         value={field.state.value}
                         onValueChange={(value) =>
                           field.handleChange(
-                            value as PromptBuilderFormData["output_format"]
+                            value as PromptBuilderAdvancedFormData["output_format"]
                           )
                         }
                       >
@@ -315,7 +253,7 @@ export function PromptBuilderAdvanced() {
                         value={field.state.value}
                         onValueChange={(value) =>
                           field.handleChange(
-                            value as PromptBuilderFormData["reasoning_depth"]
+                            value as PromptBuilderAdvancedFormData["reasoning_depth"]
                           )
                         }
                       >
@@ -464,7 +402,12 @@ export function PromptBuilderAdvanced() {
                               </p>
                               <Select
                                 value={field.state.value || ""}
-                                onValueChange={handleAiRoleChange}
+                                onValueChange={(value) =>
+                                  form.setFieldValue(
+                                    "ai_role",
+                                    value as PromptBuilderAdvancedFormData["ai_role"]
+                                  )
+                                }
                               >
                                 <SelectTrigger
                                   id="ai_role"
@@ -602,7 +545,7 @@ export function PromptBuilderAdvanced() {
                                 value={field.state.value || ""}
                                 onValueChange={(value) =>
                                   field.handleChange(
-                                    value as PromptBuilderFormData["tone_style"]
+                                    value as PromptBuilderAdvancedFormData["tone_style"]
                                   )
                                 }
                               >
@@ -649,7 +592,7 @@ export function PromptBuilderAdvanced() {
                                 value={field.state.value || ""}
                                 onValueChange={(value) =>
                                   field.handleChange(
-                                    value as PromptBuilderFormData["length_preference"]
+                                    value as PromptBuilderAdvancedFormData["length_preference"]
                                   )
                                 }
                               >
@@ -819,53 +762,18 @@ export function PromptBuilderAdvanced() {
         </div>
 
         <div className="w-full lg:w-1/2">
-          <Card className="border-2 shadow-lg">
-            <CardHeader>
-              <CardTitle className="text-2xl md:text-3xl font-bold">
-                Preview
-              </CardTitle>
-              <CardDescription className="text-base">
-                Preview how your AI prompt looks like
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <AnimatePresence key={promptGenerated.updatedAt}>
-                <div className="flex justify-end pt-4">
-                  <Button
-                    type="submit"
-                    size="lg"
-                    className="border-2 shadow-md font-semibold cursor-pointer"
-                    onClick={() => {
-                      navigator.clipboard
-                        .writeText(promptGenerated.value)
-                        .then(() => {
-                          console.log("Copied!");
-                          alert("Copied prompt!");
-                        })
-                        .catch((err) => {
-                          console.error("Failed to copy: ", err);
-                          alert(`Failed to copy: ${err.message}`);
-                        });
-                    }}
-                  >
-                    Copy Prompt to clipboard
-                  </Button>
-                </div>
-                <Textarea
-                  id="generated_prompt"
-                  value={promptGenerated.value}
-                  onChange={(e) => {
-                    console.log(
-                      "[promptGenerated][textarea] e",
-                      e.target.value
-                    );
-                  }}
-                  className={`min-h-[100px] border-2 resize-y transition-colors border-[#38AC5F] bg-[#38AC5F]/5`}
-                  placeholder="Your generated prompt will appear here.."
-                />
-              </AnimatePresence>
-            </CardContent>
-          </Card>
+          <PromptPreview
+            value={promptGenerated.value}
+            updatedAt={promptGenerated.updatedAt}
+            onClipboardCopy={(error) => {
+              // if (error) {
+              //   console.error("Failed to copy prompt: ", error);
+              //   alert(`Failed to copy prompt: ${error.message}`);
+              // } else {
+              //   console.log("Prompt copied successfully!");
+              // }
+            }}
+          />
         </div>
       </div>
     </div>

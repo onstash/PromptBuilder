@@ -17,8 +17,8 @@ export const Route = createRootRoute({
         content: 'width=device-width, initial-scale=1',
       },
       {
-        title: 'TanStack Start Starter',
-      },
+        title: 'Prompt Builder',
+      }
     ],
     links: [
       {
@@ -46,7 +46,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
           }}
           plugins={[
             {
-              name: 'Tanstack Router',
+              name: 'Prompt Builder',
               render: <TanStackRouterDevtoolsPanel />,
             },
           ]}

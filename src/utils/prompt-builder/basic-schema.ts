@@ -1,7 +1,12 @@
 import { z } from "zod";
 
+import {
+  createKeyMapping,
+  createSearchParamsConverter,
+} from "../search-params-core";
+
 // Zod schema with conditional validation
-export const instructionSchema = z
+export const promptBuilderBasicFormSchema = z
   .object({
     context_gathering: z.string().min(1, "Context gathering is required"),
     persistence: z.string().optional(),
@@ -56,64 +61,52 @@ export const instructionSchema = z
     }
   });
 
-export type InstructionFormData = z.infer<typeof instructionSchema>;
+export type PromptBuilderBasicFormData = z.infer<
+  typeof promptBuilderBasicFormSchema
+>;
 
-export type InstructionFormDataShortened = Partial<{
-  ctxg: InstructionFormData["context_gathering"];
-  p: InstructionFormData["persistence"];
-  tp: InstructionFormData["tool_preambles"];
-  re: InstructionFormData["reasoning_effort"];
-  sr: InstructionFormData["self_reflection"];
-  ctxu: InstructionFormData["context_understanding"];
-  mctxu: InstructionFormData["maximize_context_understanding"];
-  it: InstructionFormData["instruction_type"];
-  cer: InstructionFormData["code_editing_rules"];
-  gp: InstructionFormData["guiding_principles"];
-  fsd: InstructionFormData["frontend_stack_defaults"];
-  uixbp: InstructionFormData["ui_ux_best_practices"];
+export type PromptBuilderBasicFormDataShortened = Partial<{
+  ctxg: PromptBuilderBasicFormData["context_gathering"];
+  p: PromptBuilderBasicFormData["persistence"];
+  tp: PromptBuilderBasicFormData["tool_preambles"];
+  re: PromptBuilderBasicFormData["reasoning_effort"];
+  sr: PromptBuilderBasicFormData["self_reflection"];
+  ctxu: PromptBuilderBasicFormData["context_understanding"];
+  mctxu: PromptBuilderBasicFormData["maximize_context_understanding"];
+  it: PromptBuilderBasicFormData["instruction_type"];
+  cer: PromptBuilderBasicFormData["code_editing_rules"];
+  gp: PromptBuilderBasicFormData["guiding_principles"];
+  fsd: PromptBuilderBasicFormData["frontend_stack_defaults"];
+  uixbp: PromptBuilderBasicFormData["ui_ux_best_practices"];
 }>;
 
+const promptBuilderBasicSearchParamsConverter = createSearchParamsConverter<
+  PromptBuilderBasicFormData,
+  PromptBuilderBasicFormDataShortened
+>(
+  createKeyMapping<
+    PromptBuilderBasicFormData,
+    PromptBuilderBasicFormDataShortened
+  >({
+    ctxg: "context_gathering",
+    p: "persistence",
+    tp: "tool_preambles",
+    re: "reasoning_effort",
+    sr: "self_reflection",
+    ctxu: "context_understanding",
+    mctxu: "maximize_context_understanding",
+    it: "instruction_type",
+    cer: "code_editing_rules",
+    gp: "guiding_principles",
+    fsd: "frontend_stack_defaults",
+    uixbp: "ui_ux_best_practices",
+  })
+);
 
-export const searchParamsLongToShort = (
-  data: Partial<InstructionFormData>
-): InstructionFormDataShortened => {
-  return {
-    ctxg: data["context_gathering"],
-    p: data["persistence"],
-    tp: data["tool_preambles"],
-    re: data["reasoning_effort"],
-    sr: data["self_reflection"],
-    ctxu: data["context_understanding"],
-    mctxu: data["maximize_context_understanding"],
-    it: data["instruction_type"],
-    cer: data["code_editing_rules"],
-    gp: data["guiding_principles"],
-    fsd: data["frontend_stack_defaults"],
-    uixbp: data["ui_ux_best_practices"],
-  };
-};
+export const searchParamsLongToShort = promptBuilderBasicSearchParamsConverter.longToShort;
+export const searchParamsShortToLong = promptBuilderBasicSearchParamsConverter.shortToLong;
 
-export const searchParamsShortToLong = (
-  data: InstructionFormDataShortened
-): InstructionFormData => {
-  return {
-    context_gathering: data["ctxg"]!,
-    persistence: data["p"],
-    tool_preambles: data["tp"],
-    reasoning_effort: data["re"]!,
-    self_reflection: data["sr"]!,
-    context_understanding: data["ctxu"],
-    maximize_context_understanding: data["mctxu"],
-    instruction_type: data["it"]!,
-    code_editing_rules: data["cer"],
-    guiding_principles: data["gp"],
-    frontend_stack_defaults: data["fsd"],
-    ui_ux_best_practices: data["uixbp"],
-  };
-};
-
-
-export const defaultValues: Partial<InstructionFormData> = {
+export const defaultValues: Partial<PromptBuilderBasicFormData> = {
   context_gathering: "",
   persistence: "",
   tool_preambles: "",
@@ -131,5 +124,5 @@ export const defaultValues: Partial<InstructionFormData> = {
 export const defaultValuesShortened = searchParamsLongToShort({
   reasoning_effort: defaultValues["reasoning_effort"],
   instruction_type: defaultValues["instruction_type"],
-  self_reflection: defaultValues["self_reflection"]
+  self_reflection: defaultValues["self_reflection"],
 });
