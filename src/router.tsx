@@ -10,9 +10,13 @@ import { routeTree } from "./routeTree.gen";
 import { stringify, parse } from "zipson";
 import * as LZ from "lz-string";
 
-import { decodeFromBinary, encodeToBinary } from "./utils/search-params";
+import { decodeFromBinary, encodeToBinary } from "./utils/search-params-core";
 
-export const parseSearch = (searchStr: string) => {
+const FEATURE_CONFIG = {
+  ENABLE_COMPRESSED_SEARCH_PARAMS: false,
+};
+
+const parseSearch = (searchStr: string) => {
   const id = performance.now();
   let index = 0;
   const result = parseSearchWith((value) => {
@@ -33,7 +37,7 @@ export const parseSearch = (searchStr: string) => {
   return result;
 };
 
-export const stringifySearch = (searchObj: Record<string, any>) => {
+const stringifySearch = (searchObj: Record<string, any>) => {
   const id = performance.now();
   let index = 0;
   const result = stringifySearchWith((value) => {
@@ -56,12 +60,16 @@ export const stringifySearch = (searchObj: Record<string, any>) => {
 
 // Create a new router instance
 export const getRouter = () => {
-  const router = createRouter({
+  const router = createRouter(FEATURE_CONFIG.ENABLE_COMPRESSED_SEARCH_PARAMS ? {
     routeTree,
     scrollRestoration: true,
     defaultPreloadStaleTime: 0,
     parseSearch,
     stringifySearch,
+  } : {
+    routeTree,
+    scrollRestoration: true,
+    defaultPreloadStaleTime: 0,
   });
 
   return router;

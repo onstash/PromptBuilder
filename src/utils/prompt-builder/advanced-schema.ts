@@ -1,8 +1,15 @@
 import z from "zod";
+import {
+  createKeyMapping,
+  createSearchParamsConverter,
+} from "../search-params-core";
 
-export const promptBuilderAdvancedFormSchema = z
+export const formSchema = z
   .object({
-    task_intent: z.string().min(5, "Describe what you want.").default("<Please fill this>"),
+    task_intent: z
+      .string()
+      .min(5, "Describe what you want.")
+      .default("Please fill this"),
     target_audience: z.string().optional(),
     context_gathering: z.string().optional(),
     examples: z.string().optional(),
@@ -58,12 +65,61 @@ export const promptBuilderAdvancedFormSchema = z
     }
   });
 
-export type PromptBuilderFormData = z.infer<
-  typeof promptBuilderAdvancedFormSchema
+export type PromptBuilderAdvancedFormData = z.infer<
+  typeof formSchema
 >;
 
-export const defaultValues: PromptBuilderFormData = {
-  task_intent: "<Please fill this>",
+export type PromptBuilderAdvancedFormDataShortened = Partial<{
+  ti: "task_intent";
+  ta: "target_audience";
+  ctxg: "context_gathering";
+  ex: "examples";
+  ar: "ai_role";
+  cr: "custom_role";
+  cons: "constraints";
+  of: "output_format";
+  ts: "tone_style";
+  lp: "length_preference";
+  rd: "reasoning_depth";
+  srr: "self_reflection_rules";
+  fr: "factuality_rules";
+  dc: "disallowed_content";
+  an: "additional_notes";
+}>;
+
+const promptBuilderBasicSearchParamsConverter = createSearchParamsConverter<
+  PromptBuilderAdvancedFormData,
+  PromptBuilderAdvancedFormDataShortened
+>(
+  createKeyMapping<
+    PromptBuilderAdvancedFormData,
+    PromptBuilderAdvancedFormDataShortened
+  >({
+    ti: "task_intent",
+    ta: "target_audience",
+    ctxg: "context_gathering",
+    ex: "examples",
+    ar: "ai_role",
+    cr: "custom_role",
+    cons: "constraints",
+    of: "output_format",
+    ts: "tone_style",
+    lp: "length_preference",
+    rd: "reasoning_depth",
+    srr: "self_reflection_rules",
+    fr: "factuality_rules",
+    dc: "disallowed_content",
+    an: "additional_notes",
+  })
+);
+
+export const searchParamsLongToShort =
+  promptBuilderBasicSearchParamsConverter.longToShort;
+export const searchParamsShortToLong =
+  promptBuilderBasicSearchParamsConverter.shortToLong;
+
+export const defaultValues: PromptBuilderAdvancedFormData = {
+  task_intent: "Please fill this",
   target_audience: "",
   context_gathering: "",
   examples: "",
@@ -79,3 +135,9 @@ export const defaultValues: PromptBuilderFormData = {
   disallowed_content: "",
   additional_notes: "",
 };
+
+export const defaultValuesShortened = searchParamsLongToShort({
+  ai_role: defaultValues["ai_role"],
+  output_format: defaultValues["output_format"],
+  reasoning_depth: defaultValues["reasoning_depth"],
+});

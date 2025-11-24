@@ -28,17 +28,12 @@ import {
 } from "@/components/ui/accordion";
 import { Checkbox } from "@/components/ui/checkbox";
 
-// import {
-//   instructionSchema,
-//   searchParamsLongToShort,
-//   searchParamsShortToLong,
-//   type InstructionFormData,
-// } from "../utils/instruction-schema";
 import { Route } from "@/routes/prompt-builder/advanced";
 import {
   defaultValues,
-  promptBuilderAdvancedFormSchema,
-  PromptBuilderFormData,
+  formSchema,
+  PromptBuilderAdvancedFormData,
+  searchParamsShortToLong,
 } from "@/utils/prompt-builder/advanced-schema";
 import { isFieldFilled } from "@/utils/forms/isFieldFilled";
 import { PromptPreview } from "../common/PromptPreview";
@@ -49,41 +44,27 @@ export function PromptBuilderAdvanced() {
   const navigate = Route.useNavigate();
   const [optionalSettingsOpen, setOptionalSettingsOpen] = useState(false);
   const [promptGenerated, generatePrompt] = usePromptGenerated({
-    initialValues: (searchParams ? searchParams : defaultValues),
+    initialValues: searchParamsShortToLong(searchParams),
   });
 
   const form = useForm({
-    // defaultValues: searchParamsShortToLong(searchParams),
-    // defaultValues: (searchParams
-    //   ? searchParams
-    //   : defaultValues) as PromptBuilderFormData,
-    defaultValues,
+    defaultValues: searchParamsShortToLong(searchParams),
     asyncDebounceMs: 500,
     validators: {
       // @ts-expect-error TODO: Santosh fix
-      onChangeAsyncDebounceMs: promptBuilderAdvancedFormSchema,
+      onChangeAsyncDebounceMs: formSchema,
       onBlurAsync: (opts) => {
-        // navigate({
-        //   search: (prev) => ({ ...prev, ...opts.value }),
-        // });
+        navigate({
+          search: (prev) => ({ ...prev, ...opts.value }),
+        });
         generatePrompt(opts.value);
       },
     },
     onSubmit: async (opts) => {
+      navigate({
+        search: (prev) => ({ ...prev, ...opts.value }),
+      });
       generatePrompt(opts.value);
-      // if (confirm(JSON.stringify(searchParamsLongToShort(value)))) {
-      //   navigate({
-      //     search: (prev) => {
-      //       return {
-      //         ...prev,
-      //         ...searchParamsLongToShort(value)
-      //       };
-      //     },
-      //     // replace: true,
-      //   });
-      // } else {
-      //   alert('searchParams not updated')
-      // }
     },
   });
 
@@ -210,7 +191,7 @@ export function PromptBuilderAdvanced() {
                         value={field.state.value}
                         onValueChange={(value) =>
                           field.handleChange(
-                            value as PromptBuilderFormData["output_format"]
+                            value as PromptBuilderAdvancedFormData["output_format"]
                           )
                         }
                       >
@@ -272,7 +253,7 @@ export function PromptBuilderAdvanced() {
                         value={field.state.value}
                         onValueChange={(value) =>
                           field.handleChange(
-                            value as PromptBuilderFormData["reasoning_depth"]
+                            value as PromptBuilderAdvancedFormData["reasoning_depth"]
                           )
                         }
                       >
@@ -424,7 +405,7 @@ export function PromptBuilderAdvanced() {
                                 onValueChange={(value) =>
                                   form.setFieldValue(
                                     "ai_role",
-                                    value as PromptBuilderFormData["ai_role"]
+                                    value as PromptBuilderAdvancedFormData["ai_role"]
                                   )
                                 }
                               >
@@ -564,7 +545,7 @@ export function PromptBuilderAdvanced() {
                                 value={field.state.value || ""}
                                 onValueChange={(value) =>
                                   field.handleChange(
-                                    value as PromptBuilderFormData["tone_style"]
+                                    value as PromptBuilderAdvancedFormData["tone_style"]
                                   )
                                 }
                               >
@@ -611,7 +592,7 @@ export function PromptBuilderAdvanced() {
                                 value={field.state.value || ""}
                                 onValueChange={(value) =>
                                   field.handleChange(
-                                    value as PromptBuilderFormData["length_preference"]
+                                    value as PromptBuilderAdvancedFormData["length_preference"]
                                   )
                                 }
                               >

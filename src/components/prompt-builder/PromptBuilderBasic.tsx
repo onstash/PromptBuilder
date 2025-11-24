@@ -27,22 +27,23 @@ import {
 } from "@/components/ui/accordion";
 
 import {
-  instructionSchema,
+  defaultValues,
+  promptBuilderBasicFormSchema,
   searchParamsLongToShort,
   searchParamsShortToLong,
-  type InstructionFormData,
-} from "../utils/instruction-schema";
+  type PromptBuilderBasicFormData,
+} from "../../utils/prompt-builder/basic-schema";
 import { Route } from "@/routes";
 import { isFieldFilled } from "@/utils/forms/isFieldFilled";
-import { PromptPreview } from "./common/PromptPreview";
+import { PromptPreview } from "../common/PromptPreview";
 import { usePromptGenerated } from "@/hooks/usePromptGenerated";
 
-export function InstructionBuilderPage() {
+export function PromptBuilderBasic() {
   const searchParams = Route.useSearch();
   const navigate = Route.useNavigate();
   const [optionalSettingsOpen, setOptionalSettingsOpen] = useState(false);
   const [promptGenerated, generatePrompt] = usePromptGenerated({
-    initialValues: searchParams,
+    initialValues: searchParamsShortToLong(searchParams),
   });
 
   const form = useForm({
@@ -50,26 +51,21 @@ export function InstructionBuilderPage() {
     asyncDebounceMs: 500,
     validators: {
       // @ts-expect-error TODO: Santosh fix
-      onChangeAsyncDebounceMs: instructionSchema,
+      onChangeAsyncDebounceMs: promptBuilderBasicFormSchema,
       onBlurAsync: (opts) => {
-        // navigate({
-        //   search: (prev) => ({ ...prev, ...opts.value }),
-        // });
+        navigate({
+          search: (prev) => ({ ...prev, ...opts.value }),
+        });
+        // @ts-expect-error TODO Santosh fix this
         generatePrompt(opts.value);
       },
     },
-    onSubmit: async ({ value }) => {
-      generatePrompt(value);
-      // if (confirm(JSON.stringify(searchParamsLongToShort(value)))) {
-      //   navigate({
-      //     search: () => {
-      //       return searchParamsLongToShort(value);
-      //     },
-      //     // replace: true,
-      //   });
-      // } else {
-      //   alert("searchParams not updated");
-      // }
+    onSubmit: async (opts) => {
+      navigate({
+        search: (prev) => ({ ...prev, ...opts.value }),
+      });
+      // @ts-expect-error TODO Santosh fix this
+      generatePrompt(opts.value);
     },
   });
 
@@ -89,7 +85,7 @@ export function InstructionBuilderPage() {
           <Card className="border-2 shadow-lg">
             <CardHeader>
               <CardTitle className="text-2xl md:text-3xl font-bold">
-                AI Instruction Builder
+                AI Prompt Builder (Basic)
               </CardTitle>
               <CardDescription className="text-base">
                 Customize how your AI assistant behaves and responds
@@ -117,7 +113,7 @@ export function InstructionBuilderPage() {
                       <Select
                         value={field.state.value}
                         onValueChange={(
-                          value: InstructionFormData["instruction_type"]
+                          value: PromptBuilderBasicFormData["instruction_type"]
                         ) => form.setFieldValue("instruction_type", value)}
                       >
                         <SelectTrigger
@@ -751,20 +747,20 @@ export function InstructionBuilderPage() {
             </CardContent>
           </Card>
         </div>
-      </div>
-      <div className="w-full lg:w-1/2">
-        <PromptPreview
-          value={promptGenerated.value}
-          updatedAt={promptGenerated.updatedAt}
-          onClipboardCopy={(error) => {
-            // if (error) {
-            //   console.error("Failed to copy prompt: ", error);
-            //   alert(`Failed to copy prompt: ${error.message}`);
-            // } else {
-            //   console.log("Prompt copied successfully!");
-            // }
-          }}
-        />
+        <div className="w-full lg:w-1/2">
+          <PromptPreview
+            value={promptGenerated.value}
+            updatedAt={promptGenerated.updatedAt}
+            onClipboardCopy={(error) => {
+              // if (error) {
+              //   console.error("Failed to copy prompt: ", error);
+              //   alert(`Failed to copy prompt: ${error.message}`);
+              // } else {
+              //   console.log("Prompt copied successfully!");
+              // }
+            }}
+          />
+        </div>
       </div>
     </div>
   );
