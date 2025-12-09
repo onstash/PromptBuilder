@@ -27,18 +27,20 @@ import {
 } from "@/components/ui/accordion";
 
 import {
+  defaultValues,
   promptBuilderBasicFormSchema,
+  searchParamsLongToShort,
   searchParamsShortToLong,
   type PromptBuilderBasicFormData,
 } from "../../utils/prompt-builder/basic-schema";
-import { useNavigate, useSearch } from "@tanstack/react-router";
+import { Route } from "@/routes";
 import { isFieldFilled } from "@/utils/forms/isFieldFilled";
 import { PromptPreview } from "../common/PromptPreview";
 import { usePromptGenerated } from "@/hooks/usePromptGenerated";
 
 export function PromptBuilderBasic() {
-  const searchParams = useSearch({ from: "/prompt-builder/basic" });
-  const navigate = useNavigate({ from: "/prompt-builder/basic" });
+  const searchParams = Route.useSearch();
+  const navigate = Route.useNavigate();
   const [optionalSettingsOpen, setOptionalSettingsOpen] = useState(false);
   const [promptGenerated, generatePrompt] = usePromptGenerated({
     initialValues: searchParamsShortToLong(searchParams),
@@ -54,6 +56,7 @@ export function PromptBuilderBasic() {
         navigate({
           search: (prev) => ({ ...prev, ...opts.value }),
         });
+        // @ts-expect-error TODO Santosh fix this
         generatePrompt(opts.value);
       },
     },
@@ -61,6 +64,7 @@ export function PromptBuilderBasic() {
       navigate({
         search: (prev) => ({ ...prev, ...opts.value }),
       });
+      // @ts-expect-error TODO Santosh fix this
       generatePrompt(opts.value);
     },
   });
@@ -69,7 +73,7 @@ export function PromptBuilderBasic() {
     if (!errors) return null;
     return errors
       .map((err) =>
-        typeof err === "string" ? err : err.message || "Unknown error",
+        typeof err === "string" ? err : err.message || "Unknown error"
       )
       .join(", ");
   };
@@ -109,7 +113,7 @@ export function PromptBuilderBasic() {
                       <Select
                         value={field.state.value}
                         onValueChange={(
-                          value: PromptBuilderBasicFormData["instruction_type"],
+                          value: PromptBuilderBasicFormData["instruction_type"]
                         ) => form.setFieldValue("instruction_type", value)}
                       >
                         <SelectTrigger
@@ -747,7 +751,14 @@ export function PromptBuilderBasic() {
           <PromptPreview
             value={promptGenerated.value}
             updatedAt={promptGenerated.updatedAt}
-            onClipboardCopy={() => {}}
+            onClipboardCopy={(error) => {
+              // if (error) {
+              //   console.error("Failed to copy prompt: ", error);
+              //   alert(`Failed to copy prompt: ${error.message}`);
+              // } else {
+              //   console.log("Prompt copied successfully!");
+              // }
+            }}
           />
         </div>
       </div>

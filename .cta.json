@@ -8,5 +8,11 @@
   "git": true,
   "version": 1,
   "framework": "react-cra",
-  "chosenAddOns": ["nitro", "start", "form", "shadcn", "t3env"]
+  "chosenAddOns": [
+    "nitro",
+    "start",
+    "form",
+    "shadcn",
+    "t3env"
+  ]
 }

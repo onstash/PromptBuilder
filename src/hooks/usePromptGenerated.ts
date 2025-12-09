@@ -1,36 +1,59 @@
-import { useState, useCallback } from "react";
+import { useState } from "react";
 
-function generatePromptString<T extends Record<string, unknown>>(
+function __generatePrompt<T extends Record<string,unknown>>(
   value: T,
-): string {
-  const entries = Object.entries(value)
-    .filter(([_, val]) => {
-      if (typeof val === "string") return val.length > 0;
-      if (typeof val === "boolean") return val === true;
-      return false;
-    })
-    .map(([key, val]) => `<${key}>\n\t${val}\n</${key}>`);
-
-  return entries.join("\n");
+  setStateCallback: (newValue: string) => void
+) {
+  const _arr = [];
+  for (const [key, _value] of Object.entries(value)) {
+    const _valueType = typeof _value;
+    switch (_valueType) {
+      case "boolean": {
+        if (_value) {
+          _arr.push(`${key}: \n${_value}`);
+        }
+        break;
+      }
+      case "string": {
+        if ((_value as string).length) {
+          _arr.push(`<${key}>\n\t${_value}\n</${key}>`);
+        }
+        break;
+      }
+    }
+  }
+  const promptGeneratedStr = _arr.join("\n");
+  setStateCallback(promptGeneratedStr);
+  // window.localStorage.setItem("promptGeneratedStr", promptGeneratedStr);
 }
 
-export function usePromptGenerated<T extends Record<string, unknown>>({
+export function usePromptGenerated<T extends Record<string,unknown>>({
   initialValues,
 }: {
   initialValues: T;
 }) {
-  const [promptGenerated, setPromptGenerated] = useState(() => {
-    const value = generatePromptString(initialValues);
+  const [promptGenerated, __setPromptGenerated] = useState(() => {
+    let updatedAt = Date.now();
+    let value = ``;
+    let setState = (newValue: string) => {
+      updatedAt = Date.now();
+      value = newValue;
+      console.log("[promptGenerated] setState called", { updatedAt, newValue });
+    };
+    __generatePrompt(initialValues, setState);
     return {
       value,
-      updatedAt: Date.now(),
+      updatedAt,
     };
   });
 
-  const generatePrompt = useCallback((values: T) => {
-    const value = generatePromptString(values);
-    setPromptGenerated({ value, updatedAt: Date.now() });
-  }, []);
+  const _setPromptGenerated = (newValue: string) => {
+    __setPromptGenerated({ value: newValue, updatedAt: Date.now() });
+  };
+
+  const generatePrompt = (values: T) => {
+    __generatePrompt(values, _setPromptGenerated);
+  };
 
   return [promptGenerated, generatePrompt] as const;
 }

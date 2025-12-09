@@ -4,10 +4,8 @@ import {
   defaultValuesShortened,
   searchParamsLongToShort,
 } from "./advanced-schema";
-import type {
-  PromptBuilderAdvancedFormData,
-  PromptBuilderAdvancedFormDataShortened,
-} from "./advanced-schema";
+import type { PromptBuilderAdvancedFormData, PromptBuilderAdvancedFormDataShortened } from "./advanced-schema";
+
 
 export const validateSearchParams = (
   search: Record<string, unknown>,
@@ -26,7 +24,7 @@ export const validateSearchParams = (
 };
 
 export function validatePromptBuilderAdvancedSearchParams(
-  searchParams: Record<string, unknown>,
+  searchParams: Record<string, unknown>
 ): PromptBuilderAdvancedFormData {
   const result = formSchema.safeParse(searchParams);
   console.log("[validatePromptBuilderAdvancedSearchParams] result", result);
