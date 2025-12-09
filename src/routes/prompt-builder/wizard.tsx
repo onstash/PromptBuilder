@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PromptBuilderWizard } from "@/components/prompt-builder/PromptBuilderWizard";
 
-
 export const Route = createFileRoute("/prompt-builder/wizard")({
   component: PromptBuilderWizard,
   validateSearch: (search: Record<string, unknown>) => {

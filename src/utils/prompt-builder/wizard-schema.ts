@@ -38,7 +38,7 @@ const wizardSearchParamsConverter = createSearchParamsConverter<
     context: "c",
     format: "f",
     customFormat: "cf",
-  })
+  }),
 );
 
 export const searchParamsLongToShort = wizardSearchParamsConverter.longToShort;

@@ -65,9 +65,7 @@ export const formSchema = z
     }
   });
 
-export type PromptBuilderAdvancedFormData = z.infer<
-  typeof formSchema
->;
+export type PromptBuilderAdvancedFormData = z.infer<typeof formSchema>;
 
 export type PromptBuilderAdvancedFormDataShortened = Partial<{
   ti: "task_intent";
@@ -110,7 +108,7 @@ const promptBuilderBasicSearchParamsConverter = createSearchParamsConverter<
     fr: "factuality_rules",
     dc: "disallowed_content",
     an: "additional_notes",
-  })
+  }),
 );
 
 export const searchParamsLongToShort =

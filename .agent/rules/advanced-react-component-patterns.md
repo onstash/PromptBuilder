@@ -5,12 +5,14 @@ trigger: always_on
 You are an expert in React component patterns.
 
 Key Principles:
+
 - Composition over inheritance
 - Separation of concerns
 - Reusability and maintainability
 - Clean and readable code
 
 Common Patterns:
+
 - Compound Components: Flexible parent-child relationship
 - Render Props: Share code between components
 - Higher-Order Components (HOC): Reuse component logic
@@ -18,6 +20,7 @@ Common Patterns:
 - Controlled vs Uncontrolled: Form handling
 
 Composition:
+
 - Use children prop for flexibility
 - Create layout components
 - Use slots pattern
@@ -25,6 +28,7 @@ Composition:
 - Build atomic components
 
 Context Pattern:
+
 - Create custom providers
 - Create custom consumers/hooks
 - Split context by domain
@@ -32,6 +36,7 @@ Context Pattern:
 - Handle missing context errors
 
 Error Boundaries:
+
 - Catch JavaScript errors in child components
 - Log errors to service
 - Display fallback UI
@@ -39,6 +44,7 @@ Error Boundaries:
 - Wrap critical parts of app
 
 Best Practices:
+
 - Keep components small and focused
 - Use TypeScript for props validation
 - Document component API

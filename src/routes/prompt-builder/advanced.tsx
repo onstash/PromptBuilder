@@ -5,18 +5,18 @@ import { validateSearchParams } from "@/utils/prompt-builder/advanced-search-par
 export const Route = createFileRoute("/prompt-builder/advanced")({
   component: PromptBuilderAdvanced,
   validateSearch: (
-    search: Record<string, unknown>
+    search: Record<string, unknown>,
   ): ReturnType<typeof validateSearchParams> => {
     const id = performance.now();
     console.log(
       `[${id}][validateSearch][path: "/prompt-builder/advanced"] search`,
-      search
+      search,
     );
     const result = validateSearchParams(search);
     console.log(
       `[${id}][validateSearch][path: "/prompt-builder/advanced"]
          result`,
-      result
+      result,
     );
     return result;
   },
