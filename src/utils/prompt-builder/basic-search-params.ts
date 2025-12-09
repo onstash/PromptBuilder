@@ -5,9 +5,7 @@ import {
   promptBuilderBasicFormSchema,
 } from "./basic-schema";
 
-import type {
-  PromptBuilderBasicFormDataShortened,
-} from "./basic-schema";
+import type { PromptBuilderBasicFormDataShortened } from "./basic-schema";
 
 export const validateSearchParams = (
   search: Record<string, unknown>,

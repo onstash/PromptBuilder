@@ -94,11 +94,11 @@ Create a new file in `src/routes`:
 
 ```tsx
 // src/routes/my-new-route.tsx
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute } from "@tanstack/react-router";
 
-export const Route = createFileRoute('/my-new-route')({
+export const Route = createFileRoute("/my-new-route")({
   component: () => <div>My New Route</div>,
-})
+});
 ```
 
 TanStack Router will automatically generate type-safe routes!
@@ -108,7 +108,7 @@ TanStack Router will automatically generate type-safe routes!
 Use the `Link` component for client-side navigation:
 
 ```tsx
-import { Link } from '@tanstack/react-router'
+import { Link } from "@tanstack/react-router";
 
 export function Navigation() {
   return (
@@ -116,7 +116,7 @@ export function Navigation() {
       <Link to="/">Home</Link>
       <Link to="/about">About</Link>
     </nav>
-  )
+  );
 }
 ```
 
@@ -127,23 +127,23 @@ Learn more: [TanStack Router Documentation](https://tanstack.com/router)
 This project uses **TanStack Form** for type-safe, performant form state management.
 
 ```tsx
-import { useForm } from '@tanstack/react-form'
+import { useForm } from "@tanstack/react-form";
 
 function MyForm() {
   const form = useForm({
     defaultValues: {
-      name: '',
+      name: "",
     },
     onSubmit: async (values) => {
       // Handle form submission
     },
-  })
+  });
 
   return (
     <form
       onSubmit={(e) => {
-        e.preventDefault()
-        form.handleSubmit()
+        e.preventDefault();
+        form.handleSubmit();
       }}
     >
       <form.Field name="name">
@@ -155,7 +155,7 @@ function MyForm() {
         )}
       </form.Field>
     </form>
-  )
+  );
 }
 ```
 
@@ -166,10 +166,10 @@ Learn more: [TanStack Form Documentation](https://tanstack.com/form)
 Environment variables are configured in `src/env.ts` with type safety using T3 Env.
 
 ```ts
-import { env } from '@/env'
+import { env } from "@/env";
 
 // Use environment variables with type safety
-console.log(env.VITE_APP_TITLE)
+console.log(env.VITE_APP_TITLE);
 ```
 
 ## 🚢 Building for Production

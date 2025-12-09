@@ -100,11 +100,13 @@ const promptBuilderBasicSearchParamsConverter = createSearchParamsConverter<
     gp: "guiding_principles",
     fsd: "frontend_stack_defaults",
     uixbp: "ui_ux_best_practices",
-  })
+  }),
 );
 
-export const searchParamsLongToShort = promptBuilderBasicSearchParamsConverter.longToShort;
-export const searchParamsShortToLong = promptBuilderBasicSearchParamsConverter.shortToLong;
+export const searchParamsLongToShort =
+  promptBuilderBasicSearchParamsConverter.longToShort;
+export const searchParamsShortToLong =
+  promptBuilderBasicSearchParamsConverter.shortToLong;
 
 export const defaultValues: Partial<PromptBuilderBasicFormData> = {
   context_gathering: "",

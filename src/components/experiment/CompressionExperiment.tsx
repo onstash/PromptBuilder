@@ -20,10 +20,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
+import { Route } from "@/routes/experiment/compression";
 import {
-  Route,
-} from "@/routes/experiment/compression";
-import { CompressionExperiment, compressionExperimentSchema } from "@/utils/experiment/compression";
+  CompressionExperiment,
+  compressionExperimentSchema,
+} from "@/utils/experiment/compression";
 import { isFieldFilled } from "@/utils/forms/isFieldFilled";
 
 export function CompressionExperimentPage() {
@@ -53,7 +54,7 @@ export function CompressionExperimentPage() {
     if (!errors) return null;
     return errors
       .map((err) =>
-        typeof err === "string" ? err : err.message || "Unknown error"
+        typeof err === "string" ? err : err.message || "Unknown error",
       )
       .join(", ");
   };
@@ -125,10 +126,7 @@ export function CompressionExperimentPage() {
               <form.Field name="sort">
                 {(field) => (
                   <div className="space-y-2">
-                    <Label
-                      htmlFor="sort"
-                      className="text-sm font-semibold"
-                    >
+                    <Label htmlFor="sort" className="text-sm font-semibold">
                       Sort
                     </Label>
                     {/* <p className="text-sm text-muted-foreground">
@@ -137,7 +135,9 @@ export function CompressionExperimentPage() {
                     <Select
                       value={field.state.value}
                       onValueChange={(value) => {
-                        field.handleChange(value as CompressionExperiment["sort"]);
+                        field.handleChange(
+                          value as CompressionExperiment["sort"],
+                        );
                       }}
                     >
                       <SelectTrigger
@@ -151,12 +151,8 @@ export function CompressionExperimentPage() {
                         <SelectValue placeholder="Select sort type" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="asc">
-                          Ascending
-                        </SelectItem>
-                        <SelectItem value="desc">
-                          Descending
-                        </SelectItem>
+                        <SelectItem value="asc">Ascending</SelectItem>
+                        <SelectItem value="desc">Descending</SelectItem>
                       </SelectContent>
                     </Select>
                     <AnimatePresence>

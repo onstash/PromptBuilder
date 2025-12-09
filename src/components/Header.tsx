@@ -1,20 +1,10 @@
-import { Link } from '@tanstack/react-router'
+import { Link } from "@tanstack/react-router";
 
-import { useState } from 'react'
-import {
-  // ChevronDown,
-  // ChevronRight,
-  // ClipboardType,
-  // Network,
-  // SquareFunction,
-  // StickyNote,
-  Home,
-  Menu,
-  X,
-} from 'lucide-react'
+import { useState } from "react";
+import { Home, Menu, X } from "lucide-react";
 
 export default function Header() {
-  const [isOpen, setIsOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(false);
   // const [groupedExpanded, setGroupedExpanded] = useState<
   //   Record<string, boolean>
   // >({})
@@ -59,7 +49,7 @@ export default function Header() {
 
       <aside
         className={`fixed top-0 left-0 h-full w-80 bg-gray-900 text-white shadow-2xl z-50 transform transition-transform duration-300 ease-in-out flex flex-col ${
-          isOpen ? 'translate-x-0' : '-translate-x-full'
+          isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         <div className="flex items-center justify-between p-4 border-b border-gray-700">
@@ -80,13 +70,12 @@ export default function Header() {
             className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
             activeProps={{
               className:
-                'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2',
+                "flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2",
             }}
           >
             <Home size={20} />
             <span className="font-medium">Home</span>
           </Link>
-
           {/* Demo Links Start */}
 
           {/* <Link
@@ -217,5 +206,5 @@ export default function Header() {
         </nav>
       </aside>
     </>
-  )
+  );
 }

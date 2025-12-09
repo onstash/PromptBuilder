@@ -4,7 +4,7 @@ export function decodeFromBinary(str: string): string {
       .call(atob(str), function (c) {
         return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
       })
-      .join("")
+      .join(""),
   );
 }
 
@@ -12,7 +12,7 @@ export function encodeToBinary(str: string): string {
   return btoa(
     encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function (match, p1) {
       return String.fromCharCode(parseInt(p1, 16));
-    })
+    }),
   );
 }
 
@@ -24,9 +24,9 @@ type KeyMapping<T, S> = {
 // Generic converter functions
 export const createSearchParamsConverter = <
   TLong extends Record<string, any>,
-  TShort extends Record<string, any>
+  TShort extends Record<string, any>,
 >(
-  mapping: KeyMapping<TLong, TShort>
+  mapping: KeyMapping<TLong, TShort>,
 ) => {
   return {
     longToShort: (data: Partial<TLong>): Partial<TShort> => {
@@ -49,9 +49,9 @@ export const createSearchParamsConverter = <
 // Generic key mapping factory function
 export const createKeyMapping = <
   TLong extends Record<string, any>,
-  TShort extends Record<string, any>
+  TShort extends Record<string, any>,
 >(
-  mapping: KeyMapping<TLong, TShort>
+  mapping: KeyMapping<TLong, TShort>,
 ): KeyMapping<TLong, TShort> => {
   return mapping;
 };

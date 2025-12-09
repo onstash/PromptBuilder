@@ -60,17 +60,21 @@ const stringifySearch = (searchObj: Record<string, any>) => {
 
 // Create a new router instance
 export const getRouter = () => {
-  const router = createRouter(FEATURE_CONFIG.ENABLE_COMPRESSED_SEARCH_PARAMS ? {
-    routeTree,
-    scrollRestoration: true,
-    defaultPreloadStaleTime: 0,
-    parseSearch,
-    stringifySearch,
-  } : {
-    routeTree,
-    scrollRestoration: true,
-    defaultPreloadStaleTime: 0,
-  });
+  const router = createRouter(
+    FEATURE_CONFIG.ENABLE_COMPRESSED_SEARCH_PARAMS
+      ? {
+          routeTree,
+          scrollRestoration: true,
+          defaultPreloadStaleTime: 0,
+          parseSearch,
+          stringifySearch,
+        }
+      : {
+          routeTree,
+          scrollRestoration: true,
+          defaultPreloadStaleTime: 0,
+        },
+  );
 
   return router;
 };

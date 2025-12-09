@@ -72,7 +72,7 @@ export function PromptBuilderAdvanced() {
     if (!errors) return null;
     return errors
       .map((err) =>
-        typeof err === "string" ? err : err.message || "Unknown error"
+        typeof err === "string" ? err : err.message || "Unknown error",
       )
       .join(", ");
   };
@@ -191,7 +191,7 @@ export function PromptBuilderAdvanced() {
                         value={field.state.value}
                         onValueChange={(value) =>
                           field.handleChange(
-                            value as PromptBuilderAdvancedFormData["output_format"]
+                            value as PromptBuilderAdvancedFormData["output_format"],
                           )
                         }
                       >
@@ -253,7 +253,7 @@ export function PromptBuilderAdvanced() {
                         value={field.state.value}
                         onValueChange={(value) =>
                           field.handleChange(
-                            value as PromptBuilderAdvancedFormData["reasoning_depth"]
+                            value as PromptBuilderAdvancedFormData["reasoning_depth"],
                           )
                         }
                       >
@@ -405,7 +405,7 @@ export function PromptBuilderAdvanced() {
                                 onValueChange={(value) =>
                                   form.setFieldValue(
                                     "ai_role",
-                                    value as PromptBuilderAdvancedFormData["ai_role"]
+                                    value as PromptBuilderAdvancedFormData["ai_role"],
                                   )
                                 }
                               >
@@ -487,7 +487,7 @@ export function PromptBuilderAdvanced() {
                                           >
                                             <p className="text-sm text-destructive">
                                               {renderErrors(
-                                                field.state.meta.errors
+                                                field.state.meta.errors,
                                               )}
                                             </p>
                                           </motion.div>
@@ -545,7 +545,7 @@ export function PromptBuilderAdvanced() {
                                 value={field.state.value || ""}
                                 onValueChange={(value) =>
                                   field.handleChange(
-                                    value as PromptBuilderAdvancedFormData["tone_style"]
+                                    value as PromptBuilderAdvancedFormData["tone_style"],
                                   )
                                 }
                               >
@@ -592,7 +592,7 @@ export function PromptBuilderAdvanced() {
                                 value={field.state.value || ""}
                                 onValueChange={(value) =>
                                   field.handleChange(
-                                    value as PromptBuilderAdvancedFormData["length_preference"]
+                                    value as PromptBuilderAdvancedFormData["length_preference"],
                                   )
                                 }
                               >
@@ -765,7 +765,7 @@ export function PromptBuilderAdvanced() {
           <PromptPreview
             value={promptGenerated.value}
             updatedAt={promptGenerated.updatedAt}
-            onClipboardCopy={(error) => {
+            onClipboardCopy={() => {
               // if (error) {
               //   console.error("Failed to copy prompt: ", error);
               //   alert(`Failed to copy prompt: ${error.message}`);
