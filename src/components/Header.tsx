@@ -1,18 +1,7 @@
 import { Link } from "@tanstack/react-router";
 
 import { useState } from "react";
-import {
-  // ChevronDown,
-  // ChevronRight,
-  // ClipboardType,
-  // Network,
-  // SquareFunction,
-  // StickyNote,
-  Home,
-  Menu,
-  X,
-  Wand2,
-} from "lucide-react";
+import { Home, Menu, X } from "lucide-react";
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
@@ -55,22 +44,6 @@ export default function Header() {
             /> */}
             Advanced Prompt Builder
           </Link>
-          <Link
-            to="/prompt-builder/wizard"
-            search={{
-              s: 1,
-              p: "",
-              cp: "",
-              t: "",
-              c: "",
-              f: "",
-              cf: "",
-            }}
-            className="ml-6 flex items-center gap-2"
-          >
-            <Wand2 size={20} />
-            Prompt Wizard
-          </Link>
         </h1>
       </header>
 
@@ -103,29 +76,6 @@ export default function Header() {
             <Home size={20} />
             <span className="font-medium">Home</span>
           </Link>
-
-          <Link
-            to="/prompt-builder/wizard"
-            search={{
-              s: 1,
-              p: "",
-              cp: "",
-              t: "",
-              c: "",
-              f: "",
-              cf: "",
-            }}
-            onClick={() => setIsOpen(false)}
-            className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mb-2"
-            activeProps={{
-              className:
-                "flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mb-2",
-            }}
-          >
-            <Wand2 size={20} />
-            <span className="font-medium">Prompt Wizard</span>
-          </Link>
-
           {/* Demo Links Start */}
 
           {/* <Link

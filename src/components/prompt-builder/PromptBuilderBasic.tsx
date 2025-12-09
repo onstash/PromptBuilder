@@ -27,20 +27,18 @@ import {
 } from "@/components/ui/accordion";
 
 import {
-  defaultValues,
   promptBuilderBasicFormSchema,
-  searchParamsLongToShort,
   searchParamsShortToLong,
   type PromptBuilderBasicFormData,
 } from "../../utils/prompt-builder/basic-schema";
-import { Route } from "@/routes";
+import { useNavigate, useSearch } from "@tanstack/react-router";
 import { isFieldFilled } from "@/utils/forms/isFieldFilled";
 import { PromptPreview } from "../common/PromptPreview";
 import { usePromptGenerated } from "@/hooks/usePromptGenerated";
 
 export function PromptBuilderBasic() {
-  const searchParams = Route.useSearch();
-  const navigate = Route.useNavigate();
+  const searchParams = useSearch({ from: "/prompt-builder/basic" });
+  const navigate = useNavigate({ from: "/prompt-builder/basic" });
   const [optionalSettingsOpen, setOptionalSettingsOpen] = useState(false);
   const [promptGenerated, generatePrompt] = usePromptGenerated({
     initialValues: searchParamsShortToLong(searchParams),
