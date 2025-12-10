@@ -2,13 +2,13 @@ import {
   HeadContent,
   Scripts,
   createRootRoute,
-  useRouterState,
+  // useRouterState,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import { Toaster } from "sonner";
 
-import Header from "../components/Header";
+// import Header from "../components/Header";
 
 import appCss from "../styles.css?url";
 
