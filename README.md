@@ -1,207 +1,160 @@
-# PromptBuilder 🚀
+# Prompt Builder AI 🚀
 
-An easy-to-use web app to build and manage AI prompts. PromptBuilder provides an intuitive interface for creating, testing, and optimizing prompts for various AI models.
+A modern web app for building structured AI prompts with a wizard-based interface. Create professional prompts with guided steps, shareable URLs, and instant preview.
 
-## 🌟 Features
+## ✨ Features
 
-- **Intuitive Prompt Builder**: Drag-and-drop interface for building complex prompts
-- **Real-time Preview**: See your prompt changes instantly
-- **Template Library**: Pre-built templates to get you started
-- **Export & Share**: Export prompts in multiple formats
-- **Responsive Design**: Works seamlessly on desktop and mobile devices
+- **Wizard Interface**: Step-by-step prompt building with 10 configurable sections
+- **URL Compression**: Share prompts via compressed URLs (TypeScript Playground-style)
+- **Real-time Preview**: See formatted prompt output instantly
+- **Local Storage**: Auto-save progress while editing
+- **Share Links**: Generate shareable `/share?d=<compressed>` URLs
+- **Responsive Design**: Neobrutalist UI with Tailwind CSS 4
 
 ## 🛠️ Tech Stack
 
-- **Frontend Framework**: React 19
-- **Routing**: TanStack Router v1
-- **Form Management**: TanStack Form
-- **Styling**: Tailwind CSS 4 with Radix UI components
-- **Build Tool**: Vite 7
-- **Language**: TypeScript 5
-- **Testing**: Vitest
-- **UI Components**: Shadcn/ui (Radix UI based)
+- **Framework**: React 19 + TypeScript 5
+- **Routing**: TanStack Router v1 (file-based)
+- **Forms**: TanStack Form + Zod validation
+- **Styling**: Tailwind CSS 4 + Radix UI
+- **Compression**: LZ-String (URL-safe)
+- **Build**: Vite 7
 - **Package Manager**: pnpm
 
-## 🚀 Getting Started
-
-### Prerequisites
-
-- Node.js 18+ (or your preferred Node version)
-- pnpm (recommended) or npm
-
-### Installation
+## 🚀 Quick Start
 
 ```bash
 # Install dependencies
 pnpm install
 
-# Start development server
+# Start dev server (port 3000)
 pnpm dev
+
+# Type check + unused code detection
+pnpm lint
 ```
 
-The application will be available at `http://localhost:3000`
+## 📝 Scripts
 
-## 📝 Available Scripts
-
-- `pnpm dev` - Start the development server on port 3000
-- `pnpm build` - Build for production
-- `pnpm serve` - Preview the production build locally
-- `pnpm test` - Run tests with Vitest
+- `pnpm dev` - Development server
+- `pnpm build` - Production build
+- `pnpm serve` - Preview production build
+- `pnpm test` - Run Vitest tests
+- `pnpm lint:types` - TypeScript type checking
+- `pnpm lint:unused` - Knip unused code detection
+- `pnpm lint` - Run both linters
 
 ## 🏗️ Project Structure
 
 ```
 src/
-├── components/      # React components
-├── routes/          # File-based router configuration
-├── hooks/           # Custom React hooks
-├── lib/             # Utility libraries
-├── utils/           # Helper functions
-├── data/            # Static data and constants
-├── styles.css       # Global styles
-├── router.tsx       # Router configuration
-└── env.ts           # Environment variables configuration
+├── components/
+│   ├── prompt-wizard/       # Wizard steps & preview
+│   ├── landing/             # Landing page components
+│   └── ui/                  # Shadcn/ui components
+├── routes/
+│   ├── wizard.tsx           # Main wizard route
+│   ├── share.tsx            # Shared prompt viewer
+│   └── demo/                # Demo routes
+├── utils/
+│   └── prompt-wizard/       # Compression, schema, validation
+└── hooks/                   # Custom React hooks
 ```
 
-## 🎨 Styling
+## 🎯 Key Routes
 
-This project uses **Tailwind CSS 4** for styling with **Radix UI** for accessible, unstyled component primitives. Custom components are built using Shadcn/ui patterns.
+- `/` - Landing page
+- `/wizard` - Prompt wizard builder
+- `/share?d=<compressed>` - View shared prompts
 
-### Adding UI Components
+## 🔧 Wizard Features
 
-Add new Shadcn components easily:
+### 10-Step Configuration
 
-```bash
-pnpx shadcn@latest add button
-pnpx shadcn@latest add input
-```
+1. **Task Intent** - Main objective (required, min 10 chars)
+2. **Context** - Background information
+3. **Constraints** - Limitations and requirements
+4. **Audience** - Target audience selection
+5. **Output Format** - Response structure (paragraph, list, table, etc.)
+6. **Role** - AI persona/expertise
+7. **Tone** - Communication style
+8. **Reasoning Depth** - Brief, moderate, or thorough
+9. **Self-Check** - Verification step toggle
+10. **Disallowed Content** - Content to avoid
 
-## 🧪 Testing
+### URL Compression
 
-Tests are written with Vitest. Run the test suite:
+- Uses LZ-String for TypeScript Playground-style compression
+- Only non-default values included in URL
+- Safe for browser URL length limits (~2000 chars)
 
-```bash
-pnpm test
-```
+### State Management
 
-## 🌐 Routing
+- Local React state for editing
+- Debounced localStorage persistence
+- Share URL generated only on "Finish"
+- Clean URLs during editing (no query params)
 
-This project uses **TanStack Router** with file-based routing. Routes are organized in the `src/routes` directory.
+## 🎨 UI Components
 
-### Adding a New Route
+Built with Shadcn/ui (Radix UI primitives):
 
-Create a new file in `src/routes`:
+- Button, Input, Label, Select, Slider, Switch
+- Accordion, Card
+- Neobrutalist design with bold borders and shadows
 
-```tsx
-// src/routes/my-new-route.tsx
-import { createFileRoute } from "@tanstack/react-router";
+## 🧪 Code Quality
 
-export const Route = createFileRoute("/my-new-route")({
-  component: () => <div>My New Route</div>,
-});
-```
+- **TypeScript**: Strict mode enabled
+- **Knip**: Detects unused files, exports, dependencies
+- **Vitest**: Unit testing framework
+- **ESLint**: Code linting (via TanStack)
 
-TanStack Router will automatically generate type-safe routes!
+## 📦 Dependencies
 
-### Navigation
+### Core
 
-Use the `Link` component for client-side navigation:
+- `react` `react-dom` - UI framework
+- `@tanstack/react-router` - Type-safe routing
+- `@tanstack/react-form` - Form state management
+- `lz-string` - URL compression
+- `zod` - Schema validation
 
-```tsx
-import { Link } from "@tanstack/react-router";
+### UI
 
-export function Navigation() {
-  return (
-    <nav>
-      <Link to="/">Home</Link>
-      <Link to="/about">About</Link>
-    </nav>
-  );
-}
-```
+- `tailwindcss` `@tailwindcss/vite` - Styling
+- `@radix-ui/*` - Accessible primitives
+- `lucide-react` - Icons
+- `motion` - Animations
+- `sonner` - Toast notifications
 
-Learn more: [TanStack Router Documentation](https://tanstack.com/router)
+### Dev Tools
 
-## 📋 Form Handling
-
-This project uses **TanStack Form** for type-safe, performant form state management.
-
-```tsx
-import { useForm } from "@tanstack/react-form";
-
-function MyForm() {
-  const form = useForm({
-    defaultValues: {
-      name: "",
-    },
-    onSubmit: async (values) => {
-      // Handle form submission
-    },
-  });
-
-  return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        form.handleSubmit();
-      }}
-    >
-      <form.Field name="name">
-        {(field) => (
-          <input
-            value={field.state.value}
-            onChange={(e) => field.handleChange(e.target.value)}
-          />
-        )}
-      </form.Field>
-    </form>
-  );
-}
-```
-
-Learn more: [TanStack Form Documentation](https://tanstack.com/form)
+- `vite` - Build tool
+- `typescript` - Type checking
+- `vitest` - Testing
+- `knip` - Unused code detection
 
 ## 🔐 Environment Variables
 
-Environment variables are configured in `src/env.ts` with type safety using T3 Env.
+Configure in `src/env.ts` using `@t3-oss/env-core`:
 
 ```ts
 import { env } from "@/env";
-
-// Use environment variables with type safety
 console.log(env.VITE_APP_TITLE);
 ```
 
-## 🚢 Building for Production
+## 🚢 Production Build
 
 ```bash
-pnpm build
-```
-
-This creates an optimized production build in the `dist/` directory.
-
-Preview the build locally:
-
-```bash
-pnpm serve
+pnpm build    # Creates dist/
+pnpm serve    # Preview locally
 ```
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## 📚 Learn More
-
-- [React Documentation](https://react.dev)
-- [TanStack Documentation](https://tanstack.com)
-- [Tailwind CSS Documentation](https://tailwindcss.com)
-- [Vite Documentation](https://vitejs.dev)
-- [TypeScript Documentation](https://www.typescriptlang.org)
+MIT
 
 ---
 
-**Built with ❤️ using modern web technologies**
+**Built with modern web technologies** ⚡
