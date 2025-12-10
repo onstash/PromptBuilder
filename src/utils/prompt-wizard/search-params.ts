@@ -27,7 +27,7 @@ export const WIZARD_DEFAULTS: PromptWizardData = {
   target_audience: "general",
   output_format: "1-paragraph",
   reasoning_depth: "moderate",
-  self_check: false,
+  self_check: true,
   step: 1,
   show_advanced: false,
   custom_audience: undefined,

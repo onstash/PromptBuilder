@@ -2,7 +2,6 @@ import { useState, useCallback, useMemo, useRef, useEffect, memo } from "react";
 import { motion } from "motion/react";
 import { Settings2, RotateCcw } from "lucide-react";
 
-import { Route } from "@/routes/prompt-builder/wizard";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -11,7 +10,8 @@ import {
   TOTAL_REQUIRED_STEPS,
   type PromptWizardData,
 } from "@/utils/prompt-wizard/schema";
-import { wizardDataToSearchParams } from "@/utils/prompt-wizard/search-params";
+import { compress } from "@/utils/prompt-wizard/url-compression";
+import { WIZARD_DEFAULTS } from "@/utils/prompt-wizard/search-params";
 
 import { WizardProgress } from "./WizardProgress";
 import { WizardNavigation } from "./WizardNavigation";
@@ -32,7 +32,7 @@ import { SelfCheckStep } from "./steps/SelfCheckStep";
 import { DisallowedStep } from "./steps/DisallowedStep";
 
 // ═══════════════════════════════════════════════════════════════════════════
-// STATIC CONFIGURATION (moved outside component to avoid recreation)
+// STATIC CONFIGURATION
 // ═══════════════════════════════════════════════════════════════════════════
 
 interface StepProps {
@@ -42,7 +42,6 @@ interface StepProps {
 
 type StepComponent = React.ComponentType<StepProps>;
 
-/** Static mapping of step number to component */
 const STEP_COMPONENTS: Record<number, StepComponent> = {
   1: TaskIntentStep,
   2: ContextStep,
@@ -56,7 +55,6 @@ const STEP_COMPONENTS: Record<number, StepComponent> = {
   10: DisallowedStep,
 };
 
-/** Static hints for each step */
 const STEP_HINTS: Record<number, string> = {
   1: 'Be specific. Example: "Write a professional email declining a job offer"',
   2: "Include relevant background that helps the AI understand your situation (optional)",
@@ -70,96 +68,148 @@ const STEP_HINTS: Record<number, string> = {
   10: "Specify topics or content the AI should avoid (optional)",
 };
 
-/** Default/empty wizard state */
-const DEFAULT_STATE: Partial<PromptWizardData> = {
-  task_intent: "",
-  context: "",
-  constraints: "",
-  target_audience: "general",
-  output_format: "1-paragraph",
-  ai_role: "",
-  tone_style: undefined,
-  reasoning_depth: "moderate",
-  self_check: false,
-  disallowed_content: "",
-  step: 1,
-  show_advanced: false,
-};
+const STORAGE_KEY = "wizard-draft";
+const SHARE_URL_KEY = "wizard-share-url";
+
+// ═══════════════════════════════════════════════════════════════════════════
+// LOCALSTORAGE HELPERS
+// ═══════════════════════════════════════════════════════════════════════════
+
+function loadFromStorage(): PromptWizardData {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (!stored) return WIZARD_DEFAULTS;
+    return { ...WIZARD_DEFAULTS, ...JSON.parse(stored) };
+  } catch {
+    return WIZARD_DEFAULTS;
+  }
+}
+
+function saveToStorage(data: PromptWizardData): void {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch {
+    // Storage full or unavailable
+  }
+}
+
+function clearStorage(): void {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(SHARE_URL_KEY);
+  } catch {
+    // Ignore
+  }
+}
+
+function generateShareUrl(data: PromptWizardData): string {
+  // Only include non-default values
+  const filtered: Partial<PromptWizardData> = {};
+  for (const [key, value] of Object.entries(data)) {
+    if (value === undefined || value === null || value === "") continue;
+    const defaultVal = WIZARD_DEFAULTS[key as keyof PromptWizardData];
+    if (value === defaultVal) continue;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (filtered as any)[key] = value;
+  }
+
+  const json = JSON.stringify(filtered);
+  const compressed = compress(json);
+  return `/share?d=${compressed}`;
+}
+
+function saveShareUrl(url: string): void {
+  try {
+    localStorage.setItem(SHARE_URL_KEY, url);
+  } catch {
+    // Ignore
+  }
+}
+
+function getShareUrl(): string | null {
+  try {
+    return localStorage.getItem(SHARE_URL_KEY);
+  } catch {
+    return null;
+  }
+}
 
 // ═══════════════════════════════════════════════════════════════════════════
 // MAIN COMPONENT
 // ═══════════════════════════════════════════════════════════════════════════
 
 export const PromptWizard = memo(function PromptWizard() {
-  const searchParams = Route.useSearch();
-  const navigate = Route.useNavigate();
-
-  // Track previous step for direction calculation (instead of useState)
-  const prevStepRef = useRef(searchParams.step);
+  // Initialize from localStorage
+  const [wizardData, setWizardData] =
+    useState<PromptWizardData>(loadFromStorage);
   const [showPreview, setShowPreview] = useState(false);
   const [showError, setShowError] = useState(false);
+  const [shareUrl, setShareUrl] = useState<string | null>(getShareUrl);
 
-  const currentStep = searchParams.step;
-  const showAdvanced = searchParams.show_advanced;
-  const totalSteps = showAdvanced ? 10 : TOTAL_REQUIRED_STEPS;
-
-  // Derive direction from step change (not stored in state)
+  // Track previous step for direction
+  const prevStepRef = useRef(wizardData.step);
   const direction =
-    currentStep > prevStepRef.current
+    wizardData.step > prevStepRef.current
       ? 1
-      : currentStep < prevStepRef.current
+      : wizardData.step < prevStepRef.current
         ? -1
         : 0;
 
-  // Update ref after render
   useEffect(() => {
-    prevStepRef.current = currentStep;
-  }, [currentStep]);
+    prevStepRef.current = wizardData.step;
+  }, [wizardData.step]);
 
-  // Optimized: Only depend on task_intent for step 1 validation
-  const taskIntentValid = searchParams.task_intent.trim().length >= 10;
+  // Debounced localStorage save (300ms)
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined
+  );
+  useEffect(() => {
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+    saveTimeoutRef.current = setTimeout(() => {
+      saveToStorage(wizardData);
+    }, 300);
 
-  // Calculate completed steps with narrowed dependencies
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, [wizardData]);
+
+  // Derived values
+  const currentStep = wizardData.step;
+  const showAdvanced = wizardData.show_advanced;
+  const totalSteps = showAdvanced ? 10 : TOTAL_REQUIRED_STEPS;
+  const taskIntentValid = wizardData.task_intent.trim().length >= 10;
+
   const completedSteps = useMemo(() => {
     const completed = new Set<number>();
     if (taskIntentValid) completed.add(1);
-    // Steps 2-10 are always valid (optional or have defaults)
     for (let i = 2; i <= totalSteps; i++) {
       completed.add(i);
     }
     return completed;
   }, [taskIntentValid, totalSteps]);
 
-  // Current step validation
   const currentStepValid = currentStep === 1 ? taskIntentValid : true;
   const currentStepError =
     currentStep === 1 && !taskIntentValid
       ? "Please describe what you want (at least 10 characters)"
       : null;
 
-  // Update URL with new data - only include non-default values
-  const updateSearch = useCallback(
-    (updates: Partial<PromptWizardData>) => {
-      setShowError(false);
-      // Only include fields that differ from defaults when updating URL
-      const params = wizardDataToSearchParams({ ...searchParams, ...updates });
-      navigate({
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        search: params as any,
-        replace: true,
-      });
-    },
-    [searchParams, navigate]
-  );
+  // Update local state (fast, no URL updates)
+  const updateData = useCallback((updates: Partial<PromptWizardData>) => {
+    setShowError(false);
+    setWizardData((prev) => ({ ...prev, ...updates }));
+  }, []);
 
   // Navigation handlers
-  const goToStep = useCallback(
-    (step: number) => {
-      setShowError(false);
-      updateSearch({ step });
-    },
-    [updateSearch]
-  );
+  const goToStep = useCallback((step: number) => {
+    setShowError(false);
+    setWizardData((prev) => ({ ...prev, step }));
+  }, []);
 
   const handleNext = useCallback(() => {
     if (!currentStepValid) {
@@ -182,26 +232,25 @@ export const PromptWizard = memo(function PromptWizard() {
       setShowError(true);
       return;
     }
+    // Generate and save share URL
+    const url = generateShareUrl(wizardData);
+    saveShareUrl(url);
+    setShareUrl(url);
     setShowPreview(true);
-  }, [currentStepValid]);
+  }, [currentStepValid, wizardData]);
 
   const toggleAdvanced = useCallback(() => {
-    updateSearch({ show_advanced: !showAdvanced });
-  }, [showAdvanced, updateSearch]);
+    updateData({ show_advanced: !showAdvanced });
+  }, [showAdvanced, updateData]);
 
-  // Reset form to initial state
   const handleReset = useCallback(() => {
-    const params = wizardDataToSearchParams(DEFAULT_STATE);
-    navigate({
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      search: params as any,
-      replace: true,
-    });
+    setWizardData(WIZARD_DEFAULTS);
+    clearStorage();
+    setShareUrl(null);
     setShowPreview(false);
     setShowError(false);
-  }, [navigate]);
+  }, []);
 
-  // Handle click on progress step
   const handleStepClick = useCallback(
     (step: number) => {
       if (step < currentStep) {
@@ -237,7 +286,6 @@ export const PromptWizard = memo(function PromptWizard() {
                 Prompt Wizard
               </h1>
               <div className="flex items-center gap-3">
-                {/* Reset Button */}
                 <Button
                   variant="ghost"
                   size="sm"
@@ -247,7 +295,6 @@ export const PromptWizard = memo(function PromptWizard() {
                 >
                   <RotateCcw className="w-4 h-4" />
                 </Button>
-                {/* Advanced Toggle */}
                 <div className="flex items-center gap-2">
                   <Switch
                     id="advanced-mode"
@@ -276,10 +323,9 @@ export const PromptWizard = memo(function PromptWizard() {
               direction={direction}
               hint={stepHint}
             >
-              <StepComponent data={searchParams} onUpdate={updateSearch} />
+              <StepComponent data={wizardData} onUpdate={updateData} />
             </WizardStep>
 
-            {/* Validation Error */}
             {showError && currentStepError && (
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
@@ -307,7 +353,8 @@ export const PromptWizard = memo(function PromptWizard() {
         {/* Preview Panel */}
         {showPreview && (
           <WizardPreview
-            data={searchParams}
+            data={wizardData}
+            shareUrl={shareUrl}
             onClose={() => setShowPreview(false)}
           />
         )}

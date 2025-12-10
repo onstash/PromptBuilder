@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ShareRouteImport } from './routes/share'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PromptBuilderWizardRouteImport } from './routes/prompt-builder/wizard'
 import { Route as PromptBuilderBasicRouteImport } from './routes/prompt-builder/basic'
@@ -24,6 +25,11 @@ import { Route as DemoStartSsrSpaModeRouteImport } from './routes/demo/start.ssr
 import { Route as DemoStartSsrFullSsrRouteImport } from './routes/demo/start.ssr.full-ssr'
 import { Route as DemoStartSsrDataOnlyRouteImport } from './routes/demo/start.ssr.data-only'
 
+const ShareRoute = ShareRouteImport.update({
+  id: '/share',
+  path: '/share',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -97,6 +103,7 @@ const DemoStartSsrDataOnlyRoute = DemoStartSsrDataOnlyRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/share': typeof ShareRoute
   '/experiment/compression': typeof ExperimentCompressionRoute
   '/prompt-builder/advanced': typeof PromptBuilderAdvancedRoute
   '/prompt-builder/basic': typeof PromptBuilderBasicRoute
@@ -113,6 +120,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/share': typeof ShareRoute
   '/experiment/compression': typeof ExperimentCompressionRoute
   '/prompt-builder/advanced': typeof PromptBuilderAdvancedRoute
   '/prompt-builder/basic': typeof PromptBuilderBasicRoute
@@ -130,6 +138,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/share': typeof ShareRoute
   '/experiment/compression': typeof ExperimentCompressionRoute
   '/prompt-builder/advanced': typeof PromptBuilderAdvancedRoute
   '/prompt-builder/basic': typeof PromptBuilderBasicRoute
@@ -148,6 +157,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/share'
     | '/experiment/compression'
     | '/prompt-builder/advanced'
     | '/prompt-builder/basic'
@@ -164,6 +174,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/share'
     | '/experiment/compression'
     | '/prompt-builder/advanced'
     | '/prompt-builder/basic'
@@ -180,6 +191,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/share'
     | '/experiment/compression'
     | '/prompt-builder/advanced'
     | '/prompt-builder/basic'
@@ -197,6 +209,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ShareRoute: typeof ShareRoute
   ExperimentCompressionRoute: typeof ExperimentCompressionRoute
   PromptBuilderAdvancedRoute: typeof PromptBuilderAdvancedRoute
   PromptBuilderBasicRoute: typeof PromptBuilderBasicRoute
@@ -214,6 +227,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/share': {
+      id: '/share'
+      path: '/share'
+      fullPath: '/share'
+      preLoaderRoute: typeof ShareRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -317,6 +337,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ShareRoute: ShareRoute,
   ExperimentCompressionRoute: ExperimentCompressionRoute,
   PromptBuilderAdvancedRoute: PromptBuilderAdvancedRoute,
   PromptBuilderBasicRoute: PromptBuilderBasicRoute,
