@@ -5,29 +5,29 @@ const steps = [
   {
     number: "01",
     icon: MousePointer,
-    title: "Choose Your Use Case",
-    description:
-      "Select General Purpose or Frontend Engineering mode based on your needs.",
+    title: "Choose",
+    description: "Select General Purpose or Frontend Engineering mode.",
+    color: "bg-primary",
   },
   {
     number: "02",
     icon: Sliders,
-    title: "Configure Settings",
-    description:
-      "Customize context, reasoning depth, tone, and output preferences.",
+    title: "Configure",
+    description: "Customize context, reasoning, tone, and preferences.",
+    color: "bg-secondary",
   },
   {
     number: "03",
     icon: Copy,
-    title: "Generate & Copy",
-    description:
-      "Get your optimized prompt instantly and copy it to your clipboard.",
+    title: "Generate",
+    description: "Get your optimized prompt instantly and copy it.",
+    color: "bg-accent",
   },
 ];
 
 export function HowItWorks() {
   return (
-    <section className="py-24 px-6 bg-gradient-to-b from-slate-900 to-slate-800">
+    <section className="py-24 px-6 bg-background">
       <div className="max-w-5xl mx-auto">
         {/* Section header */}
         <motion.div
@@ -36,49 +36,53 @@ export function HowItWorks() {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <h2 className="text-3xl md:text-5xl font-bold text-white mb-4">
+          <h2 className="text-4xl md:text-6xl font-black text-foreground mb-4 uppercase tracking-tight">
             How It Works
           </h2>
-          <p className="text-xl text-slate-400">
+          <p className="text-xl text-muted-foreground">
             Three simple steps to create professional prompts.
           </p>
         </motion.div>
 
         {/* Steps */}
-        <div className="relative">
-          {/* Connecting line */}
-          <div className="hidden md:block absolute top-1/2 left-0 right-0 h-0.5 bg-gradient-to-r from-purple-500/20 via-pink-500/40 to-cyan-500/20 -translate-y-1/2" />
-
-          <div className="grid md:grid-cols-3 gap-8 relative">
-            {steps.map((step, index) => (
-              <motion.div
-                key={step.number}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.15 }}
-                className="relative text-center group"
+        <div className="grid md:grid-cols-3 gap-8">
+          {steps.map((step, index) => (
+            <motion.div
+              key={step.number}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: index * 0.15 }}
+              className="relative text-center"
+            >
+              {/* Step number */}
+              <div
+                className={`inline-flex items-center justify-center w-20 h-20 ${step.color} border-4 border-foreground shadow-[4px_4px_0px_0px_hsl(var(--foreground))] mb-6`}
               >
-                {/* Step number badge */}
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 text-white font-bold text-lg mb-6 shadow-lg shadow-purple-500/20 group-hover:scale-110 transition-transform duration-300">
-                  <step.icon className="w-7 h-7" />
-                </div>
+                <step.icon className="w-8 h-8 text-foreground" />
+              </div>
 
-                {/* Content */}
-                <div className="bg-slate-800/50 rounded-2xl p-6 border border-slate-700/50">
-                  <span className="text-purple-400 font-mono text-sm">
-                    Step {step.number}
-                  </span>
-                  <h3 className="text-xl font-semibold text-white mt-2 mb-3">
-                    {step.title}
-                  </h3>
-                  <p className="text-slate-400 text-sm leading-relaxed">
-                    {step.description}
-                  </p>
+              {/* Content */}
+              <div className="bg-card border-4 border-foreground shadow-[4px_4px_0px_0px_hsl(var(--foreground))] p-6">
+                <span className="text-primary font-mono text-sm font-bold">
+                  STEP {step.number}
+                </span>
+                <h3 className="text-2xl font-black text-foreground mt-2 mb-3 uppercase">
+                  {step.title}
+                </h3>
+                <p className="text-muted-foreground text-sm">
+                  {step.description}
+                </p>
+              </div>
+
+              {/* Arrow connector */}
+              {index < steps.length - 1 && (
+                <div className="hidden md:block absolute top-10 -right-4 text-4xl text-foreground font-black">
+                  →
                 </div>
-              </motion.div>
-            ))}
-          </div>
+              )}
+            </motion.div>
+          ))}
         </div>
       </div>
     </section>

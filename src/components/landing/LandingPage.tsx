@@ -6,7 +6,7 @@ import { CTASection } from "./CTASection";
 
 export function LandingPage() {
   return (
-    <main className="bg-slate-900 min-h-screen">
+    <main className="bg-background">
       <Hero />
       <FeaturesGrid />
       <HowItWorks />
@@ -14,23 +14,23 @@ export function LandingPage() {
       <CTASection />
 
       {/* Footer */}
-      <footer className="py-8 px-6 bg-slate-900 border-t border-slate-800">
+      <footer className="py-8 px-6 bg-foreground text-background">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-slate-500 text-sm">
-            © 2024 Prompt Builder. Built with TanStack.
+          <p className="text-sm font-mono uppercase tracking-wider">
+            © 2024 Prompt Builder
           </p>
-          <div className="flex gap-6">
+          <div className="flex gap-6 font-mono text-sm uppercase tracking-wider">
             <a
               href="https://github.com"
-              className="text-slate-400 hover:text-white transition-colors text-sm"
+              className="hover:text-primary transition-colors underline underline-offset-4"
             >
               GitHub
             </a>
             <a
               href="#"
-              className="text-slate-400 hover:text-white transition-colors text-sm"
+              className="hover:text-primary transition-colors underline underline-offset-4"
             >
-              Documentation
+              Docs
             </a>
           </div>
         </div>
