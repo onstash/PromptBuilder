@@ -5,6 +5,43 @@ import {
 } from "./url-compression";
 
 // ═══════════════════════════════════════════════════════════════════════════
+// URL PARAMS STRUCTURE
+// ═══════════════════════════════════════════════════════════════════════════
+//
+// The wizard uses compressed URL search params for state management.
+// This enables shareable, bookmarkable links.
+//
+// EXAMPLE URL:
+// /prompt-builder/wizard?ti=~N4Ig...&ctx=~M2Ew...&s=3&fmt=bullet-list
+//
+// KEY MAPPING (short → long):
+// ┌──────┬────────────────────┬─────────────────────────────────────────┐
+// │ Key  │ Full Name          │ Description                             │
+// ├──────┼────────────────────┼─────────────────────────────────────────┤
+// │ ti   │ task_intent        │ What do you want the AI to do?          │
+// │ ctx  │ context            │ Background information                  │
+// │ con  │ constraints        │ Rules, limits, things to avoid          │
+// │ aud  │ target_audience    │ Who is this for? (general, technical)   │
+// │ caud │ custom_audience    │ Custom audience description             │
+// │ fmt  │ output_format      │ 1-paragraph, bullet-list, table, etc.   │
+// │ role │ ai_role            │ What persona should the AI adopt?       │
+// │ tone │ tone_style         │ formal, casual, technical, friendly     │
+// │ depth│ reasoning_depth    │ brief, moderate, thorough               │
+// │ chk  │ self_check         │ Should AI verify its work? (true/false) │
+// │ no   │ disallowed_content │ What should the AI avoid?               │
+// │ s    │ step               │ Current wizard step (1-10)              │
+// │ adv  │ show_advanced      │ Show optional steps? (true/false)       │
+// └──────┴────────────────────┴─────────────────────────────────────────┘
+//
+// COMPRESSION:
+// Long text fields (ti, ctx, con, no, caud, role) are LZ-string compressed
+// and prefixed with "~" to indicate compressed content.
+//
+// Example: "~N4IgLg9gJg..." = compressed text
+//
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════════════════════
 // KEY MAPPING - Shorten keys for URL compression
 // ═══════════════════════════════════════════════════════════════════════════
 
