@@ -2,50 +2,110 @@ import LZString from "lz-string";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // URL COMPRESSION UTILITIES
+// TypeScript Playground-style encoding using LZ-String
+// https://www.typescriptlang.org/play uses the same approach
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * Compress text for URL storage using LZ-String
+ * Same method used by TypeScript Playground
+ *
+ * @example
+ * compress('console.log({hello: "world"});')
+ * // → 'MYewdgziA2CmB00QHMAUBvAFraSBcABAEQDuIATtACZEC+AlANwBQzQA'
+ */
+export function compress(text: string): string {
+  if (!text) return "";
+  return LZString.compressToEncodedURIComponent(text);
+}
+
+/**
+ * Decompress text from URL
+ *
+ * @example
+ * decompress('MYewdgziA2CmB00QHMAUBvAFraSBcABAEQDuIATtACZEC+AlANwBQzQA')
+ * // → 'console.log({hello: "world"});'
+ */
+export function decompress(compressed: string): string {
+  if (!compressed) return "";
+  const result = LZString.decompressFromEncodedURIComponent(compressed);
+  return result || "";
+}
+
+/**
+ * Compress an entire object to a single URL-safe string
+ * Similar to how TypeScript Playground encodes all code in one parameter
+ */
+export function compressObject<T extends Record<string, unknown>>(
+  obj: T
+): string {
+  if (!obj || Object.keys(obj).length === 0) return "";
+
+  // Filter out empty/undefined values
+  const filtered: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(obj)) {
+    if (value !== undefined && value !== null && value !== "") {
+      filtered[key] = value;
+    }
+  }
+
+  if (Object.keys(filtered).length === 0) return "";
+
+  const json = JSON.stringify(filtered);
+  return compress(json);
+}
+
+/**
+ * Decompress a URL string back to an object
+ */
+export function decompressObject<T extends Record<string, unknown>>(
+  compressed: string
+): Partial<T> {
+  if (!compressed) return {};
+
+  try {
+    const json = decompress(compressed);
+    if (!json) return {};
+    return JSON.parse(json) as Partial<T>;
+  } catch {
+    return {};
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// FIELD-LEVEL COMPRESSION (backward compatible)
 // ═══════════════════════════════════════════════════════════════════════════
 
 const COMPRESSION_PREFIX = "~";
-const COMPRESSION_THRESHOLD = 100; // Only compress if longer than this
 
 /**
- * Compress a text field for URL storage
- * Uses LZ-string for efficient compression
- * Prefixes with ~ to indicate compressed content
+ * Compress a single field value for URL (with prefix marker)
+ * Use this when you want to compress individual fields
  */
 export function compressField(text: string): string {
-  if (!text || text.length < COMPRESSION_THRESHOLD) {
-    return text;
-  }
-
-  const compressed = LZString.compressToEncodedURIComponent(text);
-
-  // Only use compression if it actually saves space
-  if (compressed && compressed.length < text.length) {
-    return `${COMPRESSION_PREFIX}${compressed}`;
-  }
-
-  return text;
+  if (!text) return "";
+  const compressed = compress(text);
+  return `${COMPRESSION_PREFIX}${compressed}`;
 }
 
 /**
- * Decompress a field from URL
- * Detects if content is compressed by checking for ~ prefix
+ * Decompress a single field value from URL
  */
 export function decompressField(value: string): string {
   if (!value) return "";
-
-  if (!value.startsWith(COMPRESSION_PREFIX)) {
-    return value;
-  }
-
-  const compressed = value.slice(COMPRESSION_PREFIX.length);
-  const decompressed = LZString.decompressFromEncodedURIComponent(compressed);
-
-  return decompressed || "";
+  if (!value.startsWith(COMPRESSION_PREFIX)) return value;
+  return decompress(value.slice(COMPRESSION_PREFIX.length));
 }
 
 /**
- * Fields that should be compressed (long text fields)
+ * Check if a value is compressed (starts with ~)
+ */
+export function isCompressed(value: string): boolean {
+  return value.startsWith(COMPRESSION_PREFIX);
+}
+
+/**
+ * Fields that should have individual compression
  */
 export const COMPRESSIBLE_FIELDS = [
   "task_intent",
@@ -74,7 +134,11 @@ export function compressSearchParams(
   const result: Record<string, unknown> = {};
 
   for (const [key, value] of Object.entries(params)) {
-    if (typeof value === "string" && isCompressibleField(key)) {
+    if (
+      typeof value === "string" &&
+      isCompressibleField(key) &&
+      value.length > 0
+    ) {
       result[key] = compressField(value);
     } else {
       result[key] = value;
@@ -93,7 +157,7 @@ export function decompressSearchParams(
   const result: Record<string, unknown> = {};
 
   for (const [key, value] of Object.entries(params)) {
-    if (typeof value === "string" && isCompressibleField(key)) {
+    if (typeof value === "string" && isCompressed(value)) {
       result[key] = decompressField(value);
     } else {
       result[key] = value;
