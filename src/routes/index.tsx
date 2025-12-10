@@ -1,11 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { validateSearchParams } from "@/utils/prompt-builder/basic-search-params";
-
-import { PromptBuilderBasic } from "@/components/prompt-builder/PromptBuilderBasic";
+import { LandingPage } from "@/components/landing/LandingPage";
 
 export const Route = createFileRoute("/")({
-  component: PromptBuilderBasic,
-  validateSearch: validateSearchParams,
-  ssr: true,
+  component: LandingPage,
 });
