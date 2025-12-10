@@ -38,8 +38,8 @@ export const Route = createRootRoute({
 });
 
 function RootDocument({ children }: { children: React.ReactNode }) {
-  const routerState = useRouterState();
-  const isLandingPage = routerState.location.pathname === "/";
+  // const routerState = useRouterState();
+  // const isLandingPage = routerState.location.pathname === "/";
 
   return (
     <html lang="en">
@@ -47,7 +47,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body>
-        {!isLandingPage && <Header />}
+        {/* {!isLandingPage && <Header />} */}
         {children}
         <Toaster />
         <TanStackDevtools
