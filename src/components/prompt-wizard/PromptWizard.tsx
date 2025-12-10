@@ -106,6 +106,7 @@ function generateShareUrl(data: PromptWizardData): string {
   // Only include non-default values
   const filtered: Partial<PromptWizardData> = {};
   for (const [key, value] of Object.entries(data)) {
+    if (key === "d") continue;
     if (value === undefined || value === null || value === "") continue;
     const defaultVal = WIZARD_DEFAULTS[key as keyof PromptWizardData];
     if (value === defaultVal) continue;
