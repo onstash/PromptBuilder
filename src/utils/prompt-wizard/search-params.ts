@@ -1,171 +1,129 @@
 import { promptWizardSchema, type PromptWizardData } from "./schema";
-import {
-  decompressSearchParams,
-  compressSearchParams,
-} from "./url-compression";
+import { compress, decompress } from "./url-compression";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // URL PARAMS STRUCTURE
 // ═══════════════════════════════════════════════════════════════════════════
 //
-// The wizard uses compressed URL search params for state management.
-// This enables shareable, bookmarkable links.
+// The wizard uses TypeScript Playground-style URL compression.
+// The entire state is compressed into a single `d` (data) parameter.
 //
 // EXAMPLE URL:
-// /prompt-builder/wizard?ti=~N4Ig...&ctx=~M2Ew...&s=3&fmt=bullet-list
+// /prompt-builder/wizard?d=N4IgLg9gJgpgThCA...
 //
-// KEY MAPPING (short → long):
-// ┌──────┬────────────────────┬─────────────────────────────────────────┐
-// │ Key  │ Full Name          │ Description                             │
-// ├──────┼────────────────────┼─────────────────────────────────────────┤
-// │ ti   │ task_intent        │ What do you want the AI to do?          │
-// │ ctx  │ context            │ Background information                  │
-// │ con  │ constraints        │ Rules, limits, things to avoid          │
-// │ aud  │ target_audience    │ Who is this for? (general, technical)   │
-// │ caud │ custom_audience    │ Custom audience description             │
-// │ fmt  │ output_format      │ 1-paragraph, bullet-list, table, etc.   │
-// │ role │ ai_role            │ What persona should the AI adopt?       │
-// │ tone │ tone_style         │ formal, casual, technical, friendly     │
-// │ depth│ reasoning_depth    │ brief, moderate, thorough               │
-// │ chk  │ self_check         │ Should AI verify its work? (true/false) │
-// │ no   │ disallowed_content │ What should the AI avoid?               │
-// │ s    │ step               │ Current wizard step (1-10)              │
-// │ adv  │ show_advanced      │ Show optional steps? (true/false)       │
-// └──────┴────────────────────┴─────────────────────────────────────────┘
-//
-// COMPRESSION:
-// Long text fields (ti, ctx, con, no, caud, role) are LZ-string compressed
-// and prefixed with "~" to indicate compressed content.
-//
-// Example: "~N4IgLg9gJg..." = compressed text
+// On initial load: URL stays clean (no params)
+// After user edits: URL contains compressed state
 //
 // ═══════════════════════════════════════════════════════════════════════════
 
 // ═══════════════════════════════════════════════════════════════════════════
-// KEY MAPPING - Shorten keys for URL compression
+// DEFAULT VALUES (applied in component, NOT in URL)
 // ═══════════════════════════════════════════════════════════════════════════
 
-const SHORT_TO_LONG: Record<string, keyof PromptWizardData> = {
-  ti: "task_intent",
-  ctx: "context",
-  con: "constraints",
-  aud: "target_audience",
-  caud: "custom_audience",
-  fmt: "output_format",
-  role: "ai_role",
-  tone: "tone_style",
-  depth: "reasoning_depth",
-  chk: "self_check",
-  no: "disallowed_content",
-  s: "step",
-  adv: "show_advanced",
+export const WIZARD_DEFAULTS: PromptWizardData = {
+  task_intent: "",
+  context: "",
+  constraints: "",
+  target_audience: "general",
+  output_format: "1-paragraph",
+  reasoning_depth: "moderate",
+  self_check: false,
+  step: 1,
+  show_advanced: false,
+  custom_audience: undefined,
+  ai_role: undefined,
+  tone_style: undefined,
+  disallowed_content: undefined,
 };
 
-const LONG_TO_SHORT: Record<keyof PromptWizardData, string> =
-  Object.fromEntries(
-    Object.entries(SHORT_TO_LONG).map(([short, long]) => [long, short])
-  ) as Record<keyof PromptWizardData, string>;
-
 // ═══════════════════════════════════════════════════════════════════════════
-// SEARCH PARAMS CONVERSION
+// FULL STATE COMPRESSION (TypeScript Playground style)
 // ═══════════════════════════════════════════════════════════════════════════
 
 /**
- * Convert short URL params to long form for internal use
+ * Compress wizard state to a single URL-safe string
+ * Only includes non-default values
  */
-function shortToLong(params: Record<string, unknown>): Record<string, unknown> {
-  const result: Record<string, unknown> = {};
+function compressFullState(data: Partial<PromptWizardData>): string {
+  const filtered: Record<string, unknown> = {};
 
-  for (const [key, value] of Object.entries(params)) {
-    const longKey = SHORT_TO_LONG[key] || key;
-    result[longKey] = value;
+  for (const [key, value] of Object.entries(data)) {
+    // Skip undefined/null/empty
+    if (value === undefined || value === null || value === "") continue;
+
+    // Skip if same as default
+    const defaultVal = WIZARD_DEFAULTS[key as keyof PromptWizardData];
+    if (value === defaultVal) continue;
+
+    filtered[key] = value;
   }
 
-  return result;
+  if (Object.keys(filtered).length === 0) return "";
+
+  const json = JSON.stringify(filtered);
+  return compress(json);
 }
 
 /**
- * Convert long form params to short for URL
+ * Decompress full state from URL param
  */
-function longToShort(params: Record<string, unknown>): Record<string, unknown> {
-  const result: Record<string, unknown> = {};
+function decompressFullState(compressed: string): Partial<PromptWizardData> {
+  if (!compressed) return {};
 
-  for (const [key, value] of Object.entries(params)) {
-    const shortKey = LONG_TO_SHORT[key as keyof PromptWizardData] || key;
-    // Only include non-empty values
-    if (value !== undefined && value !== null && value !== "") {
-      result[shortKey] = value;
-    }
+  try {
+    const json = decompress(compressed);
+    if (!json) return {};
+    return JSON.parse(json) as Partial<PromptWizardData>;
+  } catch {
+    return {};
   }
-
-  return result;
 }
 
-/**
- * Parse boolean values from URL
- */
-function parseValue(key: string, value: unknown): unknown {
-  if (value === "true") return true;
-  if (value === "false") return false;
-  if (key === "step" || key === "s") {
-    const num = Number(value);
-    return isNaN(num) ? 1 : num;
-  }
-  return value;
-}
+// ═══════════════════════════════════════════════════════════════════════════
+// PUBLIC API
+// ═══════════════════════════════════════════════════════════════════════════
 
 /**
  * Validate and parse search params from URL
- * Used as the validateSearch function for the route
+ * Returns FULL object with defaults applied (for component use)
+ * TanStack Router won't serialize defaults back to URL because we use
+ * a sparse representation in wizardDataToSearchParams
  */
 export function validateWizardSearch(
   search: Record<string, unknown>
 ): PromptWizardData {
-  // Convert short keys to long
-  const longParams = shortToLong(search);
+  let parsedData: Partial<PromptWizardData> = {};
 
-  // Parse special values
-  const parsedParams: Record<string, unknown> = {};
-  for (const [key, value] of Object.entries(longParams)) {
-    parsedParams[key] = parseValue(key, value);
+  // Check for compressed format
+  if (typeof search.d === "string" && search.d) {
+    parsedData = decompressFullState(search.d);
   }
 
-  // Decompress text fields
-  const decompressed = decompressSearchParams(parsedParams);
-
-  // Validate with Zod schema (provides defaults)
-  const result = promptWizardSchema.safeParse(decompressed);
+  // Merge with defaults (Zod schema provides type validation + defaults)
+  const result = promptWizardSchema.safeParse(parsedData);
 
   if (result.success) {
     return result.data;
   }
 
-  // Return defaults on validation failure
-  return promptWizardSchema.parse({});
+  return WIZARD_DEFAULTS;
 }
 
 /**
  * Convert wizard data to URL search params
- * Compresses long text fields and uses short keys
+ * Uses compressed format (single 'd' param)
+ * Only includes non-default values
  */
 export function wizardDataToSearchParams(
   data: Partial<PromptWizardData>
 ): Record<string, string> {
-  // Compress text fields
-  const compressed = compressSearchParams(data as Record<string, unknown>);
+  const compressed = compressFullState(data);
 
-  // Convert to short keys
-  const shortParams = longToShort(compressed);
-
-  // Convert all values to strings for URL
-  const result: Record<string, string> = {};
-  for (const [key, value] of Object.entries(shortParams)) {
-    if (value !== undefined && value !== null && value !== "") {
-      result[key] = String(value);
-    }
+  if (!compressed) {
+    return {}; // Empty/default state = no params = clean URL
   }
 
-  return result;
+  return { d: compressed };
 }
 
 /**
