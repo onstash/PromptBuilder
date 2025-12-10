@@ -1,6 +1,6 @@
 import { motion } from "motion/react";
 import { Link } from "@tanstack/react-router";
-import { Sparkles, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function Hero() {
@@ -10,30 +10,17 @@ export function Hero() {
       <div className="absolute inset-0 bg-[linear-gradient(to_right,hsl(var(--border))_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border))_1px,transparent_1px)] bg-[size:4rem_4rem] opacity-20" />
 
       {/* Decorative shapes */}
-      <div className="absolute top-20 left-20 w-32 h-32 bg-primary border-4 border-foreground shadow-[8px_8px_0px_0px_hsl(var(--foreground))]" />
-      <div className="absolute bottom-32 right-20 w-24 h-24 bg-secondary border-4 border-foreground shadow-[8px_8px_0px_0px_hsl(var(--foreground))]" />
-      <div className="absolute top-1/3 right-1/4 w-16 h-16 bg-accent border-4 border-foreground shadow-[8px_8px_0px_0px_hsl(var(--foreground))] rotate-12" />
+      <div className="absolute top-20 left-20 w-24 h-24 bg-primary border-4 border-foreground shadow-[6px_6px_0px_0px_hsl(var(--foreground))] hidden md:block" />
+      <div className="absolute bottom-32 right-20 w-20 h-20 bg-secondary border-4 border-foreground shadow-[6px_6px_0px_0px_hsl(var(--foreground))] hidden md:block" />
+      <div className="absolute top-1/3 right-1/4 w-12 h-12 bg-accent border-4 border-foreground shadow-[4px_4px_0px_0px_hsl(var(--foreground))] rotate-12 hidden md:block" />
 
       {/* Content */}
-      <div className="relative z-10 max-w-5xl mx-auto px-6 text-center">
+      <div className="relative z-10 max-w-4xl mx-auto px-6 text-center">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 0.5 }}
         >
-          {/* Badge */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2 }}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-accent text-accent-foreground border-4 border-foreground shadow-[4px_4px_0px_0px_hsl(var(--foreground))] font-mono text-sm mb-8"
-          >
-            <Sparkles className="w-4 h-4" />
-            <span className="uppercase tracking-wider font-bold">
-              Professional Prompt Engineering
-            </span>
-          </motion.div>
-
           {/* Main Headline */}
           <h1 className="text-5xl md:text-8xl font-black text-foreground mb-6 leading-none tracking-tight uppercase">
             Build Better
@@ -41,60 +28,89 @@ export function Hero() {
           </h1>
 
           {/* Subheadline */}
-          <p className="text-xl md:text-2xl text-muted-foreground mb-12 max-w-2xl mx-auto font-medium">
-            Transform your ideas into powerful, structured prompts. No expertise
-            required — just configure and go.
+          <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-xl mx-auto">
+            Professional prompt engineering made simple. Configure, generate,
+            copy.
           </p>
 
-          {/* CTAs */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Button
-              asChild
-              size="lg"
-              className="text-lg px-8 py-6 h-auto uppercase font-bold tracking-wide"
+          {/* Single CTA */}
+          <Button
+            asChild
+            size="lg"
+            className="text-lg px-10 py-7 h-auto uppercase font-black tracking-wide"
+          >
+            <Link
+              to="/prompt-builder/basic"
+              className="flex items-center gap-3"
             >
-              <Link
-                to="/prompt-builder/basic"
-                className="flex items-center gap-2"
-              >
-                Start Building
-                <ArrowRight className="w-5 h-5" />
-              </Link>
-            </Button>
-            <Button
-              asChild
-              variant="outline"
-              size="lg"
-              className="text-lg px-8 py-6 h-auto uppercase font-bold tracking-wide"
-            >
-              <a href="#features">See Features</a>
-            </Button>
-          </div>
+              Start Building
+              <ArrowRight className="w-5 h-5" />
+            </Link>
+          </Button>
 
-          {/* Trust signal */}
-          <p className="mt-8 text-sm text-muted-foreground font-mono uppercase tracking-wider">
-            ✦ No signup required • Start instantly • 100% free ✦
+          {/* Trust Signal */}
+          <p className="mt-6 text-sm text-muted-foreground font-mono">
+            Free • No signup • Start in seconds
           </p>
         </motion.div>
 
-        {/* Brutalist preview mockup */}
+        {/* Problem Demo Preview */}
         <motion.div
-          initial={{ opacity: 0, y: 50 }}
+          initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4, duration: 0.6 }}
-          className="mt-16 relative"
+          transition={{ delay: 0.3, duration: 0.5 }}
+          className="mt-12"
         >
-          <div className="bg-card border-4 border-foreground shadow-[8px_8px_0px_0px_hsl(var(--foreground))] p-6">
+          <p className="text-sm text-muted-foreground font-mono mb-4 uppercase tracking-wider">
+            The problem with typical prompts:
+          </p>
+          <div className="bg-card border-4 border-foreground shadow-[8px_8px_0px_0px_hsl(var(--foreground))] p-6 text-left">
+            <div className="flex gap-2 mb-4">
+              <div className="w-4 h-4 bg-destructive border-2 border-foreground" />
+              <div className="w-4 h-4 bg-muted border-2 border-foreground" />
+              <div className="w-4 h-4 bg-muted border-2 border-foreground" />
+            </div>
+            <div className="space-y-3 font-mono text-sm">
+              <div className="text-muted-foreground line-through">
+                "Write me a React component for a dashboard"
+              </div>
+              <div className="text-destructive text-xs">
+                ✗ Vague • No context • Inconsistent results
+              </div>
+            </div>
+          </div>
+
+          <div className="my-4 text-2xl font-black text-primary">↓</div>
+
+          <p className="text-sm text-muted-foreground font-mono mb-4 uppercase tracking-wider">
+            With Prompt Builder:
+          </p>
+          <div className="bg-card border-4 border-foreground shadow-[8px_8px_0px_0px_hsl(var(--foreground))] p-6 text-left">
             <div className="flex gap-2 mb-4">
               <div className="w-4 h-4 bg-primary border-2 border-foreground" />
               <div className="w-4 h-4 bg-secondary border-2 border-foreground" />
               <div className="w-4 h-4 bg-accent border-2 border-foreground" />
             </div>
-            <div className="space-y-3 text-left font-mono">
-              <div className="h-4 w-3/4 bg-primary" />
-              <div className="h-4 w-1/2 bg-muted" />
-              <div className="h-4 w-5/6 bg-muted" />
-              <div className="h-4 w-2/3 bg-muted" />
+            <div className="space-y-2 font-mono text-xs">
+              <div className="text-foreground">
+                <span className="text-primary">Role:</span> Senior Frontend
+                Engineer
+              </div>
+              <div className="text-foreground">
+                <span className="text-primary">Context:</span> React 18,
+                TypeScript, Tailwind
+              </div>
+              <div className="text-foreground">
+                <span className="text-primary">Task:</span> Dashboard with
+                charts, dark mode
+              </div>
+              <div className="text-foreground">
+                <span className="text-primary">Output:</span> Step-by-step with
+                code
+              </div>
+              <div className="mt-3 text-primary">
+                ✓ Structured • Consistent • Professional results
+              </div>
             </div>
           </div>
         </motion.div>
