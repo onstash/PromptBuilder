@@ -28,7 +28,7 @@ export default function Header() {
             /> */}
             Home
           </Link>
-          <Link to="/prompt-builder/basic" className="ml-6">
+          <Link to="/wizard" className="ml-6">
             {/* <img
               src="/tanstack-word-logo-white.svg"
               alt="TanStack Logo"

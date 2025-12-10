@@ -9,12 +9,9 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WizardRouteImport } from './routes/wizard'
 import { Route as ShareRouteImport } from './routes/share'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as PromptBuilderWizardRouteImport } from './routes/prompt-builder/wizard'
-import { Route as PromptBuilderBasicRouteImport } from './routes/prompt-builder/basic'
-import { Route as PromptBuilderAdvancedRouteImport } from './routes/prompt-builder/advanced'
-import { Route as ExperimentCompressionRouteImport } from './routes/experiment/compression'
 import { Route as DemoStartServerFuncsRouteImport } from './routes/demo/start.server-funcs'
 import { Route as DemoStartApiRequestRouteImport } from './routes/demo/start.api-request'
 import { Route as DemoFormSimpleRouteImport } from './routes/demo/form.simple'
@@ -25,6 +22,11 @@ import { Route as DemoStartSsrSpaModeRouteImport } from './routes/demo/start.ssr
 import { Route as DemoStartSsrFullSsrRouteImport } from './routes/demo/start.ssr.full-ssr'
 import { Route as DemoStartSsrDataOnlyRouteImport } from './routes/demo/start.ssr.data-only'
 
+const WizardRoute = WizardRouteImport.update({
+  id: '/wizard',
+  path: '/wizard',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ShareRoute = ShareRouteImport.update({
   id: '/share',
   path: '/share',
@@ -33,26 +35,6 @@ const ShareRoute = ShareRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PromptBuilderWizardRoute = PromptBuilderWizardRouteImport.update({
-  id: '/prompt-builder/wizard',
-  path: '/prompt-builder/wizard',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PromptBuilderBasicRoute = PromptBuilderBasicRouteImport.update({
-  id: '/prompt-builder/basic',
-  path: '/prompt-builder/basic',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PromptBuilderAdvancedRoute = PromptBuilderAdvancedRouteImport.update({
-  id: '/prompt-builder/advanced',
-  path: '/prompt-builder/advanced',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ExperimentCompressionRoute = ExperimentCompressionRouteImport.update({
-  id: '/experiment/compression',
-  path: '/experiment/compression',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DemoStartServerFuncsRoute = DemoStartServerFuncsRouteImport.update({
@@ -104,10 +86,7 @@ const DemoStartSsrDataOnlyRoute = DemoStartSsrDataOnlyRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/share': typeof ShareRoute
-  '/experiment/compression': typeof ExperimentCompressionRoute
-  '/prompt-builder/advanced': typeof PromptBuilderAdvancedRoute
-  '/prompt-builder/basic': typeof PromptBuilderBasicRoute
-  '/prompt-builder/wizard': typeof PromptBuilderWizardRoute
+  '/wizard': typeof WizardRoute
   '/demo/api/names': typeof DemoApiNamesRoute
   '/demo/form/address': typeof DemoFormAddressRoute
   '/demo/form/simple': typeof DemoFormSimpleRoute
@@ -121,10 +100,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/share': typeof ShareRoute
-  '/experiment/compression': typeof ExperimentCompressionRoute
-  '/prompt-builder/advanced': typeof PromptBuilderAdvancedRoute
-  '/prompt-builder/basic': typeof PromptBuilderBasicRoute
-  '/prompt-builder/wizard': typeof PromptBuilderWizardRoute
+  '/wizard': typeof WizardRoute
   '/demo/api/names': typeof DemoApiNamesRoute
   '/demo/form/address': typeof DemoFormAddressRoute
   '/demo/form/simple': typeof DemoFormSimpleRoute
@@ -139,10 +115,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/share': typeof ShareRoute
-  '/experiment/compression': typeof ExperimentCompressionRoute
-  '/prompt-builder/advanced': typeof PromptBuilderAdvancedRoute
-  '/prompt-builder/basic': typeof PromptBuilderBasicRoute
-  '/prompt-builder/wizard': typeof PromptBuilderWizardRoute
+  '/wizard': typeof WizardRoute
   '/demo/api/names': typeof DemoApiNamesRoute
   '/demo/form/address': typeof DemoFormAddressRoute
   '/demo/form/simple': typeof DemoFormSimpleRoute
@@ -158,10 +131,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/share'
-    | '/experiment/compression'
-    | '/prompt-builder/advanced'
-    | '/prompt-builder/basic'
-    | '/prompt-builder/wizard'
+    | '/wizard'
     | '/demo/api/names'
     | '/demo/form/address'
     | '/demo/form/simple'
@@ -175,10 +145,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/share'
-    | '/experiment/compression'
-    | '/prompt-builder/advanced'
-    | '/prompt-builder/basic'
-    | '/prompt-builder/wizard'
+    | '/wizard'
     | '/demo/api/names'
     | '/demo/form/address'
     | '/demo/form/simple'
@@ -192,10 +159,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/share'
-    | '/experiment/compression'
-    | '/prompt-builder/advanced'
-    | '/prompt-builder/basic'
-    | '/prompt-builder/wizard'
+    | '/wizard'
     | '/demo/api/names'
     | '/demo/form/address'
     | '/demo/form/simple'
@@ -210,10 +174,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ShareRoute: typeof ShareRoute
-  ExperimentCompressionRoute: typeof ExperimentCompressionRoute
-  PromptBuilderAdvancedRoute: typeof PromptBuilderAdvancedRoute
-  PromptBuilderBasicRoute: typeof PromptBuilderBasicRoute
-  PromptBuilderWizardRoute: typeof PromptBuilderWizardRoute
+  WizardRoute: typeof WizardRoute
   DemoApiNamesRoute: typeof DemoApiNamesRoute
   DemoFormAddressRoute: typeof DemoFormAddressRoute
   DemoFormSimpleRoute: typeof DemoFormSimpleRoute
@@ -227,6 +188,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/wizard': {
+      id: '/wizard'
+      path: '/wizard'
+      fullPath: '/wizard'
+      preLoaderRoute: typeof WizardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/share': {
       id: '/share'
       path: '/share'
@@ -239,34 +207,6 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/prompt-builder/wizard': {
-      id: '/prompt-builder/wizard'
-      path: '/prompt-builder/wizard'
-      fullPath: '/prompt-builder/wizard'
-      preLoaderRoute: typeof PromptBuilderWizardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/prompt-builder/basic': {
-      id: '/prompt-builder/basic'
-      path: '/prompt-builder/basic'
-      fullPath: '/prompt-builder/basic'
-      preLoaderRoute: typeof PromptBuilderBasicRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/prompt-builder/advanced': {
-      id: '/prompt-builder/advanced'
-      path: '/prompt-builder/advanced'
-      fullPath: '/prompt-builder/advanced'
-      preLoaderRoute: typeof PromptBuilderAdvancedRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/experiment/compression': {
-      id: '/experiment/compression'
-      path: '/experiment/compression'
-      fullPath: '/experiment/compression'
-      preLoaderRoute: typeof ExperimentCompressionRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/demo/start/server-funcs': {
@@ -338,10 +278,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ShareRoute: ShareRoute,
-  ExperimentCompressionRoute: ExperimentCompressionRoute,
-  PromptBuilderAdvancedRoute: PromptBuilderAdvancedRoute,
-  PromptBuilderBasicRoute: PromptBuilderBasicRoute,
-  PromptBuilderWizardRoute: PromptBuilderWizardRoute,
+  WizardRoute: WizardRoute,
   DemoApiNamesRoute: DemoApiNamesRoute,
   DemoFormAddressRoute: DemoFormAddressRoute,
   DemoFormSimpleRoute: DemoFormSimpleRoute,
