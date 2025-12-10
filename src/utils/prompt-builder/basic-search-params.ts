@@ -8,7 +8,7 @@ import {
 import type { PromptBuilderBasicFormDataShortened } from "./basic-schema";
 
 export const validateSearchParams = (
-  search: Record<string, unknown>
+  search: Record<string, unknown>,
 ): PromptBuilderBasicFormDataShortened => {
   // If search params are empty, return defaults immediately
   if (!search || Object.keys(search).length === 0) {
@@ -20,7 +20,7 @@ export const validateSearchParams = (
     if (!result.success || result.error) {
       console.error(
         "[validateSearchParams] Validation failed, using defaults:",
-        result.error
+        result.error,
       );
       return defaultValuesShortened;
     }
