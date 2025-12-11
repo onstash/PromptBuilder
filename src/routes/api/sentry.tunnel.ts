@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-const SENTRY_HOST = "o4510516655423488.ingest.us.sentry.io";
+const SENTRY_HOST = "e355b27fdb2047aa2e65b53c737c185c@o4510516655423488.ingest.us.sentry.io";
 const SENTRY_PROJECT_IDS = ["4510516658831360"];
 
 export const Route = createFileRoute("/api/sentry/tunnel")({
