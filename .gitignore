@@ -11,3 +11,7 @@ count.txt
 .output
 .vinxi
 todos.json
+# Sentry Config File
+.env.sentry-build-plugin
+.vercel
+.env*.local

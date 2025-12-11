@@ -1,7 +1,4 @@
-import {
-  REASONING_DEPTHS,
-  type PromptWizardData,
-} from "@/utils/prompt-wizard/schema";
+import { REASONING_DEPTHS, type PromptWizardData } from "@/utils/prompt-wizard/schema";
 
 interface StepProps {
   data: PromptWizardData;
@@ -19,8 +16,7 @@ export function ReasoningStep({ data, onUpdate }: StepProps) {
               key={depth.value}
               onClick={() =>
                 onUpdate({
-                  reasoning_depth:
-                    depth.value as PromptWizardData["reasoning_depth"],
+                  reasoning_depth: depth.value as PromptWizardData["reasoning_depth"],
                 })
               }
               className={`
@@ -32,12 +28,8 @@ export function ReasoningStep({ data, onUpdate }: StepProps) {
                 }
               `}
             >
-              <span className="block font-bold uppercase text-sm">
-                {depth.label}
-              </span>
-              <span className="block text-xs mt-1 opacity-80">
-                {depth.description}
-              </span>
+              <span className="block font-bold uppercase text-sm">{depth.label}</span>
+              <span className="block text-xs mt-1 opacity-80">{depth.description}</span>
             </button>
           );
         })}

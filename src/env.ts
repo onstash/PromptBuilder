@@ -3,7 +3,8 @@ import { z } from "zod";
 
 export const env = createEnv({
   server: {
-    SERVER_URL: z.string().url().optional(),
+    SERVER_URL: z.url().optional(),
+    SENTRY_AUTH_TOKEN: z.string(),
   },
 
   /**
@@ -14,6 +15,7 @@ export const env = createEnv({
 
   client: {
     VITE_APP_TITLE: z.string().min(1).optional(),
+    VITE_PUBLIC_MIXPANEL_PROJECT_TOKEN: z.string(),
   },
 
   /**

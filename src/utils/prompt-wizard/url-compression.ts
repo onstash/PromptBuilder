@@ -36,9 +36,7 @@ export function decompress(compressed: string): string {
  * Compress an entire object to a single URL-safe string
  * Similar to how TypeScript Playground encodes all code in one parameter
  */
-export function compressObject<T extends Record<string, unknown>>(
-  obj: T
-): string {
+export function compressObject<T extends Record<string, unknown>>(obj: T): string {
   if (!obj || Object.keys(obj).length === 0) return "";
 
   // Filter out empty/undefined values
@@ -120,25 +118,17 @@ export const COMPRESSIBLE_FIELDS = [
  * Check if a field should be compressed
  */
 export function isCompressibleField(key: string): boolean {
-  return COMPRESSIBLE_FIELDS.includes(
-    key as (typeof COMPRESSIBLE_FIELDS)[number]
-  );
+  return COMPRESSIBLE_FIELDS.includes(key as (typeof COMPRESSIBLE_FIELDS)[number]);
 }
 
 /**
  * Compress all compressible fields in an object
  */
-export function compressSearchParams(
-  params: Record<string, unknown>
-): Record<string, unknown> {
+export function compressSearchParams(params: Record<string, unknown>): Record<string, unknown> {
   const result: Record<string, unknown> = {};
 
   for (const [key, value] of Object.entries(params)) {
-    if (
-      typeof value === "string" &&
-      isCompressibleField(key) &&
-      value.length > 0
-    ) {
+    if (typeof value === "string" && isCompressibleField(key) && value.length > 0) {
       result[key] = compressField(value);
     } else {
       result[key] = value;
@@ -151,9 +141,7 @@ export function compressSearchParams(
 /**
  * Decompress all compressible fields in an object
  */
-export function decompressSearchParams(
-  params: Record<string, unknown>
-): Record<string, unknown> {
+export function decompressSearchParams(params: Record<string, unknown>): Record<string, unknown> {
   const result: Record<string, unknown> = {};
 
   for (const [key, value] of Object.entries(params)) {

@@ -29,11 +29,7 @@ export function WizardNavigation({
       {/* Back button */}
       {!isFirstStep ? (
         <motion.div whileHover={{ x: -4 }} whileTap={{ scale: 0.98 }}>
-          <Button
-            variant="outline"
-            onClick={onBack}
-            className="uppercase font-bold"
-          >
+          <Button variant="outline" onClick={onBack} className="uppercase font-bold">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back
           </Button>
@@ -45,22 +41,14 @@ export function WizardNavigation({
       {/* Next / Finish button */}
       {isLastStep ? (
         <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-          <Button
-            onClick={onFinish}
-            disabled={!canProceed}
-            className="uppercase font-bold"
-          >
+          <Button onClick={onFinish} disabled={!canProceed} className="uppercase font-bold">
             <Sparkles className="w-4 h-4 mr-2" />
             Generate Prompt
           </Button>
         </motion.div>
       ) : (
         <motion.div whileHover={{ x: 4 }} whileTap={{ scale: 0.98 }}>
-          <Button
-            onClick={onNext}
-            disabled={!canProceed}
-            className="uppercase font-bold"
-          >
+          <Button onClick={onNext} disabled={!canProceed} className="uppercase font-bold">
             Next
             <ArrowRight className="w-4 h-4 ml-2" />
           </Button>

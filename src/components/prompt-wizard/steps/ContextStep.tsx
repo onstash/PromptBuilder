@@ -18,9 +18,7 @@ export function ContextStep({ data, onUpdate }: StepProps) {
       />
 
       <div className="text-sm text-muted-foreground">
-        <p className="font-mono uppercase tracking-wider mb-2">
-          Include things like:
-        </p>
+        <p className="font-mono uppercase tracking-wider mb-2">Include things like:</p>
         <ul className="space-y-1 list-disc list-inside">
           <li>Your current situation or role</li>
           <li>Relevant past experience or knowledge</li>

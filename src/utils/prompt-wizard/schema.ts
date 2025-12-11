@@ -98,14 +98,7 @@ export const promptWizardSchema = z.object({
   context: z.string().default(""),
   constraints: z.string().default(""),
   target_audience: z
-    .enum([
-      "general",
-      "technical",
-      "business",
-      "children",
-      "entrepreneur",
-      "custom",
-    ])
+    .enum(["general", "technical", "business", "children", "entrepreneur", "custom"])
     .default("general"),
   custom_audience: z.string().optional(),
   output_format: z
@@ -125,18 +118,9 @@ export const promptWizardSchema = z.object({
   // ─────────────────────────────────────────────────────────────────────────
   ai_role: z.string().optional(),
   tone_style: z
-    .enum([
-      "formal",
-      "casual",
-      "technical",
-      "friendly",
-      "professional",
-      "humorous",
-    ])
+    .enum(["formal", "casual", "technical", "friendly", "professional", "humorous"])
     .optional(),
-  reasoning_depth: z
-    .enum(["brief", "moderate", "thorough"])
-    .default("moderate"),
+  reasoning_depth: z.enum(["brief", "moderate", "thorough"]).default("moderate"),
   self_check: z.boolean().default(false),
   disallowed_content: z.string().optional(),
 

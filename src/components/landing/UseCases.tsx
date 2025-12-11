@@ -5,8 +5,7 @@ const useCases = [
   {
     icon: Code,
     title: "Code Generation",
-    description:
-      "Generate React components, APIs, and utilities with best practices.",
+    description: "Generate React components, APIs, and utilities with best practices.",
     example: "Create a responsive navbar...",
     color: "bg-primary",
   },
@@ -76,9 +75,7 @@ export function UseCases() {
                   <h3 className="text-xl font-black text-foreground mb-2 uppercase">
                     {useCase.title}
                   </h3>
-                  <p className="text-muted-foreground text-sm mb-4">
-                    {useCase.description}
-                  </p>
+                  <p className="text-muted-foreground text-sm mb-4">{useCase.description}</p>
                   <div className="px-4 py-2 bg-muted border-2 border-foreground font-mono text-sm">
                     "{useCase.example}"
                   </div>
