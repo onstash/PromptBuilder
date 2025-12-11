@@ -1,81 +1,16 @@
 import * as Sentry from "@sentry/tanstackstart-react";
-import {
-  createRouter,
-  parseSearchWith,
-  stringifySearchWith,
-} from "@tanstack/react-router";
+import { createRouter } from "@tanstack/react-router";
 
 // Import the generated route tree
 import { routeTree } from "./routeTree.gen";
 
-import { stringify, parse } from "zipson";
-import * as LZ from "lz-string";
-
-import { decodeFromBinary, encodeToBinary } from "./utils/search-params-core";
-
-const FEATURE_CONFIG = {
-  ENABLE_COMPRESSED_SEARCH_PARAMS: false,
-};
-
-const parseSearch = (searchStr: string) => {
-  const id = performance.now();
-  let index = 0;
-  const result = parseSearchWith((value) => {
-    const decompressed = LZ.decompress(value);
-    const _decodedValue = decodeFromBinary(decompressed);
-    const _parsedDecodedValue = parse(_decodedValue);
-    console.log(`\t[${id}][parseSearch]`, {
-      index,
-      value,
-      decompressed,
-      _decodedValue,
-      _parsedDecodedValue,
-    });
-    index += 1;
-    return _parsedDecodedValue;
-  })(searchStr);
-  console.log(`[${id}][parseSearch]`, { searchStr, result });
-  return result;
-};
-
-const stringifySearch = (searchObj: Record<string, any>) => {
-  const id = performance.now();
-  let index = 0;
-  const result = stringifySearchWith((value) => {
-    const _stringifiedValue = stringify(value);
-    const compressed = LZ.compress(_stringifiedValue);
-    const _encodedStringifiedValue = encodeToBinary(compressed);
-    console.log(`\t[${id}][stringifySearch]`, {
-      index,
-      value,
-      compressed,
-      _stringifiedValue,
-      _encodedStringifiedValue,
-    });
-    index += 1;
-    return _encodedStringifiedValue;
-  })(searchObj);
-  console.log(`[${id}][stringifySearch]`, { searchObj, result });
-  return result;
-};
-
 // Create a new router instance
 export const getRouter = () => {
-  const router = createRouter(
-    FEATURE_CONFIG.ENABLE_COMPRESSED_SEARCH_PARAMS
-      ? {
-          routeTree,
-          scrollRestoration: true,
-          defaultPreloadStaleTime: 0,
-          parseSearch,
-          stringifySearch,
-        }
-      : {
-          routeTree,
-          scrollRestoration: true,
-          defaultPreloadStaleTime: 0,
-        }
-  );
+  const router = createRouter({
+    routeTree,
+    scrollRestoration: true,
+    defaultPreloadStaleTime: 0,
+  });
 
   if (!router.isServer) {
     Sentry.init({
