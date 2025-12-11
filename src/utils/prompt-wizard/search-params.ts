@@ -1,4 +1,8 @@
-import { promptWizardSchema, type PromptWizardData } from "./schema";
+import {
+  promptWizardSchema,
+  PromptWizardSearchParamsCompressed,
+  type PromptWizardData,
+} from "./schema";
 import { compress, decompress } from "./url-compression";
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -67,15 +71,15 @@ function compressFullState(data: Partial<PromptWizardData>): string {
 /**
  * Decompress full state from URL param
  */
-function decompressFullState(compressed: string): Partial<PromptWizardData> {
-  if (!compressed) return {};
+export function decompressFullState(compressed: string): PromptWizardData {
+  if (!compressed) return {} as PromptWizardData;
 
   try {
     const json = decompress(compressed);
-    if (!json) return {};
-    return JSON.parse(json) as Partial<PromptWizardData>;
+    if (!json) return {} as PromptWizardData;
+    return JSON.parse(json) as PromptWizardData;
   } catch {
-    return {};
+    return {} as PromptWizardData;
   }
 }
 
@@ -91,46 +95,15 @@ function decompressFullState(compressed: string): Partial<PromptWizardData> {
  */
 export function validateWizardSearch(
   search: Record<string, unknown>
-): PromptWizardData {
-  let parsedData: Partial<PromptWizardData> = {};
-
+): PromptWizardSearchParamsCompressed {
   // Check for compressed format
   if (typeof search.d === "string" && search.d) {
+    let parsedData: Partial<PromptWizardData> = {};
     parsedData = decompressFullState(search.d);
+    const result = promptWizardSchema.safeParse(parsedData);
+    if (result.success) {
+      return { d: search.d, vld: 1 };
+    }
   }
-
-  // Merge with defaults (Zod schema provides type validation + defaults)
-  const result = promptWizardSchema.safeParse(parsedData);
-
-  if (result.success) {
-    return result.data;
-  }
-
-  return WIZARD_DEFAULTS;
-}
-
-/**
- * Convert wizard data to URL search params
- * Uses compressed format (single 'd' param)
- * Only includes non-default values
- */
-export function wizardDataToSearchParams(
-  data: Partial<PromptWizardData>
-): Record<string, string> {
-  const compressed = compressFullState(data);
-
-  if (!compressed) {
-    return {}; // Empty/default state = no params = clean URL
-  }
-
-  return { d: compressed };
-}
-
-/**
- * Build a URL string for the wizard with given params
- */
-export function buildWizardUrl(data: Partial<PromptWizardData>): string {
-  const params = wizardDataToSearchParams(data);
-  const searchString = new URLSearchParams(params).toString();
-  return `/prompt-builder/wizard${searchString ? `?${searchString}` : ""}`;
+  return { d: null, vld: 0 };
 }

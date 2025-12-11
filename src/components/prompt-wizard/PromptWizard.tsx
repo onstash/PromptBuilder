@@ -11,7 +11,10 @@ import {
   type PromptWizardData,
 } from "@/utils/prompt-wizard/schema";
 import { compress } from "@/utils/prompt-wizard/url-compression";
-import { WIZARD_DEFAULTS } from "@/utils/prompt-wizard/search-params";
+import {
+  decompressFullState,
+  WIZARD_DEFAULTS,
+} from "@/utils/prompt-wizard/search-params";
 
 import { WizardProgress } from "./WizardProgress";
 import { WizardNavigation } from "./WizardNavigation";
@@ -30,6 +33,7 @@ import { ToneStep } from "./steps/ToneStep";
 import { ReasoningStep } from "./steps/ReasoningStep";
 import { SelfCheckStep } from "./steps/SelfCheckStep";
 import { DisallowedStep } from "./steps/DisallowedStep";
+import { useSearch } from "@tanstack/react-router";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // STATIC CONFIGURATION
@@ -140,9 +144,17 @@ function getShareUrl(): string | null {
 // ═══════════════════════════════════════════════════════════════════════════
 
 export const PromptWizard = memo(function PromptWizard() {
+  const search = useSearch({ from: "/wizard" });
   // Initialize from localStorage
-  const [wizardData, setWizardData] =
-    useState<PromptWizardData>(loadFromStorage);
+  const [wizardData, setWizardData] = useState<PromptWizardData>(() => {
+    if (search.d && search.vld) {
+      const decompressed = decompressFullState(search.d);
+      if (Object.keys(decompressed).length > 1) {
+        return decompressed;
+      }
+    }
+    return loadFromStorage();
+  });
   const [showPreview, setShowPreview] = useState(false);
   const [showError, setShowError] = useState(false);
   const [shareUrl, setShareUrl] = useState<string | null>(getShareUrl);
@@ -203,7 +215,12 @@ export const PromptWizard = memo(function PromptWizard() {
   // Update local state (fast, no URL updates)
   const updateData = useCallback((updates: Partial<PromptWizardData>) => {
     setShowError(false);
-    setWizardData((prev) => ({ ...prev, ...updates }));
+    setWizardData((prev) => {
+      if (updates.show_advanced === false && prev.step > 5) {
+        return { ...prev, ...updates, step: 5 };
+      }
+      return { ...prev, ...updates };
+    });
   }, []);
 
   // Navigation handlers
@@ -351,10 +368,10 @@ export const PromptWizard = memo(function PromptWizard() {
           </div>
         </motion.div>
 
-        {/* Preview Panel */}
         {showPreview && (
           <WizardPreview
             data={wizardData}
+            compressed={false}
             shareUrl={shareUrl}
             onClose={() => setShowPreview(false)}
             source="wizard"
