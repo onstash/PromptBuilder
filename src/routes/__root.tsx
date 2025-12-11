@@ -12,6 +12,7 @@ import { Toaster } from "sonner";
 
 import appCss from "../styles.css?url";
 import { Footer } from "@/components/landing";
+import { PostHogProvider } from "@/utils/analytics/PostHogProvider";
 
 export const Route = createRootRoute({
   head: () => ({
@@ -49,7 +50,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         {/* {!isLandingPage && <Header />} */}
-        {children}
+        <PostHogProvider>{children}</PostHogProvider>
         <Toaster />
         <TanStackDevtools
           config={{
