@@ -1,4 +1,4 @@
-import * as Sentry from "@sentry/tanstackstart-react";
+// import * as Sentry from "@sentry/tanstackstart-react";
 import { Hero } from "./Hero";
 import { SocialProof } from "./SocialProof";
 import { CTASection } from "./CTASection";
@@ -30,7 +30,7 @@ export function LandingPage() {
       >
         Break the world
       </button> */}
-      <button
+      {/* <button
         type="button"
         onClick={async () => {
           await Sentry.startSpan(
@@ -48,7 +48,7 @@ export function LandingPage() {
         }}
       >
         Break the world
-      </button>
+      </button> */}
       <Hero />
       <SocialProof show={SHOW_SOCIAL_PROOF} />
       <CTASection />
