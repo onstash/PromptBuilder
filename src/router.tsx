@@ -92,6 +92,7 @@ export const getRouter = () => {
       // We recommend adjusting this value in production.
       // Learn more at https://docs.sentry.io/platforms/javascript/configuration/options/#traces-sample-rate
       tracesSampleRate: 1.0,
+      tunnel: "/api/sentry/tunnel",
     });
   }
 

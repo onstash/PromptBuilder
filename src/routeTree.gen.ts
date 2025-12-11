@@ -18,6 +18,7 @@ import { Route as DemoStartApiRequestRouteImport } from "./routes/demo/start.api
 import { Route as DemoFormSimpleRouteImport } from "./routes/demo/form.simple";
 import { Route as DemoFormAddressRouteImport } from "./routes/demo/form.address";
 import { Route as DemoApiNamesRouteImport } from "./routes/demo/api.names";
+import { Route as ApiSentryTunnelRouteImport } from "./routes/api/sentry.tunnel";
 import { Route as DemoStartSsrIndexRouteImport } from "./routes/demo/start.ssr.index";
 import { Route as DemoStartSsrSpaModeRouteImport } from "./routes/demo/start.ssr.spa-mode";
 import { Route as DemoStartSsrFullSsrRouteImport } from "./routes/demo/start.ssr.full-ssr";
@@ -68,6 +69,11 @@ const DemoApiNamesRoute = DemoApiNamesRouteImport.update({
   path: "/demo/api/names",
   getParentRoute: () => rootRouteImport,
 } as any);
+const ApiSentryTunnelRoute = ApiSentryTunnelRouteImport.update({
+  id: "/api/sentry/tunnel",
+  path: "/api/sentry/tunnel",
+  getParentRoute: () => rootRouteImport,
+} as any);
 const DemoStartSsrIndexRoute = DemoStartSsrIndexRouteImport.update({
   id: "/demo/start/ssr/",
   path: "/demo/start/ssr/",
@@ -94,6 +100,7 @@ export interface FileRoutesByFullPath {
   "/share": typeof ShareRoute;
   "/wizard": typeof WizardRoute;
   "/api/sentry-example": typeof ApiSentryExampleRoute;
+  "/api/sentry/tunnel": typeof ApiSentryTunnelRoute;
   "/demo/api/names": typeof DemoApiNamesRoute;
   "/demo/form/address": typeof DemoFormAddressRoute;
   "/demo/form/simple": typeof DemoFormSimpleRoute;
@@ -109,6 +116,7 @@ export interface FileRoutesByTo {
   "/share": typeof ShareRoute;
   "/wizard": typeof WizardRoute;
   "/api/sentry-example": typeof ApiSentryExampleRoute;
+  "/api/sentry/tunnel": typeof ApiSentryTunnelRoute;
   "/demo/api/names": typeof DemoApiNamesRoute;
   "/demo/form/address": typeof DemoFormAddressRoute;
   "/demo/form/simple": typeof DemoFormSimpleRoute;
@@ -125,6 +133,7 @@ export interface FileRoutesById {
   "/share": typeof ShareRoute;
   "/wizard": typeof WizardRoute;
   "/api/sentry-example": typeof ApiSentryExampleRoute;
+  "/api/sentry/tunnel": typeof ApiSentryTunnelRoute;
   "/demo/api/names": typeof DemoApiNamesRoute;
   "/demo/form/address": typeof DemoFormAddressRoute;
   "/demo/form/simple": typeof DemoFormSimpleRoute;
@@ -142,6 +151,7 @@ export interface FileRouteTypes {
     | "/share"
     | "/wizard"
     | "/api/sentry-example"
+    | "/api/sentry/tunnel"
     | "/demo/api/names"
     | "/demo/form/address"
     | "/demo/form/simple"
@@ -157,6 +167,7 @@ export interface FileRouteTypes {
     | "/share"
     | "/wizard"
     | "/api/sentry-example"
+    | "/api/sentry/tunnel"
     | "/demo/api/names"
     | "/demo/form/address"
     | "/demo/form/simple"
@@ -172,6 +183,7 @@ export interface FileRouteTypes {
     | "/share"
     | "/wizard"
     | "/api/sentry-example"
+    | "/api/sentry/tunnel"
     | "/demo/api/names"
     | "/demo/form/address"
     | "/demo/form/simple"
@@ -188,6 +200,7 @@ export interface RootRouteChildren {
   ShareRoute: typeof ShareRoute;
   WizardRoute: typeof WizardRoute;
   ApiSentryExampleRoute: typeof ApiSentryExampleRoute;
+  ApiSentryTunnelRoute: typeof ApiSentryTunnelRoute;
   DemoApiNamesRoute: typeof DemoApiNamesRoute;
   DemoFormAddressRoute: typeof DemoFormAddressRoute;
   DemoFormSimpleRoute: typeof DemoFormSimpleRoute;
@@ -264,6 +277,13 @@ declare module "@tanstack/react-router" {
       preLoaderRoute: typeof DemoApiNamesRouteImport;
       parentRoute: typeof rootRouteImport;
     };
+    "/api/sentry/tunnel": {
+      id: "/api/sentry/tunnel";
+      path: "/api/sentry/tunnel";
+      fullPath: "/api/sentry/tunnel";
+      preLoaderRoute: typeof ApiSentryTunnelRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
     "/demo/start/ssr/": {
       id: "/demo/start/ssr/";
       path: "/demo/start/ssr";
@@ -300,6 +320,7 @@ const rootRouteChildren: RootRouteChildren = {
   ShareRoute: ShareRoute,
   WizardRoute: WizardRoute,
   ApiSentryExampleRoute: ApiSentryExampleRoute,
+  ApiSentryTunnelRoute: ApiSentryTunnelRoute,
   DemoApiNamesRoute: DemoApiNamesRoute,
   DemoFormAddressRoute: DemoFormAddressRoute,
   DemoFormSimpleRoute: DemoFormSimpleRoute,

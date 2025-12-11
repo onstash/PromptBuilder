@@ -20,12 +20,31 @@ export function LandingPage() {
   }, []);
   return (
     <main className="bg-background min-h-screen">
-      <button
+      {/* <button
         type="button"
         onClick={() => {
           // Send a test metric before throwing the error
           Sentry.metrics.count("test_counter", 1);
           throw new Error("Sentry Test Error");
+        }}
+      >
+        Break the world
+      </button> */}
+      <button
+        type="button"
+        onClick={async () => {
+          await Sentry.startSpan(
+            {
+              name: "Example Frontend Span",
+              op: "test",
+            },
+            async () => {
+              const res = await fetch("/api/sentry-example");
+              if (!res.ok) {
+                throw new Error("Sentry Example Frontend Error");
+              }
+            }
+          );
         }}
       >
         Break the world
