@@ -34,15 +34,7 @@ export default function Header() {
               alt="TanStack Logo"
               className="h-10"
             /> */}
-            Basic Prompt Builder
-          </Link>
-          <Link to="/prompt-builder/advanced" className="ml-6">
-            {/* <img
-              src="/tanstack-word-logo-white.svg"
-              alt="TanStack Logo"
-              className="h-10"
-            /> */}
-            Advanced Prompt Builder
+            Prompt Wizard
           </Link>
         </h1>
       </header>
