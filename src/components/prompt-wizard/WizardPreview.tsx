@@ -1,25 +1,24 @@
 import { motion } from "motion/react";
 import { Copy, Check, X, Link2, ExternalLink, FilePen } from "lucide-react";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import type { PromptWizardData } from "@/utils/prompt-wizard/schema";
 import { compressFullState, decompress } from "@/utils/prompt-wizard";
 import { Link } from "@tanstack/react-router";
+import { useTrackMixpanel } from "@/utils/analytics/MixpanelProvider";
 
 type WizardPreviewProps =
   | {
-      /** @deprecated */
-      shareUrl: string | null;
+      shareUrl: string;
       onClose: () => void;
       data: PromptWizardData;
       compressed: false;
       source: "wizard";
     }
   | {
-      /** @deprecated */
-      shareUrl: string | null;
+      shareUrl: string;
       onClose: () => void;
       data: string;
       compressed: true;
@@ -115,7 +114,16 @@ export function WizardPreview({
   onClose,
   source,
 }: WizardPreviewProps) {
+  const trackEvent = useTrackMixpanel();
   const isSourceShare = source === "share";
+  useEffect(() => {
+    trackEvent("page_viewed_share", {
+      data: {
+        source,
+        compressed,
+      },
+    });
+  }, []);
   const [copiedPrompt, setCopiedPrompt] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
   const [[promptText, promptTextCompressed]] = useState(() => {
@@ -134,6 +142,9 @@ export function WizardPreview({
   const handleCopyPrompt = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(promptText);
+      trackEvent("button_clicked", {
+        button: "copy_prompt",
+      });
       setCopiedPrompt(true);
       toast.success("Prompt copied to clipboard!");
       setTimeout(() => setCopiedPrompt(false), 2000);

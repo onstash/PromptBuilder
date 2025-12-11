@@ -7,11 +7,22 @@ import { z } from "zod";
 import { getOrCreateSessionId } from "@/utils/session";
 
 const MixpanelDataSchema = z.object({
-  event: z.string(),
+  event: z.enum([
+    "page_viewed_landing",
+    "page_viewed_wizard",
+    "page_viewed_share",
+    "button_clicked",
+    "step_changed",
+    "form_submitted",
+    "data_loaded_url",
+    "data_loaded_localstorage",
+  ]),
   properties: z.looseObject({
     distinct_id: z.string(),
   }),
 });
+
+type MixpanelData = z.infer<typeof MixpanelDataSchema>;
 
 const mp = Mixpanel.init(import.meta.env.VITE_PUBLIC_MIXPANEL_PROJECT_TOKEN, {
   verbose: true,
@@ -39,7 +50,7 @@ export function MixpanelProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function useMixpanelContext() {
+function useMixpanelContext() {
   const context = useContext(MixpanelContext);
   if (!context) {
     throw new Error("useMixpanelContext must be used within MixpanelProvider");
@@ -63,7 +74,10 @@ export function useTrackMixpanel() {
   const trackMixpanelFn = useMixpanelContext();
 
   const trackEvent = useCallback(
-    (event: string, properties: Record<string, unknown> = {}) => {
+    (
+      event: MixpanelData["event"],
+      properties: Omit<MixpanelData["properties"], "distinct_id">
+    ) => {
       const sessionId = getOrCreateSessionId();
 
       trackMixpanelFn({

@@ -12,7 +12,7 @@ export function LandingPage() {
 
   useEffect(() => {
     // Track landing page view with session ID automatically included
-    trackEvent("page_view", {
+    trackEvent("page_viewed_landing", {
       page: "landing",
       timestamp: new Date().toISOString(),
     });

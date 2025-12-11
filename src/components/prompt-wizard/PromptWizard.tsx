@@ -149,7 +149,7 @@ export const PromptWizard = memo(function PromptWizard() {
   const navigate = useNavigate({ from: "/wizard" });
   const trackEvent = useTrackMixpanel();
   useEffect(() => {
-    trackEvent("page_view", {
+    trackEvent("page_viewed_wizard", {
       page: "wizard",
       timestamp: new Date().toISOString(),
     });
@@ -159,7 +159,7 @@ export const PromptWizard = memo(function PromptWizard() {
     if (search.d && search.vld) {
       const decompressed = decompressFullState(search.d);
       if (Object.keys(decompressed).length > 1) {
-        trackEvent("data_loaded", {
+        trackEvent("data_loaded_url", {
           page: "wizard",
           timestamp: new Date().toISOString(),
           data: decompressed,
@@ -170,7 +170,7 @@ export const PromptWizard = memo(function PromptWizard() {
     }
     const [dataFromLocalStorage, source] = loadFromStorage();
     if (source === "localStorage") {
-      trackEvent("data_loaded", {
+      trackEvent("data_loaded_localstorage", {
         page: "wizard",
         timestamp: new Date().toISOString(),
         data: dataFromLocalStorage,
@@ -280,7 +280,7 @@ export const PromptWizard = memo(function PromptWizard() {
       return;
     }
     // Generate and save share URL
-    trackEvent("data_generated", {
+    trackEvent("form_submitted", {
       page: "wizard",
       timestamp: new Date().toISOString(),
       data: wizardData,
@@ -408,13 +408,13 @@ export const PromptWizard = memo(function PromptWizard() {
           </div>
         </motion.div>
 
-        {showPreview && (
+        {showPreview && shareUrl && (
           <WizardPreview
             data={wizardData}
             compressed={false}
-            shareUrl={shareUrl}
             onClose={() => setShowPreview(false)}
             source="wizard"
+            shareUrl={shareUrl!}
           />
         )}
 
