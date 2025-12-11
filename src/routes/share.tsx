@@ -73,6 +73,7 @@ function ShareRouteComponent() {
             </p>
             <Link
               to="/wizard"
+              search={{ d: null, vld: 0 }}
               className="inline-block bg-primary text-primary-foreground font-bold uppercase px-6 py-3 border-4 border-foreground shadow-[4px_4px_0px_0px_hsl(var(--foreground))] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_hsl(var(--foreground))] transition-all"
             >
               Create New Prompt
@@ -92,7 +93,7 @@ function ShareRouteComponent() {
           source="share"
           shareUrl={shareUrl}
           onClose={() => {
-            navigate({ to: "/wizard" });
+            navigate({ to: "/wizard", search: { d: null, vld: 0 } });
           }}
         />
       </div>
