@@ -2,8 +2,10 @@ import { motion } from "motion/react";
 import { Link } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useTrackMixpanel } from "@/utils/analytics/MixpanelProvider";
 
 export function Hero() {
+  const trackEvent = useTrackMixpanel();
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-background">
       {/* Grid pattern background */}
@@ -38,6 +40,12 @@ export function Hero() {
             asChild
             size="lg"
             className="text-lg px-10 py-7 h-auto uppercase font-black tracking-wide"
+            onClick={() => {
+              trackEvent("button_clicked", {
+                page: "landing",
+                cta: "start_building",
+              });
+            }}
           >
             <Link
               to="/wizard"

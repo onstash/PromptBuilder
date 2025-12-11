@@ -68,6 +68,9 @@ importers:
       lz-string:
         specifier: ^1.5.0
         version: 1.5.0
+      mixpanel:
+        specifier: ^0.19.1
+        version: 0.19.1
       motion:
         specifier: ^12.23.24
         version: 12.23.24(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -2271,6 +2274,10 @@ packages:
   mimic-function@5.0.1:
     resolution: {integrity: sha512-VP79XUPxV2CigYP3jWwAUFSku2aKqBH7uTAapFWCBqutsbmDo96KY5o8uh6U+/YSIn5OxJnXp73beVkpqMIGhA==}
     engines: {node: '>=18'}
+
+  mixpanel@0.19.1:
+    resolution: {integrity: sha512-NK3kJ7/ke1KfLeZyfl9Ec9XALzfI3cclpnpD3Uu0N2kTjlpeIs+zN/mpd1ZxwaiZLK3muccSzmecQ8HzqtMptw==}
+    engines: {node: '>=10.0'}
 
   motion-dom@12.23.23:
     resolution: {integrity: sha512-n5yolOs0TQQBRUFImrRfs/+6X4p3Q4n1dUEqt/H58Vx7OW6RF+foWEgmTVDhIWJIMXOuNNL0apKH2S16en9eiA==}
@@ -5056,6 +5063,12 @@ snapshots:
       picomatch: 2.3.1
 
   mimic-function@5.0.1: {}
+
+  mixpanel@0.19.1:
+    dependencies:
+      https-proxy-agent: 7.0.6
+    transitivePeerDependencies:
+      - supports-color
 
   motion-dom@12.23.23:
     dependencies:

@@ -1,8 +1,10 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useTrackMixpanel } from "@/utils/analytics/MixpanelProvider";
 
 export function CTASection() {
+  const trackEvent = useTrackMixpanel();
   return (
     <section className="py-20 px-6 bg-primary">
       <div className="max-w-2xl mx-auto text-center">
@@ -14,6 +16,12 @@ export function CTASection() {
           size="lg"
           variant="secondary"
           className="text-lg px-10 py-7 h-auto uppercase font-black tracking-wide"
+          onClick={() => {
+            trackEvent("button_clicked", {
+              page: "landing",
+              cta: "get_started_free",
+            });
+          }}
         >
           <Link
             to="/wizard"

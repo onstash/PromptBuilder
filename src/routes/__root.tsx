@@ -12,7 +12,7 @@ import { Toaster } from "sonner";
 
 import appCss from "../styles.css?url";
 import { Footer } from "@/components/landing";
-import { PostHogProvider } from "@/utils/analytics/PostHogProvider";
+import { MixpanelProvider } from "@/utils/analytics/MixpanelProvider";
 
 export const Route = createRootRoute({
   head: () => ({
@@ -50,7 +50,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         {/* {!isLandingPage && <Header />} */}
-        <PostHogProvider>{children}</PostHogProvider>
+        <MixpanelProvider>{children}</MixpanelProvider>
         <Toaster />
         <TanStackDevtools
           config={{
