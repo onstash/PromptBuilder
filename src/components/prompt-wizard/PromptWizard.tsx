@@ -33,7 +33,7 @@ import { ToneStep } from "./steps/ToneStep";
 import { ReasoningStep } from "./steps/ReasoningStep";
 import { SelfCheckStep } from "./steps/SelfCheckStep";
 import { DisallowedStep } from "./steps/DisallowedStep";
-import { Link, useSearch } from "@tanstack/react-router";
+import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // STATIC CONFIGURATION
@@ -145,6 +145,7 @@ function getShareUrl(): string | null {
 
 export const PromptWizard = memo(function PromptWizard() {
   const search = useSearch({ from: "/wizard" });
+  const navigate = useNavigate({ from: "/wizard" });
   // Initialize from localStorage
   const [wizardData, setWizardData] = useState<PromptWizardData>(() => {
     if (search.d && search.vld) {
@@ -262,6 +263,7 @@ export const PromptWizard = memo(function PromptWizard() {
   }, [showAdvanced, updateData]);
 
   const handleReset = useCallback(() => {
+    navigate({ to: "/wizard", search: { d: null, vld: 0 } });
     setWizardData(WIZARD_DEFAULTS);
     clearStorage();
     setShareUrl(null);
