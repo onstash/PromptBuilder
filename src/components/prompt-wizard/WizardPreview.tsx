@@ -5,33 +5,57 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import type { PromptWizardData } from "@/utils/prompt-wizard/schema";
+import { decompress } from "@/utils/prompt-wizard";
 
-interface WizardPreviewProps {
-  data: PromptWizardData;
-  shareUrl: string | null;
-  onClose: () => void;
-  source: "wizard" | "share";
-}
+type WizardPreviewProps =
+  | {
+      shareUrl: string | null;
+      onClose: () => void;
+      data: PromptWizardData;
+      compressed: false;
+      source: "wizard";
+    }
+  | {
+      shareUrl: string | null;
+      onClose: () => void;
+      data: string;
+      compressed: true;
+      source: "share";
+    };
 
-function generatePromptString(data: PromptWizardData): string {
+function generatePromptString(
+  opts:
+    | {
+        data: PromptWizardData;
+        compressed: false;
+      }
+    | {
+        data: string;
+        compressed: true;
+      }
+): string {
+  const { data, compressed } = opts;
+  const finalData = (
+    compressed ? JSON.parse(decompress(data)) : data
+  ) as PromptWizardData;
   const sections: string[] = [];
 
-  if (data.task_intent) {
-    sections.push(`## Task\n${data.task_intent}`);
+  if (finalData.task_intent) {
+    sections.push(`## Task\n${finalData.task_intent}`);
   }
 
-  if (data.context) {
-    sections.push(`## Context\n${data.context}`);
+  if (finalData.context) {
+    sections.push(`## Context\n${finalData.context}`);
   }
 
-  if (data.constraints) {
-    sections.push(`## Constraints\n${data.constraints}`);
+  if (finalData.constraints) {
+    sections.push(`## Constraints\n${finalData.constraints}`);
   }
 
   const audienceLabel =
-    data.target_audience === "custom"
-      ? data.custom_audience
-      : data.target_audience;
+    finalData.target_audience === "custom"
+      ? finalData.custom_audience
+      : finalData.target_audience;
   if (audienceLabel) {
     sections.push(`## Target Audience\n${audienceLabel}`);
   }
@@ -46,36 +70,36 @@ function generatePromptString(data: PromptWizardData): string {
     table: "Provide your response in a table format.",
     mixed: "Use a combination of paragraphs, lists, and other formatting.",
   };
-  if (data.output_format) {
+  if (finalData.output_format) {
     sections.push(
-      `## Output Format\n${formatMap[data.output_format] || data.output_format}`
+      `## Output Format\n${formatMap[finalData.output_format] || finalData.output_format}`
     );
   }
 
-  if (data.ai_role) {
-    sections.push(`## Your Role\nAct as: ${data.ai_role}`);
+  if (finalData.ai_role) {
+    sections.push(`## Your Role\nAct as: ${finalData.ai_role}`);
   }
 
-  if (data.tone_style) {
-    sections.push(`## Tone\nUse a ${data.tone_style} tone.`);
+  if (finalData.tone_style) {
+    sections.push(`## Tone\nUse a ${finalData.tone_style} tone.`);
   }
 
-  if (data.reasoning_depth && data.reasoning_depth !== "moderate") {
+  if (finalData.reasoning_depth && finalData.reasoning_depth !== "moderate") {
     const depthMap: Record<string, string> = {
       brief: "Be concise and direct.",
       thorough: "Provide thorough, in-depth analysis.",
     };
-    sections.push(`## Reasoning\n${depthMap[data.reasoning_depth]}`);
+    sections.push(`## Reasoning\n${depthMap[finalData.reasoning_depth]}`);
   }
 
-  if (data.self_check) {
+  if (finalData.self_check) {
     sections.push(
       `## Self-Check\nBefore finalizing, verify your response is accurate and complete.`
     );
   }
 
-  if (data.disallowed_content) {
-    sections.push(`## Avoid\n${data.disallowed_content}`);
+  if (finalData.disallowed_content) {
+    sections.push(`## Avoid\n${finalData.disallowed_content}`);
   }
 
   return sections.join("\n\n");
@@ -83,6 +107,7 @@ function generatePromptString(data: PromptWizardData): string {
 
 export function WizardPreview({
   data,
+  compressed,
   shareUrl,
   onClose,
   source,
@@ -90,7 +115,15 @@ export function WizardPreview({
   const isSourceShare = source === "share";
   const [copiedPrompt, setCopiedPrompt] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
-  const promptText = generatePromptString(data);
+  const [promptText] = useState(() => {
+    const result = compressed
+      ? generatePromptString({ data: data as string, compressed: true })
+      : generatePromptString({
+          data: data as PromptWizardData,
+          compressed: false,
+        });
+    return result;
+  });
 
   const handleCopyPrompt = useCallback(async () => {
     try {
@@ -101,7 +134,7 @@ export function WizardPreview({
     } catch {
       toast.error("Failed to copy");
     }
-  }, [promptText]);
+  }, []);
 
   const handleCopyLink = useCallback(async () => {
     if (!shareUrl) return;
