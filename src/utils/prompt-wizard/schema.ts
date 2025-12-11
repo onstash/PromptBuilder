@@ -149,6 +149,16 @@ export const promptWizardSchema = z.object({
 
 export type PromptWizardData = z.infer<typeof promptWizardSchema>;
 
+export type PromptWizardSearchParamsCompressed =
+  | {
+      d: string;
+      vld: 1;
+    }
+  | {
+      d: null;
+      vld: 0;
+    };
+
 // ═══════════════════════════════════════════════════════════════════════════
 // STEP DEFINITIONS
 // ═══════════════════════════════════════════════════════════════════════════

@@ -1,5 +1,6 @@
 import {
   createFileRoute,
+  Link,
   useNavigate,
   useSearch,
 } from "@tanstack/react-router";
@@ -9,21 +10,22 @@ import { decompress } from "@/utils/prompt-wizard/url-compression";
 import { WIZARD_DEFAULTS } from "@/utils/prompt-wizard/search-params";
 import {
   promptWizardSchema,
+  type PromptWizardSearchParamsCompressed,
   type PromptWizardData,
 } from "@/utils/prompt-wizard/schema";
 import { WizardPreview } from "@/components/prompt-wizard/WizardPreview";
 
 // Validate and decompress the ?d= parameter
-function validateShareSearch(search: Record<string, unknown>): {
-  data: PromptWizardData | null;
-} {
+function validateShareSearch(
+  search: Record<string, unknown>
+): PromptWizardSearchParamsCompressed {
   if (typeof search.d !== "string" || !search.d) {
-    return { data: null };
+    return { d: null, vld: 0 };
   }
 
   try {
     const json = decompress(search.d);
-    if (!json) return { data: null };
+    if (!json) return { d: null, vld: 0 };
 
     const parsed = JSON.parse(json) as Partial<PromptWizardData>;
     const result = promptWizardSchema.safeParse({
@@ -32,11 +34,11 @@ function validateShareSearch(search: Record<string, unknown>): {
     });
 
     if (result.success) {
-      return { data: result.data };
+      return { d: search.d, vld: 1 };
     }
-    return { data: null };
+    return { d: null, vld: 0 };
   } catch {
-    return { data: null };
+    return { d: null, vld: 0 };
   }
 }
 
@@ -46,7 +48,7 @@ export const Route = createFileRoute("/share")({
 });
 
 function ShareRouteComponent() {
-  const { data } = useSearch({ from: "/share" });
+  const { d, vld } = useSearch({ from: "/share" });
   const navigate = useNavigate({ from: "/share" });
 
   // Reconstruct the share URL from current location
@@ -57,7 +59,7 @@ function ShareRouteComponent() {
     return null;
   }, []);
 
-  if (!data) {
+  if (!d || !vld) {
     return (
       <div className="min-h-screen bg-background py-8 px-4">
         <div className="max-w-2xl mx-auto">
@@ -69,12 +71,12 @@ function ShareRouteComponent() {
               This share link is invalid or has expired. The prompt data could
               not be decoded.
             </p>
-            <a
-              href="/prompt-builder/wizard"
+            <Link
+              to="/wizard"
               className="inline-block bg-primary text-primary-foreground font-bold uppercase px-6 py-3 border-4 border-foreground shadow-[4px_4px_0px_0px_hsl(var(--foreground))] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_hsl(var(--foreground))] transition-all"
             >
               Create New Prompt
-            </a>
+            </Link>
           </div>
         </div>
       </div>
@@ -85,12 +87,13 @@ function ShareRouteComponent() {
     <div className="min-h-screen bg-background py-8 px-4">
       <div className="max-w-2xl mx-auto">
         <WizardPreview
-          data={data}
+          data={d}
+          compressed
+          source="share"
           shareUrl={shareUrl}
           onClose={() => {
             navigate({ to: "/wizard" });
           }}
-          source="share"
         />
       </div>
     </div>
