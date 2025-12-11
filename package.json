@@ -4,9 +4,11 @@
   "type": "module",
   "scripts": {
     "dev": "NODE_OPTIONS='--import ./instrument.server.mjs' vite dev --port 3000",
-    "build": "vite build && cp instrument.server.mjs .output/server",
+    "build": "vite build && cp instrument.server.mjs .vercel/output/server",
+    "build:local": "vite build && cp instrument.server.mjs .output/server",
     "serve": "vite preview",
-    "start": "node --import ./.output/server/instrument.server.mjs .output/server/index.mjs",
+    "start": "node --import .vercel/server/instrument.server.mjs .vercel/output/server/index.mjs",
+    "start:local": "node --import ./.output/server/instrument.server.mjs .output/server/index.mjs",
     "test": "vitest run",
     "prepare": "husky"
   },
