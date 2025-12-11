@@ -48,7 +48,7 @@ export const WIZARD_DEFAULTS: PromptWizardData = {
  * Compress wizard state to a single URL-safe string
  * Only includes non-default values
  */
-function compressFullState(data: Partial<PromptWizardData>): string {
+export function compressFullState(data: PromptWizardData): string {
   const filtered: Record<string, unknown> = {};
 
   for (const [key, value] of Object.entries(data)) {

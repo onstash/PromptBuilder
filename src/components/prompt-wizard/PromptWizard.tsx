@@ -33,7 +33,7 @@ import { ToneStep } from "./steps/ToneStep";
 import { ReasoningStep } from "./steps/ReasoningStep";
 import { SelfCheckStep } from "./steps/SelfCheckStep";
 import { DisallowedStep } from "./steps/DisallowedStep";
-import { useSearch } from "@tanstack/react-router";
+import { Link, useSearch } from "@tanstack/react-router";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // STATIC CONFIGURATION
@@ -381,9 +381,9 @@ export const PromptWizard = memo(function PromptWizard() {
         {/* Back to Home */}
         <div className="mt-6 text-center">
           <Button variant="link" asChild>
-            <a href="/" className="text-muted-foreground font-mono text-sm">
+            <Link to="/" className="text-muted-foreground font-mono text-sm">
               ← Back to Home
-            </a>
+            </Link>
           </Button>
         </div>
       </div>

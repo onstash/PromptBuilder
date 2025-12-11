@@ -39,7 +39,11 @@ export function Hero() {
             size="lg"
             className="text-lg px-10 py-7 h-auto uppercase font-black tracking-wide"
           >
-            <Link to="/wizard" className="flex items-center gap-3">
+            <Link
+              to="/wizard"
+              search={{ d: null, vld: 0 }}
+              className="flex items-center gap-3"
+            >
               Start Building
               <ArrowRight className="w-5 h-5" />
             </Link>

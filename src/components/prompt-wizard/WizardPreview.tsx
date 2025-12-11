@@ -1,14 +1,16 @@
 import { motion } from "motion/react";
-import { Copy, Check, X, Link2, ExternalLink } from "lucide-react";
+import { Copy, Check, X, Link2, ExternalLink, FilePen } from "lucide-react";
 import { useState, useCallback } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import type { PromptWizardData } from "@/utils/prompt-wizard/schema";
-import { decompress } from "@/utils/prompt-wizard";
+import { compressFullState, decompress } from "@/utils/prompt-wizard";
+import { Link } from "@tanstack/react-router";
 
 type WizardPreviewProps =
   | {
+      /** @deprecated */
       shareUrl: string | null;
       onClose: () => void;
       data: PromptWizardData;
@@ -16,6 +18,7 @@ type WizardPreviewProps =
       source: "wizard";
     }
   | {
+      /** @deprecated */
       shareUrl: string | null;
       onClose: () => void;
       data: string;
@@ -115,14 +118,17 @@ export function WizardPreview({
   const isSourceShare = source === "share";
   const [copiedPrompt, setCopiedPrompt] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
-  const [promptText] = useState(() => {
+  const [[promptText, promptTextCompressed]] = useState(() => {
     const result = compressed
       ? generatePromptString({ data: data as string, compressed: true })
       : generatePromptString({
           data: data as PromptWizardData,
           compressed: false,
         });
-    return result;
+    return [
+      result,
+      compressed ? data : compressFullState(data as PromptWizardData),
+    ];
   });
 
   const handleCopyPrompt = useCallback(async () => {
@@ -148,6 +154,8 @@ export function WizardPreview({
       toast.error("Failed to copy link");
     }
   }, [shareUrl]);
+
+  const EditOrOpenIcon = !isSourceShare ? ExternalLink : FilePen;
 
   return (
     <motion.div
@@ -179,19 +187,20 @@ export function WizardPreview({
                   </>
                 )}
               </Button>
-              {!isSourceShare && (
-                <Button
-                  asChild
-                  variant="outline"
-                  size="sm"
-                  className="font-mono text-xs"
+              <Button
+                asChild
+                variant="outline"
+                size="sm"
+                className="font-mono text-xs"
+              >
+                <Link
+                  to={!isSourceShare ? "/share" : "/wizard"}
+                  search={{ d: promptTextCompressed, vld: 1 }}
                 >
-                  <a href={shareUrl} target="_blank" rel="noopener noreferrer">
-                    <ExternalLink className="w-4 h-4 mr-1" />
-                    Open
-                  </a>
-                </Button>
-              )}
+                  <EditOrOpenIcon className="w-4 h-4 mr-1" />
+                  {!isSourceShare ? "Open" : "Edit"}
+                </Link>
+              </Button>
             </>
           )}
           <Button
