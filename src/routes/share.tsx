@@ -90,6 +90,7 @@ function ShareRouteComponent() {
           onClose={() => {
             navigate({ to: "/wizard" });
           }}
+          source="share"
         />
       </div>
     </div>

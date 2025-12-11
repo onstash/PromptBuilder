@@ -357,6 +357,7 @@ export const PromptWizard = memo(function PromptWizard() {
             data={wizardData}
             shareUrl={shareUrl}
             onClose={() => setShowPreview(false)}
+            source="wizard"
           />
         )}
 

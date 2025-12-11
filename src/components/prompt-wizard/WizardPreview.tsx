@@ -10,6 +10,7 @@ interface WizardPreviewProps {
   data: PromptWizardData;
   shareUrl: string | null;
   onClose: () => void;
+  source: "wizard" | "share";
 }
 
 function generatePromptString(data: PromptWizardData): string {
@@ -80,7 +81,13 @@ function generatePromptString(data: PromptWizardData): string {
   return sections.join("\n\n");
 }
 
-export function WizardPreview({ data, shareUrl, onClose }: WizardPreviewProps) {
+export function WizardPreview({
+  data,
+  shareUrl,
+  onClose,
+  source,
+}: WizardPreviewProps) {
+  const isSourceShare = source === "share";
   const [copiedPrompt, setCopiedPrompt] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
   const promptText = generatePromptString(data);
@@ -139,17 +146,19 @@ export function WizardPreview({ data, shareUrl, onClose }: WizardPreviewProps) {
                   </>
                 )}
               </Button>
-              <Button
-                asChild
-                variant="outline"
-                size="sm"
-                className="font-mono text-xs"
-              >
-                <a href={shareUrl} target="_blank" rel="noopener noreferrer">
-                  <ExternalLink className="w-4 h-4 mr-1" />
-                  Open
-                </a>
-              </Button>
+              {!isSourceShare && (
+                <Button
+                  asChild
+                  variant="outline"
+                  size="sm"
+                  className="font-mono text-xs"
+                >
+                  <a href={shareUrl} target="_blank" rel="noopener noreferrer">
+                    <ExternalLink className="w-4 h-4 mr-1" />
+                    Open
+                  </a>
+                </Button>
+              )}
             </>
           )}
           <Button
