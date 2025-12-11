@@ -54,7 +54,7 @@ function ShareRouteComponent() {
     return null;
   }, []);
 
-  if (!d || !vld || !shareUrl) {
+  if (!d || !vld) {
     return (
       <div className="min-h-screen bg-background py-8 px-4">
         <div className="max-w-2xl mx-auto">
