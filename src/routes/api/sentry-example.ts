@@ -5,14 +5,11 @@ export const Route = createFileRoute("/api/sentry-example")({
     handlers: {
       GET: () => {
         throw new Error("Sentry Example Route Error");
-        return new Response(
-          JSON.stringify({ message: "Testing Sentry Error..." }),
-          {
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
+        return new Response(JSON.stringify({ message: "Testing Sentry Error..." }), {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
       },
     },
   },

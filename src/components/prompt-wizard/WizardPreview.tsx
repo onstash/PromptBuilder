@@ -37,9 +37,7 @@ function generatePromptString(
       }
 ): string {
   const { data, compressed } = opts;
-  const finalData = (
-    compressed ? JSON.parse(decompress(data)) : data
-  ) as PromptWizardData;
+  const finalData = (compressed ? JSON.parse(decompress(data)) : data) as PromptWizardData;
   const sections: string[] = [];
 
   if (finalData.task_intent) {
@@ -55,9 +53,7 @@ function generatePromptString(
   }
 
   const audienceLabel =
-    finalData.target_audience === "custom"
-      ? finalData.custom_audience
-      : finalData.target_audience;
+    finalData.target_audience === "custom" ? finalData.custom_audience : finalData.target_audience;
   if (audienceLabel) {
     sections.push(`## Target Audience\n${audienceLabel}`);
   }
@@ -65,8 +61,7 @@ function generatePromptString(
   const formatMap: Record<string, string> = {
     "1-paragraph": "Provide your response in a single paragraph.",
     "2-paragraphs": "Provide your response in exactly 2 paragraphs.",
-    "3-plus-paragraphs":
-      "Provide a detailed response with multiple paragraphs.",
+    "3-plus-paragraphs": "Provide a detailed response with multiple paragraphs.",
     "bullet-list": "Provide your response as a bulleted list.",
     "numbered-list": "Provide your response as a numbered step-by-step list.",
     table: "Provide your response in a table format.",
@@ -107,13 +102,7 @@ function generatePromptString(
   return sections.join("\n\n");
 }
 
-export function WizardPreview({
-  data,
-  compressed,
-  shareUrl,
-  onClose,
-  source,
-}: WizardPreviewProps) {
+export function WizardPreview({ data, compressed, shareUrl, onClose, source }: WizardPreviewProps) {
   const trackEvent = useTrackMixpanel();
   const isSourceShare = source === "share";
   useEffect(() => {
@@ -133,10 +122,7 @@ export function WizardPreview({
           data: data as PromptWizardData,
           compressed: false,
         });
-    return [
-      result,
-      compressed ? data : compressFullState(data as PromptWizardData),
-    ];
+    return [result, compressed ? data : compressFullState(data as PromptWizardData)];
   });
 
   const handleCopyPrompt = useCallback(async () => {
@@ -198,12 +184,7 @@ export function WizardPreview({
                   </>
                 )}
               </Button>
-              <Button
-                asChild
-                variant="outline"
-                size="sm"
-                className="font-mono text-xs"
-              >
+              <Button asChild variant="outline" size="sm" className="font-mono text-xs">
                 <Link
                   to={!isSourceShare ? "/share" : "/wizard"}
                   search={{ d: promptTextCompressed, vld: 1 }}
@@ -214,11 +195,7 @@ export function WizardPreview({
               </Button>
             </>
           )}
-          <Button
-            onClick={handleCopyPrompt}
-            size="sm"
-            className="uppercase font-bold"
-          >
+          <Button onClick={handleCopyPrompt} size="sm" className="uppercase font-bold">
             {copiedPrompt ? (
               <>
                 <Check className="w-4 h-4 mr-1" />
@@ -239,17 +216,14 @@ export function WizardPreview({
 
       {/* Prompt content */}
       <div className="p-4 max-h-[400px] overflow-y-auto">
-        <pre className="whitespace-pre-wrap font-mono text-sm leading-relaxed">
-          {promptText}
-        </pre>
+        <pre className="whitespace-pre-wrap font-mono text-sm leading-relaxed">{promptText}</pre>
       </div>
 
       {/* Share URL indicator */}
       {shareUrl && (
         <div className="p-4 border-t-2 border-muted bg-muted/30">
           <p className="text-xs font-mono text-muted-foreground">
-            🔗 Share link ready! Use "Copy Link" to share this prompt with
-            others.
+            🔗 Share link ready! Use "Copy Link" to share this prompt with others.
           </p>
         </div>
       )}

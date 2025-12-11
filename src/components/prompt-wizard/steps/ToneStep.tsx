@@ -1,7 +1,4 @@
-import {
-  TONE_STYLES,
-  type PromptWizardData,
-} from "@/utils/prompt-wizard/schema";
+import { TONE_STYLES, type PromptWizardData } from "@/utils/prompt-wizard/schema";
 
 interface StepProps {
   data: PromptWizardData;
@@ -31,9 +28,7 @@ export function ToneStep({ data, onUpdate }: StepProps) {
                 }
               `}
             >
-              <span className="block font-bold uppercase text-sm">
-                {tone.label}
-              </span>
+              <span className="block font-bold uppercase text-sm">{tone.label}</span>
             </button>
           );
         })}

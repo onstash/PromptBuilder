@@ -26,9 +26,9 @@ async function readTodos() {
           { id: 2, name: "Buy a new phone" },
         ],
         null,
-        2,
-      ),
-    ),
+        2
+      )
+    )
   );
 }
 

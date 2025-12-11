@@ -1,7 +1,4 @@
-import {
-  OUTPUT_FORMATS,
-  type PromptWizardData,
-} from "@/utils/prompt-wizard/schema";
+import { OUTPUT_FORMATS, type PromptWizardData } from "@/utils/prompt-wizard/schema";
 
 interface StepProps {
   data: PromptWizardData;
@@ -19,8 +16,7 @@ export function OutputFormatStep({ data, onUpdate }: StepProps) {
               key={format.value}
               onClick={() =>
                 onUpdate({
-                  output_format:
-                    format.value as PromptWizardData["output_format"],
+                  output_format: format.value as PromptWizardData["output_format"],
                 })
               }
               className={`
@@ -32,12 +28,8 @@ export function OutputFormatStep({ data, onUpdate }: StepProps) {
                 }
               `}
             >
-              <span className="block font-bold uppercase text-sm">
-                {format.label}
-              </span>
-              <span className="block text-xs mt-1 opacity-80">
-                {format.description}
-              </span>
+              <span className="block font-bold uppercase text-sm">{format.label}</span>
+              <span className="block text-xs mt-1 opacity-80">{format.description}</span>
             </button>
           );
         })}

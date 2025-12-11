@@ -37,10 +37,7 @@ export const Route = createFileRoute("/api/sentry/tunnel")({
 
           // Validate project ID
           if (!SENTRY_PROJECT_IDS.includes(projectId)) {
-            console.error(
-              "[Sentry Tunnel] Unauthorized project ID:",
-              projectId
-            );
+            console.error("[Sentry Tunnel] Unauthorized project ID:", projectId);
             return new Response("Unauthorized", { status: 403 });
           }
 

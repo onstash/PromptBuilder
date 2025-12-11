@@ -32,11 +32,7 @@ function getCookie(name: string): string | null {
 /**
  * Sets a cookie with the given name and value
  */
-function setCookie(
-  name: string,
-  value: string,
-  maxAge: number = COOKIE_MAX_AGE
-): void {
+function setCookie(name: string, value: string, maxAge: number = COOKIE_MAX_AGE): void {
   if (typeof document === "undefined") return;
 
   document.cookie = `${name}=${value}; max-age=${maxAge}; path=/; SameSite=Lax`;

@@ -18,9 +18,7 @@ export function RoleStep({ data, onUpdate }: StepProps) {
       />
 
       <div className="text-sm text-muted-foreground">
-        <p className="font-mono uppercase tracking-wider mb-2">
-          Popular roles:
-        </p>
+        <p className="font-mono uppercase tracking-wider mb-2">Popular roles:</p>
         <div className="flex flex-wrap gap-2">
           {[
             "Career Coach",

@@ -8,310 +8,310 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from "./routes/__root";
-import { Route as WizardRouteImport } from "./routes/wizard";
-import { Route as ShareRouteImport } from "./routes/share";
-import { Route as IndexRouteImport } from "./routes/index";
-import { Route as ApiSentryExampleRouteImport } from "./routes/api/sentry-example";
-import { Route as DemoStartServerFuncsRouteImport } from "./routes/demo/start.server-funcs";
-import { Route as DemoStartApiRequestRouteImport } from "./routes/demo/start.api-request";
-import { Route as DemoFormSimpleRouteImport } from "./routes/demo/form.simple";
-import { Route as DemoFormAddressRouteImport } from "./routes/demo/form.address";
-import { Route as DemoApiNamesRouteImport } from "./routes/demo/api.names";
-import { Route as ApiSentryTunnelRouteImport } from "./routes/api/sentry.tunnel";
-import { Route as DemoStartSsrIndexRouteImport } from "./routes/demo/start.ssr.index";
-import { Route as DemoStartSsrSpaModeRouteImport } from "./routes/demo/start.ssr.spa-mode";
-import { Route as DemoStartSsrFullSsrRouteImport } from "./routes/demo/start.ssr.full-ssr";
-import { Route as DemoStartSsrDataOnlyRouteImport } from "./routes/demo/start.ssr.data-only";
+import { Route as rootRouteImport } from './routes/__root'
+import { Route as WizardRouteImport } from './routes/wizard'
+import { Route as ShareRouteImport } from './routes/share'
+import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiSentryExampleRouteImport } from './routes/api/sentry-example'
+import { Route as DemoStartServerFuncsRouteImport } from './routes/demo/start.server-funcs'
+import { Route as DemoStartApiRequestRouteImport } from './routes/demo/start.api-request'
+import { Route as DemoFormSimpleRouteImport } from './routes/demo/form.simple'
+import { Route as DemoFormAddressRouteImport } from './routes/demo/form.address'
+import { Route as DemoApiNamesRouteImport } from './routes/demo/api.names'
+import { Route as ApiSentryTunnelRouteImport } from './routes/api/sentry.tunnel'
+import { Route as DemoStartSsrIndexRouteImport } from './routes/demo/start.ssr.index'
+import { Route as DemoStartSsrSpaModeRouteImport } from './routes/demo/start.ssr.spa-mode'
+import { Route as DemoStartSsrFullSsrRouteImport } from './routes/demo/start.ssr.full-ssr'
+import { Route as DemoStartSsrDataOnlyRouteImport } from './routes/demo/start.ssr.data-only'
 
 const WizardRoute = WizardRouteImport.update({
-  id: "/wizard",
-  path: "/wizard",
+  id: '/wizard',
+  path: '/wizard',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const ShareRoute = ShareRouteImport.update({
-  id: "/share",
-  path: "/share",
+  id: '/share',
+  path: '/share',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const IndexRoute = IndexRouteImport.update({
-  id: "/",
-  path: "/",
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const ApiSentryExampleRoute = ApiSentryExampleRouteImport.update({
-  id: "/api/sentry-example",
-  path: "/api/sentry-example",
+  id: '/api/sentry-example',
+  path: '/api/sentry-example',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const DemoStartServerFuncsRoute = DemoStartServerFuncsRouteImport.update({
-  id: "/demo/start/server-funcs",
-  path: "/demo/start/server-funcs",
+  id: '/demo/start/server-funcs',
+  path: '/demo/start/server-funcs',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const DemoStartApiRequestRoute = DemoStartApiRequestRouteImport.update({
-  id: "/demo/start/api-request",
-  path: "/demo/start/api-request",
+  id: '/demo/start/api-request',
+  path: '/demo/start/api-request',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const DemoFormSimpleRoute = DemoFormSimpleRouteImport.update({
-  id: "/demo/form/simple",
-  path: "/demo/form/simple",
+  id: '/demo/form/simple',
+  path: '/demo/form/simple',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const DemoFormAddressRoute = DemoFormAddressRouteImport.update({
-  id: "/demo/form/address",
-  path: "/demo/form/address",
+  id: '/demo/form/address',
+  path: '/demo/form/address',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const DemoApiNamesRoute = DemoApiNamesRouteImport.update({
-  id: "/demo/api/names",
-  path: "/demo/api/names",
+  id: '/demo/api/names',
+  path: '/demo/api/names',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const ApiSentryTunnelRoute = ApiSentryTunnelRouteImport.update({
-  id: "/api/sentry/tunnel",
-  path: "/api/sentry/tunnel",
+  id: '/api/sentry/tunnel',
+  path: '/api/sentry/tunnel',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const DemoStartSsrIndexRoute = DemoStartSsrIndexRouteImport.update({
-  id: "/demo/start/ssr/",
-  path: "/demo/start/ssr/",
+  id: '/demo/start/ssr/',
+  path: '/demo/start/ssr/',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const DemoStartSsrSpaModeRoute = DemoStartSsrSpaModeRouteImport.update({
-  id: "/demo/start/ssr/spa-mode",
-  path: "/demo/start/ssr/spa-mode",
+  id: '/demo/start/ssr/spa-mode',
+  path: '/demo/start/ssr/spa-mode',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const DemoStartSsrFullSsrRoute = DemoStartSsrFullSsrRouteImport.update({
-  id: "/demo/start/ssr/full-ssr",
-  path: "/demo/start/ssr/full-ssr",
+  id: '/demo/start/ssr/full-ssr',
+  path: '/demo/start/ssr/full-ssr',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const DemoStartSsrDataOnlyRoute = DemoStartSsrDataOnlyRouteImport.update({
-  id: "/demo/start/ssr/data-only",
-  path: "/demo/start/ssr/data-only",
+  id: '/demo/start/ssr/data-only',
+  path: '/demo/start/ssr/data-only',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 
 export interface FileRoutesByFullPath {
-  "/": typeof IndexRoute;
-  "/share": typeof ShareRoute;
-  "/wizard": typeof WizardRoute;
-  "/api/sentry-example": typeof ApiSentryExampleRoute;
-  "/api/sentry/tunnel": typeof ApiSentryTunnelRoute;
-  "/demo/api/names": typeof DemoApiNamesRoute;
-  "/demo/form/address": typeof DemoFormAddressRoute;
-  "/demo/form/simple": typeof DemoFormSimpleRoute;
-  "/demo/start/api-request": typeof DemoStartApiRequestRoute;
-  "/demo/start/server-funcs": typeof DemoStartServerFuncsRoute;
-  "/demo/start/ssr/data-only": typeof DemoStartSsrDataOnlyRoute;
-  "/demo/start/ssr/full-ssr": typeof DemoStartSsrFullSsrRoute;
-  "/demo/start/ssr/spa-mode": typeof DemoStartSsrSpaModeRoute;
-  "/demo/start/ssr": typeof DemoStartSsrIndexRoute;
+  '/': typeof IndexRoute
+  '/share': typeof ShareRoute
+  '/wizard': typeof WizardRoute
+  '/api/sentry-example': typeof ApiSentryExampleRoute
+  '/api/sentry/tunnel': typeof ApiSentryTunnelRoute
+  '/demo/api/names': typeof DemoApiNamesRoute
+  '/demo/form/address': typeof DemoFormAddressRoute
+  '/demo/form/simple': typeof DemoFormSimpleRoute
+  '/demo/start/api-request': typeof DemoStartApiRequestRoute
+  '/demo/start/server-funcs': typeof DemoStartServerFuncsRoute
+  '/demo/start/ssr/data-only': typeof DemoStartSsrDataOnlyRoute
+  '/demo/start/ssr/full-ssr': typeof DemoStartSsrFullSsrRoute
+  '/demo/start/ssr/spa-mode': typeof DemoStartSsrSpaModeRoute
+  '/demo/start/ssr': typeof DemoStartSsrIndexRoute
 }
 export interface FileRoutesByTo {
-  "/": typeof IndexRoute;
-  "/share": typeof ShareRoute;
-  "/wizard": typeof WizardRoute;
-  "/api/sentry-example": typeof ApiSentryExampleRoute;
-  "/api/sentry/tunnel": typeof ApiSentryTunnelRoute;
-  "/demo/api/names": typeof DemoApiNamesRoute;
-  "/demo/form/address": typeof DemoFormAddressRoute;
-  "/demo/form/simple": typeof DemoFormSimpleRoute;
-  "/demo/start/api-request": typeof DemoStartApiRequestRoute;
-  "/demo/start/server-funcs": typeof DemoStartServerFuncsRoute;
-  "/demo/start/ssr/data-only": typeof DemoStartSsrDataOnlyRoute;
-  "/demo/start/ssr/full-ssr": typeof DemoStartSsrFullSsrRoute;
-  "/demo/start/ssr/spa-mode": typeof DemoStartSsrSpaModeRoute;
-  "/demo/start/ssr": typeof DemoStartSsrIndexRoute;
+  '/': typeof IndexRoute
+  '/share': typeof ShareRoute
+  '/wizard': typeof WizardRoute
+  '/api/sentry-example': typeof ApiSentryExampleRoute
+  '/api/sentry/tunnel': typeof ApiSentryTunnelRoute
+  '/demo/api/names': typeof DemoApiNamesRoute
+  '/demo/form/address': typeof DemoFormAddressRoute
+  '/demo/form/simple': typeof DemoFormSimpleRoute
+  '/demo/start/api-request': typeof DemoStartApiRequestRoute
+  '/demo/start/server-funcs': typeof DemoStartServerFuncsRoute
+  '/demo/start/ssr/data-only': typeof DemoStartSsrDataOnlyRoute
+  '/demo/start/ssr/full-ssr': typeof DemoStartSsrFullSsrRoute
+  '/demo/start/ssr/spa-mode': typeof DemoStartSsrSpaModeRoute
+  '/demo/start/ssr': typeof DemoStartSsrIndexRoute
 }
 export interface FileRoutesById {
-  __root__: typeof rootRouteImport;
-  "/": typeof IndexRoute;
-  "/share": typeof ShareRoute;
-  "/wizard": typeof WizardRoute;
-  "/api/sentry-example": typeof ApiSentryExampleRoute;
-  "/api/sentry/tunnel": typeof ApiSentryTunnelRoute;
-  "/demo/api/names": typeof DemoApiNamesRoute;
-  "/demo/form/address": typeof DemoFormAddressRoute;
-  "/demo/form/simple": typeof DemoFormSimpleRoute;
-  "/demo/start/api-request": typeof DemoStartApiRequestRoute;
-  "/demo/start/server-funcs": typeof DemoStartServerFuncsRoute;
-  "/demo/start/ssr/data-only": typeof DemoStartSsrDataOnlyRoute;
-  "/demo/start/ssr/full-ssr": typeof DemoStartSsrFullSsrRoute;
-  "/demo/start/ssr/spa-mode": typeof DemoStartSsrSpaModeRoute;
-  "/demo/start/ssr/": typeof DemoStartSsrIndexRoute;
+  __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
+  '/share': typeof ShareRoute
+  '/wizard': typeof WizardRoute
+  '/api/sentry-example': typeof ApiSentryExampleRoute
+  '/api/sentry/tunnel': typeof ApiSentryTunnelRoute
+  '/demo/api/names': typeof DemoApiNamesRoute
+  '/demo/form/address': typeof DemoFormAddressRoute
+  '/demo/form/simple': typeof DemoFormSimpleRoute
+  '/demo/start/api-request': typeof DemoStartApiRequestRoute
+  '/demo/start/server-funcs': typeof DemoStartServerFuncsRoute
+  '/demo/start/ssr/data-only': typeof DemoStartSsrDataOnlyRoute
+  '/demo/start/ssr/full-ssr': typeof DemoStartSsrFullSsrRoute
+  '/demo/start/ssr/spa-mode': typeof DemoStartSsrSpaModeRoute
+  '/demo/start/ssr/': typeof DemoStartSsrIndexRoute
 }
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath;
+  fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | "/"
-    | "/share"
-    | "/wizard"
-    | "/api/sentry-example"
-    | "/api/sentry/tunnel"
-    | "/demo/api/names"
-    | "/demo/form/address"
-    | "/demo/form/simple"
-    | "/demo/start/api-request"
-    | "/demo/start/server-funcs"
-    | "/demo/start/ssr/data-only"
-    | "/demo/start/ssr/full-ssr"
-    | "/demo/start/ssr/spa-mode"
-    | "/demo/start/ssr";
-  fileRoutesByTo: FileRoutesByTo;
+    | '/'
+    | '/share'
+    | '/wizard'
+    | '/api/sentry-example'
+    | '/api/sentry/tunnel'
+    | '/demo/api/names'
+    | '/demo/form/address'
+    | '/demo/form/simple'
+    | '/demo/start/api-request'
+    | '/demo/start/server-funcs'
+    | '/demo/start/ssr/data-only'
+    | '/demo/start/ssr/full-ssr'
+    | '/demo/start/ssr/spa-mode'
+    | '/demo/start/ssr'
+  fileRoutesByTo: FileRoutesByTo
   to:
-    | "/"
-    | "/share"
-    | "/wizard"
-    | "/api/sentry-example"
-    | "/api/sentry/tunnel"
-    | "/demo/api/names"
-    | "/demo/form/address"
-    | "/demo/form/simple"
-    | "/demo/start/api-request"
-    | "/demo/start/server-funcs"
-    | "/demo/start/ssr/data-only"
-    | "/demo/start/ssr/full-ssr"
-    | "/demo/start/ssr/spa-mode"
-    | "/demo/start/ssr";
+    | '/'
+    | '/share'
+    | '/wizard'
+    | '/api/sentry-example'
+    | '/api/sentry/tunnel'
+    | '/demo/api/names'
+    | '/demo/form/address'
+    | '/demo/form/simple'
+    | '/demo/start/api-request'
+    | '/demo/start/server-funcs'
+    | '/demo/start/ssr/data-only'
+    | '/demo/start/ssr/full-ssr'
+    | '/demo/start/ssr/spa-mode'
+    | '/demo/start/ssr'
   id:
-    | "__root__"
-    | "/"
-    | "/share"
-    | "/wizard"
-    | "/api/sentry-example"
-    | "/api/sentry/tunnel"
-    | "/demo/api/names"
-    | "/demo/form/address"
-    | "/demo/form/simple"
-    | "/demo/start/api-request"
-    | "/demo/start/server-funcs"
-    | "/demo/start/ssr/data-only"
-    | "/demo/start/ssr/full-ssr"
-    | "/demo/start/ssr/spa-mode"
-    | "/demo/start/ssr/";
-  fileRoutesById: FileRoutesById;
+    | '__root__'
+    | '/'
+    | '/share'
+    | '/wizard'
+    | '/api/sentry-example'
+    | '/api/sentry/tunnel'
+    | '/demo/api/names'
+    | '/demo/form/address'
+    | '/demo/form/simple'
+    | '/demo/start/api-request'
+    | '/demo/start/server-funcs'
+    | '/demo/start/ssr/data-only'
+    | '/demo/start/ssr/full-ssr'
+    | '/demo/start/ssr/spa-mode'
+    | '/demo/start/ssr/'
+  fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute;
-  ShareRoute: typeof ShareRoute;
-  WizardRoute: typeof WizardRoute;
-  ApiSentryExampleRoute: typeof ApiSentryExampleRoute;
-  ApiSentryTunnelRoute: typeof ApiSentryTunnelRoute;
-  DemoApiNamesRoute: typeof DemoApiNamesRoute;
-  DemoFormAddressRoute: typeof DemoFormAddressRoute;
-  DemoFormSimpleRoute: typeof DemoFormSimpleRoute;
-  DemoStartApiRequestRoute: typeof DemoStartApiRequestRoute;
-  DemoStartServerFuncsRoute: typeof DemoStartServerFuncsRoute;
-  DemoStartSsrDataOnlyRoute: typeof DemoStartSsrDataOnlyRoute;
-  DemoStartSsrFullSsrRoute: typeof DemoStartSsrFullSsrRoute;
-  DemoStartSsrSpaModeRoute: typeof DemoStartSsrSpaModeRoute;
-  DemoStartSsrIndexRoute: typeof DemoStartSsrIndexRoute;
+  IndexRoute: typeof IndexRoute
+  ShareRoute: typeof ShareRoute
+  WizardRoute: typeof WizardRoute
+  ApiSentryExampleRoute: typeof ApiSentryExampleRoute
+  ApiSentryTunnelRoute: typeof ApiSentryTunnelRoute
+  DemoApiNamesRoute: typeof DemoApiNamesRoute
+  DemoFormAddressRoute: typeof DemoFormAddressRoute
+  DemoFormSimpleRoute: typeof DemoFormSimpleRoute
+  DemoStartApiRequestRoute: typeof DemoStartApiRequestRoute
+  DemoStartServerFuncsRoute: typeof DemoStartServerFuncsRoute
+  DemoStartSsrDataOnlyRoute: typeof DemoStartSsrDataOnlyRoute
+  DemoStartSsrFullSsrRoute: typeof DemoStartSsrFullSsrRoute
+  DemoStartSsrSpaModeRoute: typeof DemoStartSsrSpaModeRoute
+  DemoStartSsrIndexRoute: typeof DemoStartSsrIndexRoute
 }
 
-declare module "@tanstack/react-router" {
+declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    "/wizard": {
-      id: "/wizard";
-      path: "/wizard";
-      fullPath: "/wizard";
-      preLoaderRoute: typeof WizardRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/share": {
-      id: "/share";
-      path: "/share";
-      fullPath: "/share";
-      preLoaderRoute: typeof ShareRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/": {
-      id: "/";
-      path: "/";
-      fullPath: "/";
-      preLoaderRoute: typeof IndexRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/api/sentry-example": {
-      id: "/api/sentry-example";
-      path: "/api/sentry-example";
-      fullPath: "/api/sentry-example";
-      preLoaderRoute: typeof ApiSentryExampleRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/demo/start/server-funcs": {
-      id: "/demo/start/server-funcs";
-      path: "/demo/start/server-funcs";
-      fullPath: "/demo/start/server-funcs";
-      preLoaderRoute: typeof DemoStartServerFuncsRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/demo/start/api-request": {
-      id: "/demo/start/api-request";
-      path: "/demo/start/api-request";
-      fullPath: "/demo/start/api-request";
-      preLoaderRoute: typeof DemoStartApiRequestRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/demo/form/simple": {
-      id: "/demo/form/simple";
-      path: "/demo/form/simple";
-      fullPath: "/demo/form/simple";
-      preLoaderRoute: typeof DemoFormSimpleRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/demo/form/address": {
-      id: "/demo/form/address";
-      path: "/demo/form/address";
-      fullPath: "/demo/form/address";
-      preLoaderRoute: typeof DemoFormAddressRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/demo/api/names": {
-      id: "/demo/api/names";
-      path: "/demo/api/names";
-      fullPath: "/demo/api/names";
-      preLoaderRoute: typeof DemoApiNamesRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/api/sentry/tunnel": {
-      id: "/api/sentry/tunnel";
-      path: "/api/sentry/tunnel";
-      fullPath: "/api/sentry/tunnel";
-      preLoaderRoute: typeof ApiSentryTunnelRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/demo/start/ssr/": {
-      id: "/demo/start/ssr/";
-      path: "/demo/start/ssr";
-      fullPath: "/demo/start/ssr";
-      preLoaderRoute: typeof DemoStartSsrIndexRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/demo/start/ssr/spa-mode": {
-      id: "/demo/start/ssr/spa-mode";
-      path: "/demo/start/ssr/spa-mode";
-      fullPath: "/demo/start/ssr/spa-mode";
-      preLoaderRoute: typeof DemoStartSsrSpaModeRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/demo/start/ssr/full-ssr": {
-      id: "/demo/start/ssr/full-ssr";
-      path: "/demo/start/ssr/full-ssr";
-      fullPath: "/demo/start/ssr/full-ssr";
-      preLoaderRoute: typeof DemoStartSsrFullSsrRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    "/demo/start/ssr/data-only": {
-      id: "/demo/start/ssr/data-only";
-      path: "/demo/start/ssr/data-only";
-      fullPath: "/demo/start/ssr/data-only";
-      preLoaderRoute: typeof DemoStartSsrDataOnlyRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+    '/wizard': {
+      id: '/wizard'
+      path: '/wizard'
+      fullPath: '/wizard'
+      preLoaderRoute: typeof WizardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/share': {
+      id: '/share'
+      path: '/share'
+      fullPath: '/share'
+      preLoaderRoute: typeof ShareRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/sentry-example': {
+      id: '/api/sentry-example'
+      path: '/api/sentry-example'
+      fullPath: '/api/sentry-example'
+      preLoaderRoute: typeof ApiSentryExampleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/start/server-funcs': {
+      id: '/demo/start/server-funcs'
+      path: '/demo/start/server-funcs'
+      fullPath: '/demo/start/server-funcs'
+      preLoaderRoute: typeof DemoStartServerFuncsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/start/api-request': {
+      id: '/demo/start/api-request'
+      path: '/demo/start/api-request'
+      fullPath: '/demo/start/api-request'
+      preLoaderRoute: typeof DemoStartApiRequestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/form/simple': {
+      id: '/demo/form/simple'
+      path: '/demo/form/simple'
+      fullPath: '/demo/form/simple'
+      preLoaderRoute: typeof DemoFormSimpleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/form/address': {
+      id: '/demo/form/address'
+      path: '/demo/form/address'
+      fullPath: '/demo/form/address'
+      preLoaderRoute: typeof DemoFormAddressRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/api/names': {
+      id: '/demo/api/names'
+      path: '/demo/api/names'
+      fullPath: '/demo/api/names'
+      preLoaderRoute: typeof DemoApiNamesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/sentry/tunnel': {
+      id: '/api/sentry/tunnel'
+      path: '/api/sentry/tunnel'
+      fullPath: '/api/sentry/tunnel'
+      preLoaderRoute: typeof ApiSentryTunnelRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/start/ssr/': {
+      id: '/demo/start/ssr/'
+      path: '/demo/start/ssr'
+      fullPath: '/demo/start/ssr'
+      preLoaderRoute: typeof DemoStartSsrIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/start/ssr/spa-mode': {
+      id: '/demo/start/ssr/spa-mode'
+      path: '/demo/start/ssr/spa-mode'
+      fullPath: '/demo/start/ssr/spa-mode'
+      preLoaderRoute: typeof DemoStartSsrSpaModeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/start/ssr/full-ssr': {
+      id: '/demo/start/ssr/full-ssr'
+      path: '/demo/start/ssr/full-ssr'
+      fullPath: '/demo/start/ssr/full-ssr'
+      preLoaderRoute: typeof DemoStartSsrFullSsrRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/demo/start/ssr/data-only': {
+      id: '/demo/start/ssr/data-only'
+      path: '/demo/start/ssr/data-only'
+      fullPath: '/demo/start/ssr/data-only'
+      preLoaderRoute: typeof DemoStartSsrDataOnlyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -330,16 +330,16 @@ const rootRouteChildren: RootRouteChildren = {
   DemoStartSsrFullSsrRoute: DemoStartSsrFullSsrRoute,
   DemoStartSsrSpaModeRoute: DemoStartSsrSpaModeRoute,
   DemoStartSsrIndexRoute: DemoStartSsrIndexRoute,
-};
+}
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>();
+  ._addFileTypes<FileRouteTypes>()
 
-import type { getRouter } from "./router.tsx";
-import type { createStart } from "@tanstack/react-start";
-declare module "@tanstack/react-start" {
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
   interface Register {
-    ssr: true;
-    router: Awaited<ReturnType<typeof getRouter>>;
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
   }
 }

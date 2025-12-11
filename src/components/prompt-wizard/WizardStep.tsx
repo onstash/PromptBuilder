@@ -23,12 +23,7 @@ const stepVariants = {
   }),
 };
 
-export function WizardStep({
-  stepKey,
-  direction,
-  children,
-  hint,
-}: WizardStepProps) {
+export function WizardStep({ stepKey, direction, children, hint }: WizardStepProps) {
   return (
     <AnimatePresence mode="wait" custom={direction}>
       <motion.div

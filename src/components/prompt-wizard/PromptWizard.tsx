@@ -6,15 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 
-import {
-  TOTAL_REQUIRED_STEPS,
-  type PromptWizardData,
-} from "@/utils/prompt-wizard/schema";
+import { TOTAL_REQUIRED_STEPS, type PromptWizardData } from "@/utils/prompt-wizard/schema";
 import { compress } from "@/utils/prompt-wizard/url-compression";
-import {
-  decompressFullState,
-  WIZARD_DEFAULTS,
-} from "@/utils/prompt-wizard/search-params";
+import { decompressFullState, WIZARD_DEFAULTS } from "@/utils/prompt-wizard/search-params";
 
 import { WizardProgress } from "./WizardProgress";
 import { WizardNavigation } from "./WizardNavigation";
@@ -186,20 +180,14 @@ export const PromptWizard = memo(function PromptWizard() {
   // Track previous step for direction
   const prevStepRef = useRef(wizardData.step);
   const direction =
-    wizardData.step > prevStepRef.current
-      ? 1
-      : wizardData.step < prevStepRef.current
-        ? -1
-        : 0;
+    wizardData.step > prevStepRef.current ? 1 : wizardData.step < prevStepRef.current ? -1 : 0;
 
   useEffect(() => {
     prevStepRef.current = wizardData.step;
   }, [wizardData.step]);
 
   // Debounced localStorage save (300ms)
-  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(
-    undefined
-  );
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   useEffect(() => {
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current);
@@ -340,9 +328,7 @@ export const PromptWizard = memo(function PromptWizard() {
           {/* Header */}
           <div className="p-6 border-b-4 border-foreground">
             <div className="flex items-center justify-between mb-6">
-              <h1 className="text-xl font-black uppercase tracking-tight">
-                Prompt Wizard
-              </h1>
+              <h1 className="text-xl font-black uppercase tracking-tight">Prompt Wizard</h1>
               <div className="flex items-center gap-3">
                 <Button
                   variant="ghost"
@@ -376,11 +362,7 @@ export const PromptWizard = memo(function PromptWizard() {
 
           {/* Step Content */}
           <div className="p-6">
-            <WizardStep
-              stepKey={currentStep}
-              direction={direction}
-              hint={stepHint}
-            >
+            <WizardStep stepKey={currentStep} direction={direction} hint={stepHint}>
               <StepComponent data={wizardData} onUpdate={updateData} />
             </WizardStep>
 

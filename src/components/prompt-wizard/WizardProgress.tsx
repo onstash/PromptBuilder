@@ -1,9 +1,6 @@
 import { motion, AnimatePresence } from "motion/react";
 import { Check } from "lucide-react";
-import {
-  TOTAL_REQUIRED_STEPS,
-  WIZARD_STEPS,
-} from "@/utils/prompt-wizard/schema";
+import { TOTAL_REQUIRED_STEPS, WIZARD_STEPS } from "@/utils/prompt-wizard/schema";
 
 interface WizardProgressProps {
   currentStep: number;
@@ -91,11 +88,7 @@ export function WizardProgress({
                       : "Complete previous steps first"
                   }
                 >
-                  {isCompleted ? (
-                    <Check className="w-5 h-5" />
-                  ) : (
-                    <span>{stepNumber}</span>
-                  )}
+                  {isCompleted ? <Check className="w-5 h-5" /> : <span>{stepNumber}</span>}
                 </motion.button>
 
                 {/* Connecting line */}

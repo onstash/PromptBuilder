@@ -34,20 +34,14 @@ export const trackMixpanelInServer = createServerFn({ method: "POST" })
     mp.track(data.event, data.properties);
   });
 
-type MixpanelContextType = ReturnType<
-  typeof useServerFn<typeof trackMixpanelInServer>
->;
+type MixpanelContextType = ReturnType<typeof useServerFn<typeof trackMixpanelInServer>>;
 
 const MixpanelContext = createContext<MixpanelContextType | null>(null);
 
 export function MixpanelProvider({ children }: { children: React.ReactNode }) {
   const trackMixpanel = useServerFn(trackMixpanelInServer);
 
-  return (
-    <MixpanelContext.Provider value={trackMixpanel}>
-      {children}
-    </MixpanelContext.Provider>
-  );
+  return <MixpanelContext.Provider value={trackMixpanel}>{children}</MixpanelContext.Provider>;
 }
 
 function useMixpanelContext() {
@@ -74,10 +68,7 @@ export function useTrackMixpanel() {
   const trackMixpanelFn = useMixpanelContext();
 
   const trackEvent = useCallback(
-    (
-      event: MixpanelData["event"],
-      properties: Omit<MixpanelData["properties"], "distinct_id">
-    ) => {
+    (event: MixpanelData["event"], properties: Omit<MixpanelData["properties"], "distinct_id">) => {
       const sessionId = getOrCreateSessionId();
 
       trackMixpanelFn({

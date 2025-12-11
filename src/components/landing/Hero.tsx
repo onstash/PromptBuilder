@@ -31,8 +31,7 @@ export function Hero() {
 
           {/* Subheadline */}
           <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-xl mx-auto">
-            Professional prompt engineering made simple. Configure, generate,
-            copy.
+            Professional prompt engineering made simple. Configure, generate, copy.
           </p>
 
           {/* Single CTA */}
@@ -47,11 +46,7 @@ export function Hero() {
               });
             }}
           >
-            <Link
-              to="/wizard"
-              search={{ d: null, vld: 0 }}
-              className="flex items-center gap-3"
-            >
+            <Link to="/wizard" search={{ d: null, vld: 0 }} className="flex items-center gap-3">
               Start Building
               <ArrowRight className="w-5 h-5" />
             </Link>
@@ -102,20 +97,16 @@ export function Hero() {
             </div>
             <div className="space-y-2 font-mono text-xs">
               <div className="text-foreground">
-                <span className="text-primary">Role:</span> Senior Frontend
-                Engineer
+                <span className="text-primary">Role:</span> Senior Frontend Engineer
               </div>
               <div className="text-foreground">
-                <span className="text-primary">Context:</span> React 18,
-                TypeScript, Tailwind
+                <span className="text-primary">Context:</span> React 18, TypeScript, Tailwind
               </div>
               <div className="text-foreground">
-                <span className="text-primary">Task:</span> Dashboard with
-                charts, dark mode
+                <span className="text-primary">Task:</span> Dashboard with charts, dark mode
               </div>
               <div className="text-foreground">
-                <span className="text-primary">Output:</span> Step-by-step with
-                code
+                <span className="text-primary">Output:</span> Step-by-step with code
               </div>
               <div className="mt-3 text-primary">
                 ✓ Structured • Consistent • Professional results
