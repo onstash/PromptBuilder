@@ -1,4 +1,4 @@
-import * as Sentry from "@sentry/tanstackstart-react";
+// import * as Sentry from "@sentry/tanstackstart-react";
 import { Hero } from "./Hero";
 import { SocialProof } from "./SocialProof";
 import { CTASection } from "./CTASection";
@@ -20,7 +20,7 @@ export function LandingPage() {
   }, []);
   return (
     <main className="bg-background min-h-screen">
-      <button
+      {/* <button
         type="button"
         onClick={() => {
           // Send a test metric before throwing the error
@@ -29,8 +29,8 @@ export function LandingPage() {
         }}
       >
         Break the world
-      </button>
-      <button
+      </button> */}
+      {/* <button
         type="button"
         onClick={async () => {
           await Sentry.startSpan(
@@ -48,7 +48,7 @@ export function LandingPage() {
         }}
       >
         Test API Error
-      </button>
+      </button> */}
       <Hero />
       <SocialProof show={SHOW_SOCIAL_PROOF} />
       <CTASection />
