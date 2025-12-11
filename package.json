@@ -10,7 +10,10 @@
     "start": "node --import .vercel/server/instrument.server.mjs .vercel/output/server/index.mjs",
     "start:local": "node --import ./.output/server/instrument.server.mjs .output/server/index.mjs",
     "test": "vitest run",
-    "prepare": "husky"
+    "prepare": "husky",
+    "changeset": "changeset",
+    "version": "changeset version",
+    "release": "changeset publish"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,json,css,md}": [
@@ -52,6 +55,7 @@
     "zod": "^4.1.11"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.29.8",
     "@sentry/vite-plugin": "^4.6.1",
     "@tanstack/devtools-vite": "^0.3.11",
     "@testing-library/dom": "^10.4.0",
