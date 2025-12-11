@@ -1,4 +1,8 @@
-import { createFileRoute, useSearch } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  useNavigate,
+  useSearch,
+} from "@tanstack/react-router";
 import { useMemo } from "react";
 
 import { decompress } from "@/utils/prompt-wizard/url-compression";
@@ -43,6 +47,7 @@ export const Route = createFileRoute("/share")({
 
 function ShareRouteComponent() {
   const { data } = useSearch({ from: "/share" });
+  const navigate = useNavigate({ from: "/share" });
 
   // Reconstruct the share URL from current location
   const shareUrl = useMemo(() => {
@@ -83,7 +88,7 @@ function ShareRouteComponent() {
           data={data}
           shareUrl={shareUrl}
           onClose={() => {
-            window.location.href = "/prompt-builder/wizard";
+            navigate({ to: "/wizard" });
           }}
         />
       </div>
