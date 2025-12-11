@@ -6,15 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 
-import {
-  TOTAL_REQUIRED_STEPS,
-  type PromptWizardData,
-} from "@/utils/prompt-wizard/schema";
+import { TOTAL_REQUIRED_STEPS, type PromptWizardData } from "@/utils/prompt-wizard/schema";
 import { compress } from "@/utils/prompt-wizard/url-compression";
-import {
-  decompressFullState,
-  WIZARD_DEFAULTS,
-} from "@/utils/prompt-wizard/search-params";
+import { decompressFullState, WIZARD_DEFAULTS } from "@/utils/prompt-wizard/search-params";
 
 import { WizardProgress } from "./WizardProgress";
 import { WizardNavigation } from "./WizardNavigation";
@@ -34,6 +28,7 @@ import { ReasoningStep } from "./steps/ReasoningStep";
 import { SelfCheckStep } from "./steps/SelfCheckStep";
 import { DisallowedStep } from "./steps/DisallowedStep";
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
+import { useTrackMixpanel } from "@/utils/analytics/MixpanelProvider";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // STATIC CONFIGURATION
@@ -79,13 +74,13 @@ const SHARE_URL_KEY = "wizard-share-url";
 // LOCALSTORAGE HELPERS
 // ═══════════════════════════════════════════════════════════════════════════
 
-function loadFromStorage(): PromptWizardData {
+function loadFromStorage(): [PromptWizardData, "default" | "localStorage"] {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
-    if (!stored) return WIZARD_DEFAULTS;
-    return { ...WIZARD_DEFAULTS, ...JSON.parse(stored) };
+    if (!stored) return [WIZARD_DEFAULTS, "default"];
+    return [{ ...WIZARD_DEFAULTS, ...JSON.parse(stored) }, "localStorage"];
   } catch {
-    return WIZARD_DEFAULTS;
+    return [WIZARD_DEFAULTS, "default"];
   }
 }
 
@@ -146,15 +141,37 @@ function getShareUrl(): string | null {
 export const PromptWizard = memo(function PromptWizard() {
   const search = useSearch({ from: "/wizard" });
   const navigate = useNavigate({ from: "/wizard" });
+  const trackEvent = useTrackMixpanel();
+  useEffect(() => {
+    trackEvent("page_viewed_wizard", {
+      page: "wizard",
+      timestamp: new Date().toISOString(),
+    });
+  }, []);
   // Initialize from localStorage
   const [wizardData, setWizardData] = useState<PromptWizardData>(() => {
     if (search.d && search.vld) {
       const decompressed = decompressFullState(search.d);
       if (Object.keys(decompressed).length > 1) {
+        trackEvent("data_loaded_url", {
+          page: "wizard",
+          timestamp: new Date().toISOString(),
+          data: decompressed,
+          type: "URL",
+        });
         return decompressed;
       }
     }
-    return loadFromStorage();
+    const [dataFromLocalStorage, source] = loadFromStorage();
+    if (source === "localStorage") {
+      trackEvent("data_loaded_localstorage", {
+        page: "wizard",
+        timestamp: new Date().toISOString(),
+        data: dataFromLocalStorage,
+        type: "localStorage",
+      });
+    }
+    return dataFromLocalStorage;
   });
   const [showPreview, setShowPreview] = useState(false);
   const [showError, setShowError] = useState(false);
@@ -163,20 +180,14 @@ export const PromptWizard = memo(function PromptWizard() {
   // Track previous step for direction
   const prevStepRef = useRef(wizardData.step);
   const direction =
-    wizardData.step > prevStepRef.current
-      ? 1
-      : wizardData.step < prevStepRef.current
-        ? -1
-        : 0;
+    wizardData.step > prevStepRef.current ? 1 : wizardData.step < prevStepRef.current ? -1 : 0;
 
   useEffect(() => {
     prevStepRef.current = wizardData.step;
   }, [wizardData.step]);
 
   // Debounced localStorage save (300ms)
-  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(
-    undefined
-  );
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   useEffect(() => {
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current);
@@ -228,6 +239,11 @@ export const PromptWizard = memo(function PromptWizard() {
   const goToStep = useCallback((step: number) => {
     setShowError(false);
     setWizardData((prev) => ({ ...prev, step }));
+    trackEvent("step_changed", {
+      page: "wizard",
+      timestamp: new Date().toISOString(),
+      step,
+    });
   }, []);
 
   const handleNext = useCallback(() => {
@@ -252,6 +268,11 @@ export const PromptWizard = memo(function PromptWizard() {
       return;
     }
     // Generate and save share URL
+    trackEvent("form_submitted", {
+      page: "wizard",
+      timestamp: new Date().toISOString(),
+      data: wizardData,
+    });
     const url = generateShareUrl(wizardData);
     saveShareUrl(url);
     setShareUrl(url);
@@ -263,6 +284,11 @@ export const PromptWizard = memo(function PromptWizard() {
   }, [showAdvanced, updateData]);
 
   const handleReset = useCallback(() => {
+    trackEvent("data_reset", {
+      page: "wizard",
+      timestamp: new Date().toISOString(),
+      data: wizardData,
+    });
     navigate({ to: "/wizard", search: { d: null, vld: 0 } });
     setWizardData(WIZARD_DEFAULTS);
     clearStorage();
@@ -302,9 +328,7 @@ export const PromptWizard = memo(function PromptWizard() {
           {/* Header */}
           <div className="p-6 border-b-4 border-foreground">
             <div className="flex items-center justify-between mb-6">
-              <h1 className="text-xl font-black uppercase tracking-tight">
-                Prompt Wizard
-              </h1>
+              <h1 className="text-xl font-black uppercase tracking-tight">Prompt Wizard</h1>
               <div className="flex items-center gap-3">
                 <Button
                   variant="ghost"
@@ -338,11 +362,7 @@ export const PromptWizard = memo(function PromptWizard() {
 
           {/* Step Content */}
           <div className="p-6">
-            <WizardStep
-              stepKey={currentStep}
-              direction={direction}
-              hint={stepHint}
-            >
+            <WizardStep stepKey={currentStep} direction={direction} hint={stepHint}>
               <StepComponent data={wizardData} onUpdate={updateData} />
             </WizardStep>
 
@@ -370,13 +390,13 @@ export const PromptWizard = memo(function PromptWizard() {
           </div>
         </motion.div>
 
-        {showPreview && (
+        {showPreview && shareUrl && (
           <WizardPreview
             data={wizardData}
             compressed={false}
-            shareUrl={shareUrl}
             onClose={() => setShowPreview(false)}
             source="wizard"
+            shareUrl={shareUrl!}
           />
         )}
 

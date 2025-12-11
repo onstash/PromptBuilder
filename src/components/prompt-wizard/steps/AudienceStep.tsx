@@ -1,9 +1,6 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
-import {
-  TARGET_AUDIENCES,
-  type PromptWizardData,
-} from "@/utils/prompt-wizard/schema";
+import { TARGET_AUDIENCES, type PromptWizardData } from "@/utils/prompt-wizard/schema";
 
 interface StepProps {
   data: PromptWizardData;
@@ -11,9 +8,7 @@ interface StepProps {
 }
 
 export function AudienceStep({ data, onUpdate }: StepProps) {
-  const [showCustomInput, setShowCustomInput] = useState(
-    data.target_audience === "custom"
-  );
+  const [showCustomInput, setShowCustomInput] = useState(data.target_audience === "custom");
 
   const handleSelect = (value: PromptWizardData["target_audience"]) => {
     onUpdate({ target_audience: value });
@@ -28,11 +23,7 @@ export function AudienceStep({ data, onUpdate }: StepProps) {
           return (
             <button
               key={audience.value}
-              onClick={() =>
-                handleSelect(
-                  audience.value as PromptWizardData["target_audience"]
-                )
-              }
+              onClick={() => handleSelect(audience.value as PromptWizardData["target_audience"])}
               className={`
                 p-4 border-4 border-foreground text-left transition-all
                 ${
@@ -42,12 +33,8 @@ export function AudienceStep({ data, onUpdate }: StepProps) {
                 }
               `}
             >
-              <span className="block font-bold uppercase text-sm">
-                {audience.label}
-              </span>
-              <span className="block text-xs mt-1 opacity-80">
-                {audience.description}
-              </span>
+              <span className="block font-bold uppercase text-sm">{audience.label}</span>
+              <span className="block text-xs mt-1 opacity-80">{audience.description}</span>
             </button>
           );
         })}

@@ -19,9 +19,7 @@ export function SocialProof({ show = false }: SocialProofProps) {
             className="flex flex-col items-center"
           >
             <Zap className="w-8 h-8 text-primary mb-2" />
-            <span className="text-3xl md:text-4xl font-black text-foreground">
-              10K+
-            </span>
+            <span className="text-3xl md:text-4xl font-black text-foreground">10K+</span>
             <span className="text-sm text-muted-foreground font-mono uppercase">
               Prompts Generated
             </span>
@@ -34,12 +32,8 @@ export function SocialProof({ show = false }: SocialProofProps) {
             className="flex flex-col items-center"
           >
             <Users className="w-8 h-8 text-secondary mb-2" />
-            <span className="text-3xl md:text-4xl font-black text-foreground">
-              2K+
-            </span>
-            <span className="text-sm text-muted-foreground font-mono uppercase">
-              Developers
-            </span>
+            <span className="text-3xl md:text-4xl font-black text-foreground">2K+</span>
+            <span className="text-sm text-muted-foreground font-mono uppercase">Developers</span>
           </motion.div>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -49,12 +43,8 @@ export function SocialProof({ show = false }: SocialProofProps) {
             className="flex flex-col items-center"
           >
             <Sparkles className="w-8 h-8 text-accent mb-2" />
-            <span className="text-3xl md:text-4xl font-black text-foreground">
-              5★
-            </span>
-            <span className="text-sm text-muted-foreground font-mono uppercase">
-              Rating
-            </span>
+            <span className="text-3xl md:text-4xl font-black text-foreground">5★</span>
+            <span className="text-sm text-muted-foreground font-mono uppercase">Rating</span>
           </motion.div>
         </div>
       </div>

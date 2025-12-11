@@ -64,15 +64,11 @@ export function HowItWorks() {
 
               {/* Content */}
               <div className="bg-card border-4 border-foreground shadow-[4px_4px_0px_0px_hsl(var(--foreground))] p-6">
-                <span className="text-primary font-mono text-sm font-bold">
-                  STEP {step.number}
-                </span>
+                <span className="text-primary font-mono text-sm font-bold">STEP {step.number}</span>
                 <h3 className="text-2xl font-black text-foreground mt-2 mb-3 uppercase">
                   {step.title}
                 </h3>
-                <p className="text-muted-foreground text-sm">
-                  {step.description}
-                </p>
+                <p className="text-muted-foreground text-sm">{step.description}</p>
               </div>
 
               {/* Arrow connector */}

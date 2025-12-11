@@ -1,9 +1,4 @@
-import {
-  createFileRoute,
-  Link,
-  useNavigate,
-  useSearch,
-} from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { useMemo } from "react";
 
 import { decompress } from "@/utils/prompt-wizard/url-compression";
@@ -14,11 +9,10 @@ import {
   type PromptWizardData,
 } from "@/utils/prompt-wizard/schema";
 import { WizardPreview } from "@/components/prompt-wizard/WizardPreview";
+import { ErrorComponentWithSentry } from "@/components/ErrorComponentWithSentry";
 
 // Validate and decompress the ?d= parameter
-function validateShareSearch(
-  search: Record<string, unknown>
-): PromptWizardSearchParamsCompressed {
+function validateShareSearch(search: Record<string, unknown>): PromptWizardSearchParamsCompressed {
   if (typeof search.d !== "string" || !search.d) {
     return { d: null, vld: 0 };
   }
@@ -45,6 +39,7 @@ function validateShareSearch(
 export const Route = createFileRoute("/share")({
   component: ShareRouteComponent,
   validateSearch: validateShareSearch,
+  errorComponent: ErrorComponentWithSentry,
 });
 
 function ShareRouteComponent() {
@@ -59,17 +54,14 @@ function ShareRouteComponent() {
     return null;
   }, []);
 
-  if (!d || !vld) {
+  if (!d || !vld || !shareUrl) {
     return (
       <div className="min-h-screen bg-background py-8 px-4">
         <div className="max-w-2xl mx-auto">
           <div className="bg-card border-4 border-foreground shadow-[8px_8px_0px_0px_hsl(var(--foreground))] p-8 text-center">
-            <h1 className="text-2xl font-black uppercase mb-4">
-              Invalid Share Link
-            </h1>
+            <h1 className="text-2xl font-black uppercase mb-4">Invalid Share Link</h1>
             <p className="text-muted-foreground mb-6">
-              This share link is invalid or has expired. The prompt data could
-              not be decoded.
+              This share link is invalid or has expired. The prompt data could not be decoded.
             </p>
             <Link
               to="/wizard"

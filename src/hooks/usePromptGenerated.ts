@@ -1,8 +1,6 @@
 import { useState, useCallback } from "react";
 
-function generatePromptString<T extends Record<string, unknown>>(
-  value: T,
-): string {
+function generatePromptString<T extends Record<string, unknown>>(value: T): string {
   const entries = Object.entries(value)
     .filter(([_, val]) => {
       if (typeof val === "string") return val.length > 0;
