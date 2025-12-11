@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/tanstackstart-react";
 import { Hero } from "./Hero";
 import { SocialProof } from "./SocialProof";
 import { CTASection } from "./CTASection";
@@ -19,6 +20,16 @@ export function LandingPage() {
   }, []);
   return (
     <main className="bg-background min-h-screen">
+      <button
+        type="button"
+        onClick={() => {
+          // Send a test metric before throwing the error
+          Sentry.metrics.count("test_counter", 1);
+          throw new Error("Sentry Test Error");
+        }}
+      >
+        Break the world
+      </button>
       <Hero />
       <SocialProof show={SHOW_SOCIAL_PROOF} />
       <CTASection />

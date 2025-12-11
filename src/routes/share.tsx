@@ -14,6 +14,7 @@ import {
   type PromptWizardData,
 } from "@/utils/prompt-wizard/schema";
 import { WizardPreview } from "@/components/prompt-wizard/WizardPreview";
+import { ErrorComponentWithSentry } from "@/components/ErrorComponentWithSentry";
 
 // Validate and decompress the ?d= parameter
 function validateShareSearch(
@@ -45,6 +46,7 @@ function validateShareSearch(
 export const Route = createFileRoute("/share")({
   component: ShareRouteComponent,
   validateSearch: validateShareSearch,
+  errorComponent: ErrorComponentWithSentry,
 });
 
 function ShareRouteComponent() {
