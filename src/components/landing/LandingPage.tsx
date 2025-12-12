@@ -1,14 +1,14 @@
+import { useEffect } from "react";
+
 import { Hero } from "./Hero";
-import { SocialProof } from "./SocialProof";
+// import { SocialProof } from "./SocialProof";
 import { HowItWorks } from "./HowItWorks";
 import { ExamplesShowcase } from "./ExamplesShowcase";
 import { CTASection } from "./CTASection";
-import { Footer } from "./Footer";
-import { useEffect } from "react";
 import { useTrackMixpanel } from "@/utils/analytics/MixpanelProvider";
 
 // Toggle this to show/hide fake social proof stats
-const SHOW_SOCIAL_PROOF = false;
+// const SHOW_SOCIAL_PROOF = false;
 
 export function LandingPage() {
   const trackEvent = useTrackMixpanel();
@@ -23,7 +23,7 @@ export function LandingPage() {
   return (
     <main className="bg-background min-h-screen">
       <Hero />
-      <SocialProof show={SHOW_SOCIAL_PROOF} />
+      {/* <SocialProof show={SHOW_SOCIAL_PROOF} /> */}
       <HowItWorks />
       <ExamplesShowcase />
       <CTASection />

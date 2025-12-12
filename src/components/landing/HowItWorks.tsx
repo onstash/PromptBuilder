@@ -5,8 +5,8 @@ const steps = [
   {
     number: "01",
     icon: MousePointer,
-    title: "Choose",
-    description: "Select General Purpose or Frontend Engineering mode.",
+    title: "Describe",
+    description: "Tell us what you want — an email, explanation, code, or anything else.",
     color: "bg-primary",
   },
   {
