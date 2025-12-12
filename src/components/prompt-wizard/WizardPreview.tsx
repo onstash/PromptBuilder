@@ -1,6 +1,6 @@
 import { motion } from "motion/react";
 import { Copy, Check, X, Link2, ExternalLink, FilePen } from "lucide-react";
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,7 @@ import type { PromptWizardData } from "@/utils/prompt-wizard/schema";
 import { compressFullState, decompress } from "@/utils/prompt-wizard";
 import { Link } from "@tanstack/react-router";
 import { useTrackMixpanel } from "@/utils/analytics/MixpanelProvider";
+import { generatePromptText } from "@/stores/wizard-store";
 
 type WizardPreviewProps =
   | {
@@ -25,86 +26,15 @@ type WizardPreviewProps =
       source: "share";
     };
 
-function generatePromptString(
-  opts:
-    | {
-        data: PromptWizardData;
-        compressed: false;
-      }
-    | {
-        data: string;
-        compressed: true;
-      }
-): string {
-  const { data, compressed } = opts;
-  const finalData = (compressed ? JSON.parse(decompress(data)) : data) as PromptWizardData;
-  const sections: string[] = [];
-
-  if (finalData.task_intent) {
-    sections.push(`## Task\n${finalData.task_intent}`);
-  }
-
-  if (finalData.context) {
-    sections.push(`## Context\n${finalData.context}`);
-  }
-
-  if (finalData.constraints) {
-    sections.push(`## Constraints\n${finalData.constraints}`);
-  }
-
-  const audienceLabel =
-    finalData.target_audience === "custom" ? finalData.custom_audience : finalData.target_audience;
-  if (audienceLabel) {
-    sections.push(`## Target Audience\n${audienceLabel}`);
-  }
-
-  const formatMap: Record<string, string> = {
-    "1-paragraph": "Provide your response in a single paragraph.",
-    "2-paragraphs": "Provide your response in exactly 2 paragraphs.",
-    "3-plus-paragraphs": "Provide a detailed response with multiple paragraphs.",
-    "bullet-list": "Provide your response as a bulleted list.",
-    "numbered-list": "Provide your response as a numbered step-by-step list.",
-    table: "Provide your response in a table format.",
-    mixed: "Use a combination of paragraphs, lists, and other formatting.",
-  };
-  if (finalData.output_format) {
-    sections.push(
-      `## Output Format\n${formatMap[finalData.output_format] || finalData.output_format}`
-    );
-  }
-
-  if (finalData.ai_role) {
-    sections.push(`## Your Role\nAct as: ${finalData.ai_role}`);
-  }
-
-  if (finalData.tone_style) {
-    sections.push(`## Tone\nUse a ${finalData.tone_style} tone.`);
-  }
-
-  if (finalData.reasoning_depth && finalData.reasoning_depth !== "moderate") {
-    const depthMap: Record<string, string> = {
-      brief: "Be concise and direct.",
-      thorough: "Provide thorough, in-depth analysis.",
-    };
-    sections.push(`## Reasoning\n${depthMap[finalData.reasoning_depth]}`);
-  }
-
-  if (finalData.self_check) {
-    sections.push(
-      `## Self-Check\nBefore finalizing, verify your response is accurate and complete.`
-    );
-  }
-
-  if (finalData.disallowed_content) {
-    sections.push(`## Avoid\n${finalData.disallowed_content}`);
-  }
-
-  return sections.join("\n\n");
+function generatePromptStringFromCompressed(compressedData: string): string {
+  const finalData = JSON.parse(decompress(compressedData)) as PromptWizardData;
+  return generatePromptText(finalData);
 }
 
 export function WizardPreview({ data, compressed, shareUrl, onClose, source }: WizardPreviewProps) {
   const trackEvent = useTrackMixpanel();
   const isSourceShare = source === "share";
+
   useEffect(() => {
     trackEvent("page_viewed_share", {
       data: {
@@ -113,17 +43,21 @@ export function WizardPreview({ data, compressed, shareUrl, onClose, source }: W
       },
     });
   }, []);
+
   const [copiedPrompt, setCopiedPrompt] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
-  const [[promptText, promptTextCompressed]] = useState(() => {
-    const result = compressed
-      ? generatePromptString({ data: data as string, compressed: true })
-      : generatePromptString({
-          data: data as PromptWizardData,
-          compressed: false,
-        });
-    return [result, compressed ? data : compressFullState(data as PromptWizardData)];
-  });
+
+  // KEY FIX: Use useMemo instead of useState(() => ...)
+  // This ensures promptText re-computes whenever `data` changes
+  const [promptText, promptTextCompressed] = useMemo(() => {
+    if (compressed) {
+      const compressedData = data as string;
+      return [generatePromptStringFromCompressed(compressedData), compressedData];
+    } else {
+      const wizardData = data as PromptWizardData;
+      return [generatePromptText(wizardData), compressFullState(wizardData)];
+    }
+  }, [data, compressed]);
 
   const handleCopyPrompt = useCallback(async () => {
     try {
@@ -137,7 +71,7 @@ export function WizardPreview({ data, compressed, shareUrl, onClose, source }: W
     } catch {
       toast.error("Failed to copy");
     }
-  }, []);
+  }, [promptText, trackEvent]);
 
   const handleCopyLink = useCallback(async () => {
     if (!shareUrl) return;

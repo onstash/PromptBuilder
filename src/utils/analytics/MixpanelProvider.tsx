@@ -16,6 +16,7 @@ const MixpanelDataSchema = z.object({
     "form_submitted",
     "data_loaded_url",
     "data_loaded_localstorage",
+    "data_reset",
   ]),
   properties: z.looseObject({
     distinct_id: z.string(),
