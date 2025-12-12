@@ -13,7 +13,7 @@ export function ExampleComponent() {
 
   // Track page view on component mount
   useEffect(() => {
-    trackEvent("page_viewed", {
+    trackEvent("page_viewed_landing", {
       page_name: "example_page",
       timestamp: new Date().toISOString(),
     });
@@ -30,7 +30,7 @@ export function ExampleComponent() {
 
   // Track event without additional properties
   const handleSimpleEvent = () => {
-    trackEvent("simple_event");
+    trackEvent("button_clicked", { action: "simple" });
   };
 
   return (

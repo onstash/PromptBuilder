@@ -242,6 +242,7 @@ export const useWizardStore = create<WizardStore>()(
             wizardData: decompressed,
             dataSource: "url",
             shareUrl: getShareUrl(),
+            showPreview: true,
           });
           return;
         }
@@ -252,6 +253,7 @@ export const useWizardStore = create<WizardStore>()(
         wizardData: dataFromLocalStorage,
         dataSource: source,
         shareUrl: getShareUrl(),
+        showPreview: true,
       });
     },
 

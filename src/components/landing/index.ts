@@ -3,3 +3,7 @@ export { SocialProof } from "./SocialProof";
 export { CTASection } from "./CTASection";
 export { Footer } from "./Footer";
 export { LandingPage } from "./LandingPage";
+export { FeaturesGrid } from "./FeaturesGrid";
+export { HowItWorks } from "./HowItWorks";
+export { UseCases } from "./UseCases";
+export { ExamplesShowcase } from "./ExamplesShowcase";

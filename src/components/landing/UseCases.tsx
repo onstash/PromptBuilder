@@ -1,33 +1,33 @@
 import { motion } from "motion/react";
-import { Code, FileText, Lightbulb, GraduationCap } from "lucide-react";
+import { Linkedin, FileText, Lightbulb, GraduationCap } from "lucide-react";
 
 const useCases = [
   {
-    icon: Code,
-    title: "Code Generation",
-    description: "Generate React components, APIs, and utilities with best practices.",
-    example: "Create a responsive navbar...",
+    icon: Linkedin,
+    title: "Social Media",
+    description: "Craft LinkedIn posts, Twitter threads, and content that goes viral.",
+    example: "Write a post about my startup failure...",
     color: "bg-primary",
   },
   {
     icon: FileText,
     title: "Content Writing",
-    description: "Craft blog posts, docs, and marketing copy that resonates.",
-    example: "Write a technical guide...",
+    description: "Create blog posts, pitch decks, and marketing copy that converts.",
+    example: "Write a cold email to investors...",
     color: "bg-secondary",
   },
   {
     icon: Lightbulb,
-    title: "Problem Solving",
-    description: "Get structured, step-by-step solutions to challenges.",
-    example: "Debug this performance issue...",
+    title: "Business Ideas",
+    description: "Get structured ideas for side hustles, startups, and income streams.",
+    example: "Suggest passive income ideas...",
     color: "bg-accent",
   },
   {
     icon: GraduationCap,
-    title: "Learning",
-    description: "Deep-dive into technical topics with explanations.",
-    example: "Explain React Server Components...",
+    title: "Exam Prep",
+    description: "Simplify complex topics for UPSC, CAT, or any competitive exam.",
+    example: "Explain fiscal deficit for UPSC...",
     color: "bg-primary",
   },
 ];

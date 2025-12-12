@@ -83,7 +83,7 @@ function ShareRouteComponent() {
           data={d}
           compressed
           source="share"
-          shareUrl={shareUrl}
+          shareUrl={shareUrl ?? ""}
           onClose={() => {
             navigate({ to: "/wizard", search: { d: null, vld: 0 } });
           }}

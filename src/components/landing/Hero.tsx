@@ -76,7 +76,7 @@ export function Hero() {
             </div>
             <div className="space-y-3 font-mono text-sm">
               <div className="text-muted-foreground line-through">
-                "Write me a React component for a dashboard"
+                "Write me a LinkedIn post about my startup journey"
               </div>
               <div className="text-destructive text-xs">
                 ✗ Vague • No context • Inconsistent results
@@ -97,16 +97,17 @@ export function Hero() {
             </div>
             <div className="space-y-2 font-mono text-xs">
               <div className="text-foreground">
-                <span className="text-primary">Role:</span> Senior Frontend Engineer
+                <span className="text-primary">Role:</span> Startup founder sharing learnings
               </div>
               <div className="text-foreground">
-                <span className="text-primary">Context:</span> React 18, TypeScript, Tailwind
+                <span className="text-primary">Context:</span> Failed D2C brand, 2 years, angel
+                funded
               </div>
               <div className="text-foreground">
-                <span className="text-primary">Task:</span> Dashboard with charts, dark mode
+                <span className="text-primary">Task:</span> Post about lessons learned, not preachy
               </div>
               <div className="text-foreground">
-                <span className="text-primary">Output:</span> Step-by-step with code
+                <span className="text-primary">Output:</span> Under 1500 chars, hook + story
               </div>
               <div className="mt-3 text-primary">
                 ✓ Structured • Consistent • Professional results
