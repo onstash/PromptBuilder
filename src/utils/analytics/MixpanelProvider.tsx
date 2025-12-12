@@ -13,6 +13,7 @@ const MixpanelDataSchema = z.object({
     "page_viewed_wizard",
     "page_viewed_share",
     "button_clicked",
+    "example_clicked",
     "step_changed",
     "form_submitted",
     "data_loaded_url",

@@ -5,15 +5,15 @@ const steps = [
   {
     number: "01",
     icon: MousePointer,
-    title: "Choose",
-    description: "Select General Purpose or Frontend Engineering mode.",
+    title: "Describe",
+    description: "Tell us what you want — an email, explanation, code, or anything else.",
     color: "bg-primary",
   },
   {
     number: "02",
     icon: Sliders,
     title: "Configure",
-    description: "Customize context, reasoning, tone, and preferences.",
+    description: "Tell the AI exactly what you need with simple controls.",
     color: "bg-secondary",
   },
   {
