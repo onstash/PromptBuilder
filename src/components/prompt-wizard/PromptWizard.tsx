@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useRef, useEffect, memo } from "react";
+import { useCallback, useMemo, useRef, useEffect, memo } from "react";
 import { motion } from "motion/react";
 import { Settings2, RotateCcw } from "lucide-react";
 
@@ -7,8 +7,6 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 
 import { TOTAL_REQUIRED_STEPS, type PromptWizardData } from "@/utils/prompt-wizard/schema";
-import { compress } from "@/utils/prompt-wizard/url-compression";
-import { decompressFullState, WIZARD_DEFAULTS } from "@/utils/prompt-wizard/search-params";
 
 import { WizardProgress } from "./WizardProgress";
 import { WizardNavigation } from "./WizardNavigation";
@@ -29,6 +27,7 @@ import { SelfCheckStep } from "./steps/SelfCheckStep";
 import { DisallowedStep } from "./steps/DisallowedStep";
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { useTrackMixpanel } from "@/utils/analytics/MixpanelProvider";
+import { useWizardStore } from "@/stores/wizard-store";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // STATIC CONFIGURATION
@@ -67,73 +66,6 @@ const STEP_HINTS: Record<number, string> = {
   10: "Specify topics or content the AI should avoid (optional)",
 };
 
-const STORAGE_KEY = "wizard-draft";
-const SHARE_URL_KEY = "wizard-share-url";
-
-// ═══════════════════════════════════════════════════════════════════════════
-// LOCALSTORAGE HELPERS
-// ═══════════════════════════════════════════════════════════════════════════
-
-function loadFromStorage(): [PromptWizardData, "default" | "localStorage"] {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (!stored) return [WIZARD_DEFAULTS, "default"];
-    return [{ ...WIZARD_DEFAULTS, ...JSON.parse(stored) }, "localStorage"];
-  } catch {
-    return [WIZARD_DEFAULTS, "default"];
-  }
-}
-
-function saveToStorage(data: PromptWizardData): void {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-  } catch {
-    // Storage full or unavailable
-  }
-}
-
-function clearStorage(): void {
-  try {
-    localStorage.removeItem(STORAGE_KEY);
-    localStorage.removeItem(SHARE_URL_KEY);
-  } catch {
-    // Ignore
-  }
-}
-
-function generateShareUrl(data: PromptWizardData): string {
-  // Only include non-default values
-  const filtered: Partial<PromptWizardData> = {};
-  for (const [key, value] of Object.entries(data)) {
-    if (key === "d") continue;
-    if (value === undefined || value === null || value === "") continue;
-    const defaultVal = WIZARD_DEFAULTS[key as keyof PromptWizardData];
-    if (value === defaultVal) continue;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (filtered as any)[key] = value;
-  }
-
-  const json = JSON.stringify(filtered);
-  const compressed = compress(json);
-  return `/share?d=${compressed}`;
-}
-
-function saveShareUrl(url: string): void {
-  try {
-    localStorage.setItem(SHARE_URL_KEY, url);
-  } catch {
-    // Ignore
-  }
-}
-
-function getShareUrl(): string | null {
-  try {
-    return localStorage.getItem(SHARE_URL_KEY);
-  } catch {
-    return null;
-  }
-}
-
 // ═══════════════════════════════════════════════════════════════════════════
 // MAIN COMPONENT
 // ═══════════════════════════════════════════════════════════════════════════
@@ -142,42 +74,64 @@ export const PromptWizard = memo(function PromptWizard() {
   const search = useSearch({ from: "/wizard" });
   const navigate = useNavigate({ from: "/wizard" });
   const trackEvent = useTrackMixpanel();
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Zustand Store
+  // ─────────────────────────────────────────────────────────────────────────
+  const wizardData = useWizardStore((state) => state.wizardData);
+  const showPreview = useWizardStore((state) => state.showPreview);
+  const shareUrl = useWizardStore((state) => state.shareUrl);
+  const showError = useWizardStore((state) => state.showError);
+
+  const updateData = useWizardStore((state) => state.updateData);
+  const goToStep = useWizardStore((state) => state.goToStep);
+  const setShowPreview = useWizardStore((state) => state.setShowPreview);
+  const setShowError = useWizardStore((state) => state.setShowError);
+  const finish = useWizardStore((state) => state.finish);
+  const reset = useWizardStore((state) => state.reset);
+  const initialize = useWizardStore((state) => state.initialize);
+  const isCurrentStepValid = useWizardStore((state) => state.isCurrentStepValid);
+  const getCurrentStepError = useWizardStore((state) => state.getCurrentStepError);
+  const isTaskIntentValid = useWizardStore((state) => state.isTaskIntentValid);
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Initialization
+  // ─────────────────────────────────────────────────────────────────────────
+  const initialized = useRef(false);
   useEffect(() => {
+    if (initialized.current) return;
+    initialized.current = true;
+
     trackEvent("page_viewed_wizard", {
       page: "wizard",
       timestamp: new Date().toISOString(),
     });
-  }, []);
-  // Initialize from localStorage
-  const [wizardData, setWizardData] = useState<PromptWizardData>(() => {
+
+    // Initialize store from URL or localStorage
     if (search.d && search.vld) {
-      const decompressed = decompressFullState(search.d);
-      if (Object.keys(decompressed).length > 1) {
-        trackEvent("data_loaded_url", {
-          page: "wizard",
-          timestamp: new Date().toISOString(),
-          data: decompressed,
-          type: "URL",
-        });
-        return decompressed;
-      }
-    }
-    const [dataFromLocalStorage, source] = loadFromStorage();
-    if (source === "localStorage") {
-      trackEvent("data_loaded_localstorage", {
+      initialize({ d: search.d, vld: search.vld });
+      trackEvent("data_loaded_url", {
         page: "wizard",
         timestamp: new Date().toISOString(),
-        data: dataFromLocalStorage,
-        type: "localStorage",
+        type: "URL",
       });
+    } else {
+      initialize();
+      // Track localStorage load if it was the source
+      const dataSource = useWizardStore.getState().dataSource;
+      if (dataSource === "localStorage") {
+        trackEvent("data_loaded_localstorage", {
+          page: "wizard",
+          timestamp: new Date().toISOString(),
+          type: "localStorage",
+        });
+      }
     }
-    return dataFromLocalStorage;
-  });
-  const [showPreview, setShowPreview] = useState(false);
-  const [showError, setShowError] = useState(false);
-  const [shareUrl, setShareUrl] = useState<string | null>(getShareUrl);
+  }, []);
 
-  // Track previous step for direction
+  // ─────────────────────────────────────────────────────────────────────────
+  // Animation Direction
+  // ─────────────────────────────────────────────────────────────────────────
   const prevStepRef = useRef(wizardData.step);
   const direction =
     wizardData.step > prevStepRef.current ? 1 : wizardData.step < prevStepRef.current ? -1 : 0;
@@ -186,28 +140,13 @@ export const PromptWizard = memo(function PromptWizard() {
     prevStepRef.current = wizardData.step;
   }, [wizardData.step]);
 
-  // Debounced localStorage save (300ms)
-  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  useEffect(() => {
-    if (saveTimeoutRef.current) {
-      clearTimeout(saveTimeoutRef.current);
-    }
-    saveTimeoutRef.current = setTimeout(() => {
-      saveToStorage(wizardData);
-    }, 300);
-
-    return () => {
-      if (saveTimeoutRef.current) {
-        clearTimeout(saveTimeoutRef.current);
-      }
-    };
-  }, [wizardData]);
-
-  // Derived values
+  // ─────────────────────────────────────────────────────────────────────────
+  // Derived Values
+  // ─────────────────────────────────────────────────────────────────────────
   const currentStep = wizardData.step;
   const showAdvanced = wizardData.show_advanced;
   const totalSteps = showAdvanced ? 10 : TOTAL_REQUIRED_STEPS;
-  const taskIntentValid = wizardData.task_intent.trim().length >= 10;
+  const taskIntentValid = isTaskIntentValid();
 
   const completedSteps = useMemo(() => {
     const completed = new Set<number>();
@@ -218,34 +157,12 @@ export const PromptWizard = memo(function PromptWizard() {
     return completed;
   }, [taskIntentValid, totalSteps]);
 
-  const currentStepValid = currentStep === 1 ? taskIntentValid : true;
-  const currentStepError =
-    currentStep === 1 && !taskIntentValid
-      ? "Please describe what you want (at least 10 characters)"
-      : null;
+  const currentStepValid = isCurrentStepValid();
+  const currentStepError = getCurrentStepError();
 
-  // Update local state (fast, no URL updates)
-  const updateData = useCallback((updates: Partial<PromptWizardData>) => {
-    setShowError(false);
-    setWizardData((prev) => {
-      if (updates.show_advanced === false && prev.step > 5) {
-        return { ...prev, ...updates, step: 5 };
-      }
-      return { ...prev, ...updates };
-    });
-  }, []);
-
-  // Navigation handlers
-  const goToStep = useCallback((step: number) => {
-    setShowError(false);
-    setWizardData((prev) => ({ ...prev, step }));
-    trackEvent("step_changed", {
-      page: "wizard",
-      timestamp: new Date().toISOString(),
-      step,
-    });
-  }, []);
-
+  // ─────────────────────────────────────────────────────────────────────────
+  // Callbacks
+  // ─────────────────────────────────────────────────────────────────────────
   const handleNext = useCallback(() => {
     if (!currentStepValid) {
       setShowError(true);
@@ -253,31 +170,37 @@ export const PromptWizard = memo(function PromptWizard() {
     }
     if (currentStep < totalSteps) {
       goToStep(currentStep + 1);
+      trackEvent("step_changed", {
+        page: "wizard",
+        timestamp: new Date().toISOString(),
+        step: currentStep + 1,
+      });
     }
-  }, [currentStep, totalSteps, currentStepValid, goToStep]);
+  }, [currentStep, totalSteps, currentStepValid, goToStep, setShowError, trackEvent]);
 
   const handleBack = useCallback(() => {
     if (currentStep > 1) {
       goToStep(currentStep - 1);
+      trackEvent("step_changed", {
+        page: "wizard",
+        timestamp: new Date().toISOString(),
+        step: currentStep - 1,
+      });
     }
-  }, [currentStep, goToStep]);
+  }, [currentStep, goToStep, trackEvent]);
 
   const handleFinish = useCallback(() => {
     if (!currentStepValid) {
       setShowError(true);
       return;
     }
-    // Generate and save share URL
     trackEvent("form_submitted", {
       page: "wizard",
       timestamp: new Date().toISOString(),
       data: wizardData,
     });
-    const url = generateShareUrl(wizardData);
-    saveShareUrl(url);
-    setShareUrl(url);
-    setShowPreview(true);
-  }, [currentStepValid, wizardData]);
+    finish();
+  }, [currentStepValid, wizardData, setShowError, finish, trackEvent]);
 
   const toggleAdvanced = useCallback(() => {
     updateData({ show_advanced: !showAdvanced });
@@ -290,17 +213,18 @@ export const PromptWizard = memo(function PromptWizard() {
       data: wizardData,
     });
     navigate({ to: "/wizard", search: { d: null, vld: 0 } });
-    setWizardData(WIZARD_DEFAULTS);
-    clearStorage();
-    setShareUrl(null);
-    setShowPreview(false);
-    setShowError(false);
-  }, []);
+    reset();
+  }, [wizardData, navigate, reset, trackEvent]);
 
   const handleStepClick = useCallback(
     (step: number) => {
       if (step < currentStep) {
         goToStep(step);
+        trackEvent("step_changed", {
+          page: "wizard",
+          timestamp: new Date().toISOString(),
+          step,
+        });
         return;
       }
       if (step > currentStep && !currentStepValid) {
@@ -308,8 +232,13 @@ export const PromptWizard = memo(function PromptWizard() {
         return;
       }
       goToStep(step);
+      trackEvent("step_changed", {
+        page: "wizard",
+        timestamp: new Date().toISOString(),
+        step,
+      });
     },
-    [currentStep, currentStepValid, goToStep]
+    [currentStep, currentStepValid, goToStep, setShowError, trackEvent]
   );
 
   // Get step component and props
