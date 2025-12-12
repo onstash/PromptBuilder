@@ -3,7 +3,7 @@ import { subscribeWithSelector } from "zustand/middleware";
 
 import type { PromptWizardData } from "@/utils/prompt-wizard/schema";
 import { TOTAL_REQUIRED_STEPS } from "@/utils/prompt-wizard/schema";
-import { compress } from "@/utils/prompt-wizard/url-compression";
+import { compress, decompress } from "@/utils/prompt-wizard/url-compression";
 import { decompressFullState, WIZARD_DEFAULTS } from "@/utils/prompt-wizard/search-params";
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -17,19 +17,54 @@ const SHARE_URL_KEY = "wizard-share-url";
 // LOCAL STORAGE HELPERS
 // ═══════════════════════════════════════════════════════════════════════════
 
+/**
+ * Check if a string is valid JSON (uncompressed legacy format)
+ */
+function isValidJson(str: string): boolean {
+  try {
+    JSON.parse(str);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Load wizard data from localStorage with auto-detection for compressed/uncompressed data
+ * Backward compatible: handles both legacy raw JSON and new compressed format
+ */
 function loadFromStorage(): [PromptWizardData, "default" | "localStorage"] {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (!stored) return [WIZARD_DEFAULTS, "default"];
-    return [{ ...WIZARD_DEFAULTS, ...JSON.parse(stored) }, "localStorage"];
+
+    let json: string;
+
+    // Auto-detect: if it starts with '{', it's legacy uncompressed JSON
+    if (isValidJson(stored)) {
+      json = stored;
+    } else {
+      // New compressed format - decompress first
+      const decompressed = decompress(stored);
+      if (!decompressed) return [WIZARD_DEFAULTS, "default"];
+      json = decompressed;
+    }
+
+    return [{ ...WIZARD_DEFAULTS, ...JSON.parse(json) }, "localStorage"];
   } catch {
     return [WIZARD_DEFAULTS, "default"];
   }
 }
 
+/**
+ * Save wizard data to localStorage using LZ-String compression
+ * Reduces storage size by ~30-50% compared to raw JSON
+ */
 function saveToStorage(data: PromptWizardData): void {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    const json = JSON.stringify(data);
+    const compressed = compress(json);
+    localStorage.setItem(STORAGE_KEY, compressed);
   } catch {
     // Storage full or unavailable
   }
