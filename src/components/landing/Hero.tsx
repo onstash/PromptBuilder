@@ -76,7 +76,7 @@ export function Hero() {
             </div>
             <div className="space-y-3 font-mono text-sm">
               <div className="text-muted-foreground line-through">
-                "Write me a LinkedIn post about my startup journey"
+                "Write a professional email to my manager"
               </div>
               <div className="text-destructive text-xs">
                 ✗ Vague • No context • Inconsistent results
@@ -97,17 +97,16 @@ export function Hero() {
             </div>
             <div className="space-y-2 font-mono text-xs">
               <div className="text-foreground">
-                <span className="text-primary">Role:</span> Startup founder sharing learnings
+                <span className="text-primary">Role:</span> Professional writing assistant
               </div>
               <div className="text-foreground">
-                <span className="text-primary">Context:</span> Failed D2C brand, 2 years, angel
-                funded
+                <span className="text-primary">Context:</span> Requesting work-from-home
               </div>
               <div className="text-foreground">
-                <span className="text-primary">Task:</span> Post about lessons learned, not preachy
+                <span className="text-primary">Task:</span> Polite, formal email to manager
               </div>
               <div className="text-foreground">
-                <span className="text-primary">Output:</span> Under 1500 chars, hook + story
+                <span className="text-primary">Output:</span> Under 150 words, clear ask
               </div>
               <div className="mt-3 text-primary">
                 ✓ Structured • Consistent • Professional results

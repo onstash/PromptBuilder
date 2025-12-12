@@ -1,9 +1,7 @@
 import { Hero } from "./Hero";
 import { SocialProof } from "./SocialProof";
-import { FeaturesGrid } from "./FeaturesGrid";
 import { HowItWorks } from "./HowItWorks";
 import { ExamplesShowcase } from "./ExamplesShowcase";
-import { UseCases } from "./UseCases";
 import { CTASection } from "./CTASection";
 import { Footer } from "./Footer";
 import { useEffect } from "react";
@@ -26,12 +24,9 @@ export function LandingPage() {
     <main className="bg-background min-h-screen">
       <Hero />
       <SocialProof show={SHOW_SOCIAL_PROOF} />
-      <FeaturesGrid />
       <HowItWorks />
       <ExamplesShowcase />
-      <UseCases />
       <CTASection />
-      <Footer />
     </main>
   );
 }
