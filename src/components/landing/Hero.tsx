@@ -31,7 +31,7 @@ export function Hero() {
 
           {/* Subheadline */}
           <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-xl mx-auto">
-            Professional prompt engineering made simple. Configure, generate, copy.
+            Get perfect results from ChatGPT and Claude every time. Configure, generate, copy.
           </p>
 
           {/* Single CTA */}

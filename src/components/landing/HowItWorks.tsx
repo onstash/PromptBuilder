@@ -13,7 +13,7 @@ const steps = [
     number: "02",
     icon: Sliders,
     title: "Configure",
-    description: "Customize context, reasoning, tone, and preferences.",
+    description: "Tell the AI exactly what you need with simple controls.",
     color: "bg-secondary",
   },
   {

@@ -28,6 +28,7 @@ import { DisallowedStep } from "./steps/DisallowedStep";
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { useTrackMixpanel } from "@/utils/analytics/MixpanelProvider";
 import { useWizardStore } from "@/stores/wizard-store";
+import { compress } from "@/utils/prompt-wizard";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // STATIC CONFIGURATION
@@ -119,7 +120,9 @@ export const PromptWizard = memo(function PromptWizard() {
       initialize();
       // Track localStorage load if it was the source
       const dataSource = useWizardStore.getState().dataSource;
+      const wizardData = useWizardStore.getState().wizardData;
       if (dataSource === "localStorage") {
+        navigate({ to: "/wizard", search: { d: compress(JSON.stringify(wizardData)), vld: 1 } });
         trackEvent("data_loaded_localstorage", {
           page: "wizard",
           timestamp: new Date().toISOString(),
