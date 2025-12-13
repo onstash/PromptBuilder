@@ -188,7 +188,6 @@ function generateShareUrl(data: PromptWizardData): string {
 interface WizardState {
   // Core state
   wizardData: PromptWizardData;
-  showPreview: boolean;
   shareUrl: string | null;
   showError: boolean;
   dataSource: "default" | "localStorage" | "url";
@@ -206,7 +205,6 @@ interface WizardActions {
   // Actions
   updateData: (updates: Partial<PromptWizardData>) => void;
   goToStep: (step: number) => void;
-  setShowPreview: (show: boolean) => void;
   setShowError: (show: boolean) => void;
   finish: () => void;
   reset: () => void;
@@ -225,7 +223,6 @@ export const useWizardStore = create<WizardStore>()(
     // Initial State
     // ─────────────────────────────────────────────────────────────────────────
     wizardData: WIZARD_DEFAULTS,
-    showPreview: false,
     shareUrl: getShareUrl(),
     showError: false,
     dataSource: "default",
@@ -277,7 +274,6 @@ export const useWizardStore = create<WizardStore>()(
             wizardData: decompressed,
             dataSource: "url",
             shareUrl: getShareUrl(),
-            showPreview: true,
           });
           return;
         }
@@ -288,7 +284,6 @@ export const useWizardStore = create<WizardStore>()(
         wizardData: dataFromLocalStorage,
         dataSource: source,
         shareUrl: getShareUrl(),
-        showPreview: true,
       });
     },
 
@@ -309,13 +304,17 @@ export const useWizardStore = create<WizardStore>()(
     },
 
     goToStep: (step) => {
-      set((state) => ({
-        wizardData: { ...state.wizardData, step },
-        showError: false,
-      }));
+      set((state) => {
+        const wizardDataUpdated = { ...state.wizardData, step };
+        const url = generateShareUrl(wizardDataUpdated);
+        saveShareUrl(url);
+        return {
+          wizardData: wizardDataUpdated,
+          showError: false,
+          shareUrl: url,
+        };
+      });
     },
-
-    setShowPreview: (show) => set({ showPreview: show }),
 
     setShowError: (show) => set({ showError: show }),
 
@@ -328,14 +327,13 @@ export const useWizardStore = create<WizardStore>()(
 
       const url = generateShareUrl(state.wizardData);
       saveShareUrl(url);
-      set({ shareUrl: url, showPreview: true });
+      set({ shareUrl: url });
     },
 
     reset: () => {
       clearStorage();
       set({
         wizardData: WIZARD_DEFAULTS,
-        showPreview: false,
         shareUrl: null,
         showError: false,
         dataSource: "default",

@@ -36,12 +36,14 @@ export function WizardPreview({ data, compressed, shareUrl, onClose, source }: W
   const isSourceShare = source === "share";
 
   useEffect(() => {
-    trackEvent("page_viewed_share", {
-      data: {
-        source,
-        compressed,
-      },
-    });
+    if (isSourceShare) {
+      trackEvent("page_viewed_share", {
+        data: {
+          source,
+          compressed,
+        },
+      });
+    }
   }, []);
 
   const [copiedPrompt, setCopiedPrompt] = useState(false);
@@ -92,7 +94,7 @@ export function WizardPreview({ data, compressed, shareUrl, onClose, source }: W
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="mt-6 bg-card border-4 border-foreground shadow-[8px_8px_0px_0px_hsl(var(--foreground))]"
+      className="bg-card border-4 border-foreground shadow-[8px_8px_0px_0px_hsl(var(--foreground))]"
     >
       {/* Header */}
       <div className="p-4 border-b-4 border-foreground flex items-center justify-between">
