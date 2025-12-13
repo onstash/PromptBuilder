@@ -80,7 +80,6 @@ export const PromptWizard = memo(function PromptWizard() {
   // Zustand Store
   // ─────────────────────────────────────────────────────────────────────────
   const wizardData = useWizardStore((state) => state.wizardData);
-  const showPreview = useWizardStore((state) => state.showPreview);
   const shareUrl = useWizardStore((state) => state.shareUrl);
   const showError = useWizardStore((state) => state.showError);
 
@@ -250,7 +249,11 @@ export const PromptWizard = memo(function PromptWizard() {
 
   return (
     <div className="min-h-screen bg-background py-8 px-4">
-      <div className="max-w-2xl mx-auto">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className={`max-w-[90%] mx-auto flex items-start gap-6 justify-between`}
+      >
         {/* Wizard Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -322,7 +325,7 @@ export const PromptWizard = memo(function PromptWizard() {
           </div>
         </motion.div>
 
-        {showPreview && shareUrl && (
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <WizardPreview
             data={wizardData}
             compressed={false}
@@ -330,16 +333,15 @@ export const PromptWizard = memo(function PromptWizard() {
             source="wizard"
             shareUrl={shareUrl!}
           />
-        )}
-
-        {/* Back to Home */}
-        <div className="mt-6 text-center">
-          <Button variant="link" asChild>
-            <Link to="/" className="text-muted-foreground font-mono text-sm">
-              ← Back to Home
-            </Link>
-          </Button>
-        </div>
+        </motion.div>
+      </motion.div>
+      {/* Back to Home */}
+      <div className="mt-6 text-center">
+        <Button variant="link" asChild>
+          <Link to="/" className="text-muted-foreground font-mono text-sm">
+            ← Back to Home
+          </Link>
+        </Button>
       </div>
     </div>
   );
