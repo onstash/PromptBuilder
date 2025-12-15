@@ -13,7 +13,7 @@ import { generatePromptText } from "@/stores/wizard-store";
 type WizardPreviewProps =
   | {
       shareUrl: string;
-      onClose: () => void;
+      onClose?: () => void;
       data: PromptWizardData;
       compressed: false;
       source: "wizard";
@@ -144,9 +144,11 @@ export function WizardPreview({ data, compressed, shareUrl, onClose, source }: W
               </>
             )}
           </Button>
-          <Button onClick={onClose} variant="ghost" size="sm">
-            <X className="w-4 h-4" />
-          </Button>
+          {isSourceShare && (
+            <Button onClick={onClose} variant="ghost" size="sm">
+              <X className="w-4 h-4" />
+            </Button>
+          )}
         </div>
       </div>
 

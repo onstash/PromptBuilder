@@ -143,7 +143,7 @@ export const trackMixpanelInServer = createServerFn({ method: "POST" })
     const ip = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip");
     const origin = request.headers.get("origin");
 
-    mp.track(data.event, {
+    const finalData = {
       ...data.properties,
 
       // Browser/Device info
@@ -161,7 +161,14 @@ export const trackMixpanelInServer = createServerFn({ method: "POST" })
       // Network
       ip: ip,
       $origin: origin,
-    });
+    };
+
+    if (origin?.includes?.("localhost:3000")) {
+      console.log("Mixpanel event", data.event, finalData);
+      return;
+    }
+
+    mp.track(data.event, finalData);
   });
 
 type MixpanelContextType = ReturnType<typeof useServerFn<typeof trackMixpanelInServer>>;
