@@ -258,7 +258,7 @@ export const PromptWizard = memo(function PromptWizard() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-card border-4 border-foreground shadow-[8px_8px_0px_0px_hsl(var(--foreground))]"
+          className="max-w-[50%] bg-card border-4 border-foreground shadow-[8px_8px_0px_0px_hsl(var(--foreground))]"
         >
           {/* Header */}
           <div className="p-6 border-b-4 border-foreground">
@@ -325,7 +325,11 @@ export const PromptWizard = memo(function PromptWizard() {
           </div>
         </motion.div>
 
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="max-w-[45%]"
+        >
           <WizardPreview
             data={wizardData}
             compressed={false}
