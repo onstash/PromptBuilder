@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.0
+
+### Minor Changes
+
+- 2ddde0e: feat(analytics): prefix mixpanel events with app version
+
 ## 1.2.0
 
 ### Minor Changes
