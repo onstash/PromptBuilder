@@ -26,25 +26,31 @@ type WizardPreviewProps =
       source: "share";
     };
 
-function generatePromptStringFromCompressed(compressedData: string): string {
-  const finalData = JSON.parse(decompress(compressedData)) as PromptWizardData;
-  return generatePromptText(finalData);
+function generatePromptStringFromCompressed(wizardData: PromptWizardData): string {
+  return generatePromptText(wizardData);
 }
 
 export function WizardPreview({ data, compressed, shareUrl, onClose, source }: WizardPreviewProps) {
   const trackEvent = useTrackMixpanel();
   const isSourceShare = source === "share";
 
-  useEffect(() => {
-    if (isSourceShare) {
-      trackEvent("page_viewed_share", {
-        data: {
-          source,
-          compressed,
-        },
-      });
-    }
-  }, []);
+  const [analyticsWrapper] = useState(() => {
+    let loggedAtTimestamp: number | null = null;
+    return {
+      trackPageLoadEvent: (data: PromptWizardData) => {
+        if (isSourceShare && loggedAtTimestamp === null) {
+          loggedAtTimestamp = Date.now();
+          trackEvent("page_viewed_share", {
+            data: {
+              source,
+              compressed,
+              data,
+            },
+          });
+        }
+      },
+    };
+  });
 
   const [copiedPrompt, setCopiedPrompt] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
@@ -54,11 +60,13 @@ export function WizardPreview({ data, compressed, shareUrl, onClose, source }: W
   const [promptText, promptTextCompressed] = useMemo(() => {
     if (compressed) {
       const compressedData = data as string;
-      return [generatePromptStringFromCompressed(compressedData), compressedData];
-    } else {
-      const wizardData = data as PromptWizardData;
-      return [generatePromptText(wizardData), compressFullState(wizardData)];
+      const wizardData = JSON.parse(decompress(compressedData)) as PromptWizardData;
+      analyticsWrapper.trackPageLoadEvent(wizardData);
+      return [generatePromptStringFromCompressed(wizardData), compressedData];
     }
+    const wizardData = data as PromptWizardData;
+    analyticsWrapper.trackPageLoadEvent(wizardData);
+    return [generatePromptText(wizardData), compressFullState(wizardData)];
   }, [data, compressed]);
 
   const handleCopyPrompt = useCallback(async () => {

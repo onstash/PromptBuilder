@@ -296,7 +296,7 @@ export const PromptWizard = memo(function PromptWizard() {
           </div>
 
           {/* Step Content */}
-          <div className="p-6">
+          <div className="p-6 min-h-[320px]">
             <WizardStep stepKey={currentStep} direction={direction} hint={stepHint}>
               <StepComponent data={wizardData} onUpdate={updateData} />
             </WizardStep>
