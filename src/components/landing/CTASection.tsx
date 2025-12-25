@@ -17,10 +17,7 @@ export function CTASection() {
           variant="secondary"
           className="text-lg px-10 py-7 h-auto uppercase font-black tracking-wide"
           onClick={() => {
-            trackEvent("button_clicked", {
-              page: "landing",
-              cta: "get_started_free",
-            });
+            trackEvent("button_clicked_cta_landing_get_started_for_free");
           }}
         >
           <Link to="/wizard" search={{ d: null, vld: 0 }} className="flex items-center gap-3">

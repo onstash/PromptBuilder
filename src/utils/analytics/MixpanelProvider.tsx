@@ -7,18 +7,45 @@ import Mixpanel from "mixpanel";
 import { z } from "zod";
 import { getOrCreateSessionId } from "@/utils/session";
 
+import packageJSON from "../../../package.json";
+
+const version = packageJSON.version;
+
 const MixpanelDataSchema = z.object({
   event: z.enum([
     "page_viewed_landing",
     "page_viewed_wizard",
+    "page_viewed_wizard_type_default",
+    "page_viewed_wizard_type_url",
+    "page_viewed_wizard_type_localstorage",
     "page_viewed_share",
-    "button_clicked",
-    "example_clicked",
+    "button_clicked_cta_landing_get_started_for_free",
+    "button_clicked_cta_landing_start_building",
+    "button_clicked_cta_share_edit",
+    "button_clicked_cta_wizard_copy_prompt",
+    "button_clicked_cta_wizard_copy_prompt_link",
+    "button_clicked_cta_share_copy_prompt",
+    "button_clicked_cta_share_copy_prompt_link",
+    "example_clicked_work-email",
+    "example_clicked_exam-explainer",
+    "example_clicked_linkedin-post",
+    "example_clicked_job-application",
+    "example_clicked_social-caption",
+    "example_clicked_learn-coding",
     "step_changed",
+    "step_changed_1",
+    "step_changed_2",
+    "step_changed_3",
+    "step_changed_4",
+    "step_changed_5",
+    "step_changed_6",
+    "step_changed_7",
+    "step_changed_8",
+    "step_changed_9",
+    "step_changed_10",
     "form_submitted",
-    "data_loaded_url",
-    "data_loaded_localstorage",
     "data_reset",
+    "prompt_generated",
   ]),
   properties: z.looseObject({
     distinct_id: z.string(),
@@ -26,6 +53,8 @@ const MixpanelDataSchema = z.object({
 });
 
 type MixpanelData = z.infer<typeof MixpanelDataSchema>;
+
+export type MixpanelDataEvent = MixpanelData["event"];
 
 const mp = Mixpanel.init(import.meta.env.VITE_PUBLIC_MIXPANEL_PROJECT_TOKEN, {
   verbose: true,
@@ -139,11 +168,18 @@ export const trackMixpanelInServer = createServerFn({ method: "POST" })
     // Extract headers from the browser request
     const userAgent = request.headers.get("user-agent");
     const referer = request.headers.get("referer");
+    // Split referer into chunks of max 205 characters for Mixpanel property limits
+    const refererParts: string[] = [];
+    if (referer) {
+      for (let i = 0; i < referer.length; i += 205) {
+        refererParts.push(referer.slice(i, i + 205));
+      }
+    }
     const acceptLanguage = request.headers.get("accept-language");
     const ip = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip");
     const origin = request.headers.get("origin");
 
-    mp.track(data.event, {
+    const finalData = {
       ...data.properties,
 
       // Browser/Device info
@@ -154,6 +190,7 @@ export const trackMixpanelInServer = createServerFn({ method: "POST" })
 
       // Referral tracking
       $referrer: referer,
+      refererParts,
 
       // Geo/Locale
       $locale: acceptLanguage?.split(",")[0],
@@ -161,7 +198,14 @@ export const trackMixpanelInServer = createServerFn({ method: "POST" })
       // Network
       ip: ip,
       $origin: origin,
-    });
+    };
+
+    if (origin?.includes?.("localhost:3000")) {
+      console.log("Mixpanel event", data.event, finalData);
+      return;
+    }
+
+    mp.track(`v${version}_${data.event}`, finalData);
   });
 
 type MixpanelContextType = ReturnType<typeof useServerFn<typeof trackMixpanelInServer>>;
@@ -189,7 +233,7 @@ function useMixpanelContext() {
  * const trackEvent = useTrackMixpanel();
  *
  * // Track an event with custom properties
- * trackEvent("button_clicked", { button_name: "submit", page: "wizard" });
+ * trackEvent("button_clicked_cta_landing_get_started_for_free", { button_name: "submit", page: "wizard" });
  *
  * // Track an event without additional properties
  * trackEvent("page_viewed");
@@ -198,7 +242,10 @@ export function useTrackMixpanel() {
   const trackMixpanelFn = useMixpanelContext();
 
   const trackEvent = useCallback(
-    (event: MixpanelData["event"], properties: Omit<MixpanelData["properties"], "distinct_id">) => {
+    (
+      event: MixpanelData["event"],
+      properties: Omit<MixpanelData["properties"], "distinct_id"> = {}
+    ) => {
       const sessionId = getOrCreateSessionId();
 
       trackMixpanelFn({

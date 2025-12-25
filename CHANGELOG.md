@@ -1,5 +1,29 @@
 # Changelog
 
+## 1.3.0
+
+### Minor Changes
+
+- 2ddde0e: feat(analytics): prefix mixpanel events with app version
+
+## 1.2.0
+
+### Minor Changes
+
+- 6158dbd: docs(changeset): show preview in DWeb next to wizard; chore: dweb fixes 1; chore: dweb fixes 2; feat(analytics): split referer into chunks and enhance share page tracking; feat(analytics): granular event tracking and Sentry error logging;
+
+## 1.1.0
+
+### Minor Changes
+
+- 7f1aca3: feat: changeset cli integration
+- 2333256: show preview in DWeb next to wizard
+
+### Patch Changes
+
+- 26edf6e: changeset version
+- 33ca578: og tags
+
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),

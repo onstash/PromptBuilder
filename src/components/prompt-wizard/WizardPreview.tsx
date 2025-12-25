@@ -13,7 +13,7 @@ import { generatePromptText } from "@/stores/wizard-store";
 type WizardPreviewProps =
   | {
       shareUrl: string;
-      onClose: () => void;
+      onClose?: () => void;
       data: PromptWizardData;
       compressed: false;
       source: "wizard";
@@ -26,67 +26,92 @@ type WizardPreviewProps =
       source: "share";
     };
 
-function generatePromptStringFromCompressed(compressedData: string): string {
-  const finalData = JSON.parse(decompress(compressedData)) as PromptWizardData;
-  return generatePromptText(finalData);
+function generatePromptStringFromCompressed(wizardData: PromptWizardData): string {
+  return generatePromptText(wizardData);
 }
 
 export function WizardPreview({ data, compressed, shareUrl, onClose, source }: WizardPreviewProps) {
   const trackEvent = useTrackMixpanel();
   const isSourceShare = source === "share";
 
-  useEffect(() => {
-    if (isSourceShare) {
-      trackEvent("page_viewed_share", {
-        data: {
-          source,
-          compressed,
-        },
-      });
-    }
-  }, []);
+  const [analyticsWrapper] = useState(() => {
+    let loggedAtTimestamp: number | null = null;
+    return {
+      trackPageLoadEvent: (data: PromptWizardData) => {
+        if (isSourceShare && loggedAtTimestamp === null) {
+          loggedAtTimestamp = Date.now();
+          trackEvent("page_viewed_share", {
+            data: {
+              source,
+              compressed,
+              data,
+            },
+          });
+        }
+      },
+    };
+  });
 
   const [copiedPrompt, setCopiedPrompt] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
 
   // KEY FIX: Use useMemo instead of useState(() => ...)
   // This ensures promptText re-computes whenever `data` changes
-  const [promptText, promptTextCompressed] = useMemo(() => {
+  const [promptText, wizardData, promptTextCompressed] = useMemo(() => {
     if (compressed) {
       const compressedData = data as string;
-      return [generatePromptStringFromCompressed(compressedData), compressedData];
-    } else {
-      const wizardData = data as PromptWizardData;
-      return [generatePromptText(wizardData), compressFullState(wizardData)];
+      const wizardData = JSON.parse(decompress(compressedData)) as PromptWizardData;
+      analyticsWrapper.trackPageLoadEvent(wizardData);
+      return [generatePromptStringFromCompressed(wizardData), wizardData, compressedData];
     }
+    const wizardData = data as PromptWizardData;
+    analyticsWrapper.trackPageLoadEvent(wizardData);
+    return [generatePromptText(wizardData), wizardData, compressFullState(wizardData)];
   }, [data, compressed]);
 
   const handleCopyPrompt = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(promptText);
-      trackEvent("button_clicked", {
-        button: "copy_prompt",
-      });
+      trackEvent(
+        isSourceShare
+          ? "button_clicked_cta_share_copy_prompt"
+          : "button_clicked_cta_wizard_copy_prompt",
+        {
+          data: wizardData,
+          d: promptTextCompressed,
+        }
+      );
       setCopiedPrompt(true);
       toast.success("Prompt copied to clipboard!");
       setTimeout(() => setCopiedPrompt(false), 2000);
     } catch {
       toast.error("Failed to copy");
     }
-  }, [promptText, trackEvent]);
+  }, [promptText, promptTextCompressed, wizardData]);
 
   const handleCopyLink = useCallback(async () => {
     if (!shareUrl) return;
     try {
       const fullUrl = `${window.location.origin}${shareUrl}`;
       await navigator.clipboard.writeText(fullUrl);
+      trackEvent("button_clicked_cta_share_copy_prompt_link", {
+        data: wizardData,
+        d: promptTextCompressed,
+      });
       setCopiedLink(true);
       toast.success("Share link copied!");
       setTimeout(() => setCopiedLink(false), 2000);
     } catch {
       toast.error("Failed to copy link");
     }
-  }, [shareUrl]);
+  }, [shareUrl, promptTextCompressed, wizardData]);
+
+  const handleEdit = useCallback(() => {
+    trackEvent("button_clicked_cta_share_edit", {
+      data: wizardData,
+      d: promptTextCompressed,
+    });
+  }, [promptTextCompressed, wizardData]);
 
   const EditOrOpenIcon = !isSourceShare ? ExternalLink : FilePen;
 
@@ -120,7 +145,13 @@ export function WizardPreview({ data, compressed, shareUrl, onClose, source }: W
                   </>
                 )}
               </Button>
-              <Button asChild variant="outline" size="sm" className="font-mono text-xs">
+              <Button
+                onClick={handleEdit}
+                asChild
+                variant="outline"
+                size="sm"
+                className="font-mono text-xs"
+              >
                 <Link
                   to={!isSourceShare ? "/share" : "/wizard"}
                   search={{ d: promptTextCompressed, vld: 1 }}
@@ -144,9 +175,11 @@ export function WizardPreview({ data, compressed, shareUrl, onClose, source }: W
               </>
             )}
           </Button>
-          <Button onClick={onClose} variant="ghost" size="sm">
-            <X className="w-4 h-4" />
-          </Button>
+          {isSourceShare && (
+            <Button onClick={onClose} variant="ghost" size="sm">
+              <X className="w-4 h-4" />
+            </Button>
+          )}
         </div>
       </div>
 
