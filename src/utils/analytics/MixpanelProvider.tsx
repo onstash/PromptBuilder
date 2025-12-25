@@ -7,6 +7,10 @@ import Mixpanel from "mixpanel";
 import { z } from "zod";
 import { getOrCreateSessionId } from "@/utils/session";
 
+import packageJSON from "../../../package.json";
+
+const version = packageJSON.version;
+
 const MixpanelDataSchema = z.object({
   event: z.enum([
     "page_viewed_landing",
@@ -201,7 +205,7 @@ export const trackMixpanelInServer = createServerFn({ method: "POST" })
       return;
     }
 
-    mp.track(data.event, finalData);
+    mp.track(`v${version}_${data.event}`, finalData);
   });
 
 type MixpanelContextType = ReturnType<typeof useServerFn<typeof trackMixpanelInServer>>;
