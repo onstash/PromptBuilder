@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { useMemo } from "react";
+import * as Sentry from "@sentry/tanstackstart-react";
 
 import { decompress } from "@/utils/prompt-wizard/url-compression";
 import { WIZARD_DEFAULTS } from "@/utils/prompt-wizard/search-params";
@@ -13,13 +14,14 @@ import { ErrorComponentWithSentry } from "@/components/ErrorComponentWithSentry"
 
 // Validate and decompress the ?d= parameter
 function validateShareSearch(search: Record<string, unknown>): PromptWizardSearchParamsCompressed {
-  if (typeof search.d !== "string" || !search.d) {
-    return { d: null, vld: 0 };
-  }
-
   try {
+    if (typeof search.d !== "string" || !search.d) {
+      throw new Error("Invalid share link - missing or invalid data");
+    }
     const json = decompress(search.d);
-    if (!json) return { d: null, vld: 0 };
+    if (!json) {
+      throw new Error("Invalid share link - invalid data");
+    }
 
     const parsed = JSON.parse(json) as Partial<PromptWizardData>;
     const result = promptWizardSchema.safeParse({
@@ -30,8 +32,12 @@ function validateShareSearch(search: Record<string, unknown>): PromptWizardSearc
     if (result.success) {
       return { d: search.d, vld: 1 };
     }
-    return { d: null, vld: 0 };
-  } catch {
+    throw new Error("Invalid share link - schema validation failed");
+  } catch (error) {
+    Sentry.captureException(error, {
+      tags: { feature: "share_link_validation" },
+      extra: { compressedData: search.d ?? null },
+    });
     return { d: null, vld: 0 };
   }
 }

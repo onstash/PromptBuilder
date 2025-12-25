@@ -26,7 +26,7 @@ import { ReasoningStep } from "./steps/ReasoningStep";
 import { SelfCheckStep } from "./steps/SelfCheckStep";
 import { DisallowedStep } from "./steps/DisallowedStep";
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
-import { useTrackMixpanel } from "@/utils/analytics/MixpanelProvider";
+import { type MixpanelDataEvent, useTrackMixpanel } from "@/utils/analytics/MixpanelProvider";
 import { useWizardStore } from "@/stores/wizard-store";
 import { compress } from "@/utils/prompt-wizard";
 
@@ -110,10 +110,11 @@ export const PromptWizard = memo(function PromptWizard() {
     // Initialize store from URL or localStorage
     if (search.d && search.vld) {
       initialize({ d: search.d, vld: search.vld });
-      trackEvent("data_loaded_url", {
+      trackEvent("page_viewed_wizard_type_url", {
         page: "wizard",
         timestamp: new Date().toISOString(),
-        type: "URL",
+        d: search.d,
+        vld: search.vld,
       });
     } else {
       initialize();
@@ -121,11 +122,20 @@ export const PromptWizard = memo(function PromptWizard() {
       const dataSource = useWizardStore.getState().dataSource;
       const wizardData = useWizardStore.getState().wizardData;
       if (dataSource === "localStorage") {
-        navigate({ to: "/wizard", search: { d: compress(JSON.stringify(wizardData)), vld: 1 } });
-        trackEvent("data_loaded_localstorage", {
+        const dataCompressed = compress(JSON.stringify(wizardData));
+        navigate({ to: "/wizard", search: { d: dataCompressed, vld: 1 } });
+        trackEvent("page_viewed_wizard_type_localstorage", {
           page: "wizard",
           timestamp: new Date().toISOString(),
-          type: "localStorage",
+          d: dataCompressed,
+          vld: 1,
+        });
+      } else {
+        trackEvent("page_viewed_wizard_type_default", {
+          page: "wizard",
+          timestamp: new Date().toISOString(),
+          d: null,
+          vld: 0,
         });
       }
     }
@@ -172,7 +182,7 @@ export const PromptWizard = memo(function PromptWizard() {
     }
     if (currentStep < totalSteps) {
       goToStep(currentStep + 1);
-      trackEvent("step_changed", {
+      trackEvent(`step_changed_${currentStep + 1}` as MixpanelDataEvent, {
         page: "wizard",
         timestamp: new Date().toISOString(),
         step: currentStep + 1,
@@ -183,7 +193,7 @@ export const PromptWizard = memo(function PromptWizard() {
   const handleBack = useCallback(() => {
     if (currentStep > 1) {
       goToStep(currentStep - 1);
-      trackEvent("step_changed", {
+      trackEvent(`step_changed_${currentStep - 1}` as MixpanelDataEvent, {
         page: "wizard",
         timestamp: new Date().toISOString(),
         step: currentStep - 1,
@@ -201,6 +211,8 @@ export const PromptWizard = memo(function PromptWizard() {
       timestamp: new Date().toISOString(),
       data: wizardData,
     });
+    const dataCompressed = compress(JSON.stringify(wizardData));
+    navigate({ to: "/wizard", search: { d: dataCompressed, vld: 1 } });
     finish();
   }, [currentStepValid, wizardData, setShowError, finish, trackEvent]);
 
@@ -222,7 +234,7 @@ export const PromptWizard = memo(function PromptWizard() {
     (step: number) => {
       if (step < currentStep) {
         goToStep(step);
-        trackEvent("step_changed", {
+        trackEvent(`step_changed_${step}` as MixpanelDataEvent, {
           page: "wizard",
           timestamp: new Date().toISOString(),
           step,
@@ -234,7 +246,7 @@ export const PromptWizard = memo(function PromptWizard() {
         return;
       }
       goToStep(step);
-      trackEvent("step_changed", {
+      trackEvent(`step_changed_${step}` as MixpanelDataEvent, {
         page: "wizard",
         timestamp: new Date().toISOString(),
         step,

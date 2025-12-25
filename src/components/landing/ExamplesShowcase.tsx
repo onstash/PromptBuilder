@@ -3,7 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
 
 import { EXAMPLE_PROMPTS, getExampleUrl } from "@/data/example-prompts";
-import { useTrackMixpanel } from "@/utils/analytics/MixpanelProvider";
+import { type MixpanelDataEvent, useTrackMixpanel } from "@/utils/analytics/MixpanelProvider";
 
 export function ExamplesShowcase() {
   const trackEvent = useTrackMixpanel();
@@ -43,7 +43,7 @@ export function ExamplesShowcase() {
                   to="/wizard"
                   search={searchParams}
                   onClick={() => {
-                    trackEvent("example_clicked", {
+                    trackEvent(`example_clicked_${example.id}` as MixpanelDataEvent, {
                       page: "landing",
                       example_id: example.id,
                       example_title: example.title,

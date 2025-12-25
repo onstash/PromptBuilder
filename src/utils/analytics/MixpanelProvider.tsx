@@ -11,14 +11,37 @@ const MixpanelDataSchema = z.object({
   event: z.enum([
     "page_viewed_landing",
     "page_viewed_wizard",
+    "page_viewed_wizard_type_default",
+    "page_viewed_wizard_type_url",
+    "page_viewed_wizard_type_localstorage",
     "page_viewed_share",
-    "button_clicked",
-    "example_clicked",
+    "button_clicked_cta_landing_get_started_for_free",
+    "button_clicked_cta_landing_start_building",
+    "button_clicked_cta_share_edit",
+    "button_clicked_cta_wizard_copy_prompt",
+    "button_clicked_cta_wizard_copy_prompt_link",
+    "button_clicked_cta_share_copy_prompt",
+    "button_clicked_cta_share_copy_prompt_link",
+    "example_clicked_work-email",
+    "example_clicked_exam-explainer",
+    "example_clicked_linkedin-post",
+    "example_clicked_job-application",
+    "example_clicked_social-caption",
+    "example_clicked_learn-coding",
     "step_changed",
+    "step_changed_1",
+    "step_changed_2",
+    "step_changed_3",
+    "step_changed_4",
+    "step_changed_5",
+    "step_changed_6",
+    "step_changed_7",
+    "step_changed_8",
+    "step_changed_9",
+    "step_changed_10",
     "form_submitted",
-    "data_loaded_url",
-    "data_loaded_localstorage",
     "data_reset",
+    "prompt_generated",
   ]),
   properties: z.looseObject({
     distinct_id: z.string(),
@@ -26,6 +49,8 @@ const MixpanelDataSchema = z.object({
 });
 
 type MixpanelData = z.infer<typeof MixpanelDataSchema>;
+
+export type MixpanelDataEvent = MixpanelData["event"];
 
 const mp = Mixpanel.init(import.meta.env.VITE_PUBLIC_MIXPANEL_PROJECT_TOKEN, {
   verbose: true,
@@ -204,7 +229,7 @@ function useMixpanelContext() {
  * const trackEvent = useTrackMixpanel();
  *
  * // Track an event with custom properties
- * trackEvent("button_clicked", { button_name: "submit", page: "wizard" });
+ * trackEvent("button_clicked_cta_landing_get_started_for_free", { button_name: "submit", page: "wizard" });
  *
  * // Track an event without additional properties
  * trackEvent("page_viewed");
@@ -213,7 +238,10 @@ export function useTrackMixpanel() {
   const trackMixpanelFn = useMixpanelContext();
 
   const trackEvent = useCallback(
-    (event: MixpanelData["event"], properties: Omit<MixpanelData["properties"], "distinct_id">) => {
+    (
+      event: MixpanelData["event"],
+      properties: Omit<MixpanelData["properties"], "distinct_id"> = {}
+    ) => {
       const sessionId = getOrCreateSessionId();
 
       trackMixpanelFn({
