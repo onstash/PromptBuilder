@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-router";
+import { createFileRoute, Link, useSearch } from "@tanstack/react-router";
 import { useMemo } from "react";
 import * as Sentry from "@sentry/tanstackstart-react";
 
@@ -50,7 +50,6 @@ export const Route = createFileRoute("/share")({
 
 function ShareRouteComponent() {
   const { d, vld } = useSearch({ from: "/share" });
-  const navigate = useNavigate({ from: "/share" });
 
   // Reconstruct the share URL from current location
   const shareUrl = useMemo(() => {
@@ -85,15 +84,7 @@ function ShareRouteComponent() {
   return (
     <div className="min-h-screen bg-background py-8 px-4">
       <div className="max-w-2xl mx-auto">
-        <WizardPreview
-          data={d}
-          compressed
-          source="share"
-          shareUrl={shareUrl ?? ""}
-          onClose={() => {
-            navigate({ to: "/wizard", search: { d: null, vld: 0 } });
-          }}
-        />
+        <WizardPreview data={d} compressed source="share" shareUrl={shareUrl ?? ""} />
       </div>
     </div>
   );

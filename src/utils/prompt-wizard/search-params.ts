@@ -43,7 +43,6 @@ export const WIZARD_DEFAULTS: PromptWizardData = {
   tone_style: undefined,
   disallowed_content: undefined,
   updatedAt: -1,
-  currentMaxStep: 1,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════

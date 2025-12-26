@@ -1,31 +1,28 @@
 import { motion, AnimatePresence } from "motion/react";
 import { Check } from "lucide-react";
-import { TOTAL_REQUIRED_STEPS, WIZARD_STEPS } from "@/utils/prompt-wizard/schema";
+import { WIZARD_STEPS } from "@/utils/prompt-wizard/schema";
 
 interface WizardProgressProps {
   currentStep: number;
-  currentMaxStep: number;
-  showAdvanced: boolean;
-  completedSteps: Set<number>;
+  totalSteps: number;
+  completedSteps: Record<number, boolean>;
   onStepClick: (step: number) => void;
 }
 
 export function WizardProgress({
   currentStep,
-  currentMaxStep,
-  showAdvanced,
+  totalSteps,
   completedSteps,
   onStepClick,
 }: WizardProgressProps) {
-  const totalSteps = showAdvanced ? WIZARD_STEPS.length : TOTAL_REQUIRED_STEPS;
   const steps = WIZARD_STEPS.slice(0, totalSteps);
 
   const handleStepClick = (stepNumber: number) => {
     // Can only click on completed steps or the step right after last completed
     const canNavigate =
       stepNumber === 1 || // Always can go to step 1
-      completedSteps.has(stepNumber) || // Can go to completed steps
-      completedSteps.has(stepNumber - 1); // Can go to next step after completed
+      completedSteps[stepNumber] || // Can go to completed steps
+      completedSteps[stepNumber - 1]; // Can go to next step after completed
 
     if (canNavigate) {
       onStepClick(stepNumber);
@@ -48,15 +45,13 @@ export function WizardProgress({
         <AnimatePresence mode="popLayout" initial={false}>
           {steps.map((step, index) => {
             const stepNumber = index + 1;
-            const isCompleted = completedSteps.has(stepNumber) || stepNumber <= currentMaxStep;
+            const isCompleted = completedSteps[stepNumber];
             const isActive = stepNumber === currentStep;
             const isUpcoming = !isCompleted && !isActive;
 
             // Can click if completed or is the next available step
             const isClickable =
-              stepNumber === 1 ||
-              completedSteps.has(stepNumber) ||
-              completedSteps.has(stepNumber - 1);
+              stepNumber === 1 || completedSteps[stepNumber] || completedSteps[stepNumber - 1];
 
             return (
               <>

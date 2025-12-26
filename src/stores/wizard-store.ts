@@ -115,67 +115,56 @@ const depthMap: Record<string, string> = {
 };
 
 export function generatePromptText(finalData: PromptWizardData): string {
-  console.group("generatePromptText", finalData);
+  if (finalData.updatedAt === -1) {
+    return "";
+  }
   const sections: string[] = [];
 
   if (finalData.task_intent) {
     sections.push(`## Task\n${finalData.task_intent}`);
-    console.log("task_intent", finalData.task_intent);
   }
 
   if (finalData.context) {
     sections.push(`## Context\n${finalData.context}`);
-    console.log("context", finalData.context);
   }
 
   if (finalData.constraints) {
     sections.push(`## Constraints\n${finalData.constraints}`);
-    console.log("constraints", finalData.constraints);
   }
 
   const audienceLabel =
     finalData.target_audience === "custom" ? finalData.custom_audience : finalData.target_audience;
   if (audienceLabel) {
     sections.push(`## Target Audience\n${audienceLabel}`);
-    console.log("audienceLabel", audienceLabel);
   }
 
   if (finalData.output_format) {
     sections.push(
       `## Output Format\n${formatMap[finalData.output_format] || finalData.output_format}`
     );
-    console.log("output_format", finalData.output_format);
   }
 
   if (finalData.ai_role) {
     sections.push(`## Your Role\nAct as: ${finalData.ai_role}`);
-    console.log("ai_role", finalData.ai_role);
   }
 
   if (finalData.tone_style) {
     sections.push(`## Tone\nUse a ${finalData.tone_style} tone.`);
-    console.log("tone_style", finalData.tone_style);
   }
 
   if (finalData.reasoning_depth && finalData.reasoning_depth !== "moderate") {
     sections.push(`## Reasoning\n${depthMap[finalData.reasoning_depth]}`);
-    console.log("reasoning_depth", finalData.reasoning_depth);
   }
 
   if (finalData.self_check) {
     sections.push(
       `## Self-Check\nBefore finalizing, verify your response is accurate and complete.`
     );
-    console.log("self_check", finalData.self_check);
   }
 
   if (finalData.disallowed_content) {
     sections.push(`## Avoid\n${finalData.disallowed_content}`);
-    console.log("disallowed_content", finalData.disallowed_content);
   }
-  console.log("sections", sections);
-
-  console.groupEnd();
 
   return sections.join("\n\n");
 }
@@ -207,11 +196,11 @@ interface WizardState {
   shareUrl: string | null;
   showError: boolean;
   dataSource: "default" | "localStorage" | "url";
+  completedSteps: Record<number, boolean>;
 
   // Derived (computed on demand)
   getPromptText: () => string;
   getCompressedData: () => string;
-  getTotalSteps: () => number;
   isTaskIntentValid: () => boolean;
   isCurrentStepValid: () => boolean;
   getCurrentStepError: () => string | null;
@@ -242,6 +231,7 @@ export const useWizardStore = create<WizardStore>()(
     shareUrl: getShareUrl(),
     showError: false,
     dataSource: "default",
+    completedSteps: {},
 
     // ─────────────────────────────────────────────────────────────────────────
     // Derived Getters
@@ -261,8 +251,6 @@ export const useWizardStore = create<WizardStore>()(
       }
       return compress(JSON.stringify(filtered));
     },
-
-    getTotalSteps: () => (get().wizardData.show_advanced ? 10 : TOTAL_REQUIRED_STEPS),
 
     isTaskIntentValid: () => get().wizardData.task_intent.trim().length >= 10,
 
@@ -286,26 +274,40 @@ export const useWizardStore = create<WizardStore>()(
       if (fromUrl?.d && fromUrl.vld) {
         const decompressed = decompressFullState(fromUrl.d);
         if (Object.keys(decompressed).length > 1) {
+          const completedSteps = Object.fromEntries(
+            Array.from({ length: decompressed.step }, (_, i) => [i + 1, true])
+          ) as Record<number, boolean>;
           set({
-            wizardData: decompressed,
+            wizardData: { ...decompressed, step: 1 },
             dataSource: "url",
             shareUrl: getShareUrl(),
+            completedSteps,
           });
           return;
         }
       }
 
       const [dataFromLocalStorage, source] = loadFromStorage();
+      const completedSteps = Object.fromEntries(
+        Array.from({ length: dataFromLocalStorage.step }, (_, i) => [i + 1, true])
+      ) as Record<number, boolean>;
+
       set({
-        wizardData: dataFromLocalStorage,
+        wizardData: { ...dataFromLocalStorage, step: 1 },
         dataSource: source,
         shareUrl: getShareUrl(),
+        completedSteps,
       });
     },
 
     updateData: (updates) => {
       set((state) => {
-        const newData = { ...state.wizardData, ...updates, updatedAt: Date.now() };
+        const newData: PromptWizardData = {
+          ...state.wizardData,
+          ...updates,
+          updatedAt: Date.now(),
+          total_steps: updates.show_advanced ? 10 : TOTAL_REQUIRED_STEPS,
+        };
 
         // If disabling advanced mode while on step > 5, go to step 5
         if (updates.show_advanced === false && state.wizardData.step > 5) {
@@ -324,15 +326,16 @@ export const useWizardStore = create<WizardStore>()(
         const wizardDataUpdated = {
           ...state.wizardData,
           step,
-          currentMaxStep: Math.max(state.wizardData.currentMaxStep, step),
           updatedAt: Date.now(),
         };
+        const completedStepsUpdated = { ...state.completedSteps, [step]: true };
         const url = generateShareUrl(wizardDataUpdated);
         saveShareUrl(url);
         return {
           wizardData: wizardDataUpdated,
           showError: false,
           shareUrl: url,
+          completedSteps: completedStepsUpdated,
         };
       });
     },

@@ -1,5 +1,23 @@
 # Changelog
 
+## 1.7.0
+
+### Minor Changes
+
+- 89a509f: Fix wizard step tracking with serializable Record type and resolve TanStack SSR serialization error
+
+## 1.6.0
+
+### Minor Changes
+
+- 12fe817: Move step completion tracking to Zustand store and optimize component subscriptions with useShallow
+
+## 1.5.0
+
+### Minor Changes
+
+- bed5ec9: Refactor WizardPreview into separate SharePage and WizardPage variants for better code separation. Remove console.log statements from generatePromptText and return empty string when user hasn't interacted.
+
 ## 1.4.0
 
 ### Minor Changes
