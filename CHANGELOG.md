@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.4.0
+
+### Minor Changes
+
+- 1417c12: feat(wizard): add step tracking, latency logging, and remove demo routes
+
 ## 1.3.0
 
 ### Minor Changes
