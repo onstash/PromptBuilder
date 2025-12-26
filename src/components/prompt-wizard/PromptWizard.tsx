@@ -1,6 +1,8 @@
 import { useCallback, useMemo, useRef, useEffect, memo } from "react";
+
 import { motion } from "motion/react";
 import { Settings2, RotateCcw } from "lucide-react";
+import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -25,9 +27,12 @@ import { ToneStep } from "./steps/ToneStep";
 import { ReasoningStep } from "./steps/ReasoningStep";
 import { SelfCheckStep } from "./steps/SelfCheckStep";
 import { DisallowedStep } from "./steps/DisallowedStep";
-import { Link, useNavigate, useSearch } from "@tanstack/react-router";
+
+// Analytics
 import { type MixpanelDataEvent, useTrackMixpanel } from "@/utils/analytics/MixpanelProvider";
+// Stores
 import { useWizardStore } from "@/stores/wizard-store";
+// Utils
 import { compress } from "@/utils/prompt-wizard";
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -85,7 +90,6 @@ export const PromptWizard = memo(function PromptWizard() {
 
   const updateData = useWizardStore((state) => state.updateData);
   const goToStep = useWizardStore((state) => state.goToStep);
-  const setShowPreview = useWizardStore((state) => state.setShowPreview);
   const setShowError = useWizardStore((state) => state.setShowError);
   const finish = useWizardStore((state) => state.finish);
   const reset = useWizardStore((state) => state.reset);
@@ -156,6 +160,7 @@ export const PromptWizard = memo(function PromptWizard() {
   // Derived Values
   // ─────────────────────────────────────────────────────────────────────────
   const currentStep = wizardData.step;
+  const currentMaxStep = wizardData.currentMaxStep;
   const showAdvanced = wizardData.show_advanced;
   const totalSteps = showAdvanced ? 10 : TOTAL_REQUIRED_STEPS;
   const taskIntentValid = isTaskIntentValid();
@@ -301,6 +306,7 @@ export const PromptWizard = memo(function PromptWizard() {
             </div>
             <WizardProgress
               currentStep={currentStep}
+              currentMaxStep={currentMaxStep}
               showAdvanced={showAdvanced}
               completedSteps={completedSteps}
               onStepClick={handleStepClick}
@@ -308,7 +314,7 @@ export const PromptWizard = memo(function PromptWizard() {
           </div>
 
           {/* Step Content */}
-          <div className="p-6 min-h-[320px]">
+          <div className="p-6 min-h-[400px]">
             <WizardStep stepKey={currentStep} direction={direction} hint={stepHint}>
               <StepComponent data={wizardData} onUpdate={updateData} />
             </WizardStep>
@@ -345,7 +351,6 @@ export const PromptWizard = memo(function PromptWizard() {
           <WizardPreview
             data={wizardData}
             compressed={false}
-            onClose={() => setShowPreview(false)}
             source="wizard"
             shareUrl={shareUrl!}
           />

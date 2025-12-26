@@ -1,6 +1,7 @@
+import { useState, useCallback, useMemo } from "react";
+
 import { motion } from "motion/react";
 import { Copy, Check, X, Link2, ExternalLink, FilePen } from "lucide-react";
-import { useState, useCallback, useEffect, useMemo } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -9,11 +10,11 @@ import { compressFullState, decompress } from "@/utils/prompt-wizard";
 import { Link } from "@tanstack/react-router";
 import { useTrackMixpanel } from "@/utils/analytics/MixpanelProvider";
 import { generatePromptText } from "@/stores/wizard-store";
+import { withLatencyLoggingSync } from "@/utils/function-utils";
 
 type WizardPreviewProps =
   | {
       shareUrl: string;
-      onClose?: () => void;
       data: PromptWizardData;
       compressed: false;
       source: "wizard";
@@ -30,7 +31,8 @@ function generatePromptStringFromCompressed(wizardData: PromptWizardData): strin
   return generatePromptText(wizardData);
 }
 
-export function WizardPreview({ data, compressed, shareUrl, onClose, source }: WizardPreviewProps) {
+export function WizardPreview(props: WizardPreviewProps) {
+  const { data, compressed, shareUrl, source } = props;
   const trackEvent = useTrackMixpanel();
   const isSourceShare = source === "share";
 
@@ -60,7 +62,27 @@ export function WizardPreview({ data, compressed, shareUrl, onClose, source }: W
   const [promptText, wizardData, promptTextCompressed] = useMemo(() => {
     if (compressed) {
       const compressedData = data as string;
-      const wizardData = JSON.parse(decompress(compressedData)) as PromptWizardData;
+      const decompressedData = withLatencyLoggingSync(
+        () => decompress(compressedData),
+        (latency) => {
+          trackEvent("time_taken_decompress", {
+            latency,
+            compressedData,
+            decompressedData,
+          });
+        }
+      );
+      const wizardData = withLatencyLoggingSync(
+        () => JSON.parse(decompressedData) as PromptWizardData,
+        (latency) => {
+          trackEvent("time_taken_json_parse", {
+            latency,
+            compressedData,
+            decompressedData,
+            wizardData,
+          });
+        }
+      );
       analyticsWrapper.trackPageLoadEvent(wizardData);
       return [generatePromptStringFromCompressed(wizardData), wizardData, compressedData];
     }
@@ -69,7 +91,13 @@ export function WizardPreview({ data, compressed, shareUrl, onClose, source }: W
     return [generatePromptText(wizardData), wizardData, compressFullState(wizardData)];
   }, [data, compressed]);
 
+  const hasUserInteracted = wizardData.updatedAt > -1;
+
   const handleCopyPrompt = useCallback(async () => {
+    if (!hasUserInteracted) {
+      toast.error("Please interact with the wizard before copying the prompt");
+      return;
+    }
     try {
       await navigator.clipboard.writeText(promptText);
       trackEvent(
@@ -90,6 +118,10 @@ export function WizardPreview({ data, compressed, shareUrl, onClose, source }: W
   }, [promptText, promptTextCompressed, wizardData]);
 
   const handleCopyLink = useCallback(async () => {
+    if (!hasUserInteracted) {
+      toast.error("Please interact with the wizard before copying the link");
+      return;
+    }
     if (!shareUrl) return;
     try {
       const fullUrl = `${window.location.origin}${shareUrl}`;
@@ -176,7 +208,7 @@ export function WizardPreview({ data, compressed, shareUrl, onClose, source }: W
             )}
           </Button>
           {isSourceShare && (
-            <Button onClick={onClose} variant="ghost" size="sm">
+            <Button onClick={props.onClose} variant="ghost" size="sm">
               <X className="w-4 h-4" />
             </Button>
           )}

@@ -4,6 +4,7 @@ import { TOTAL_REQUIRED_STEPS, WIZARD_STEPS } from "@/utils/prompt-wizard/schema
 
 interface WizardProgressProps {
   currentStep: number;
+  currentMaxStep: number;
   showAdvanced: boolean;
   completedSteps: Set<number>;
   onStepClick: (step: number) => void;
@@ -11,6 +12,7 @@ interface WizardProgressProps {
 
 export function WizardProgress({
   currentStep,
+  currentMaxStep,
   showAdvanced,
   completedSteps,
   onStepClick,
@@ -46,7 +48,7 @@ export function WizardProgress({
         <AnimatePresence mode="popLayout" initial={false}>
           {steps.map((step, index) => {
             const stepNumber = index + 1;
-            const isCompleted = completedSteps.has(stepNumber);
+            const isCompleted = completedSteps.has(stepNumber) || stepNumber <= currentMaxStep;
             const isActive = stepNumber === currentStep;
             const isUpcoming = !isCompleted && !isActive;
 

@@ -28,16 +28,22 @@ export const WIZARD_DEFAULTS: PromptWizardData = {
   task_intent: "",
   context: "",
   constraints: "",
-  target_audience: "general",
-  output_format: "1-paragraph",
-  reasoning_depth: "moderate",
-  self_check: true,
+  // @ts-expect-error
+  target_audience: "",
+  // @ts-expect-error
+  output_format: "",
+  // @ts-expect-error
+  reasoning_depth: "",
+  // @ts-expect-error
+  self_check: null,
   step: 1,
   show_advanced: false,
   custom_audience: undefined,
   ai_role: undefined,
   tone_style: undefined,
   disallowed_content: undefined,
+  updatedAt: -1,
+  currentMaxStep: 1,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
