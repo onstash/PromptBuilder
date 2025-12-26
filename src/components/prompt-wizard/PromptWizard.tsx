@@ -106,6 +106,7 @@ export const PromptWizard = memo(function PromptWizard() {
   const initialize = useWizardStore((state) => state.initialize);
   const isCurrentStepValid = useWizardStore((state) => state.isCurrentStepValid);
   const getCurrentStepError = useWizardStore((state) => state.getCurrentStepError);
+  const toggleAdvancedMode = useWizardStore((state) => state.toggleAdvancedMode);
 
   // ─────────────────────────────────────────────────────────────────────────
   // Initialization
@@ -220,10 +221,6 @@ export const PromptWizard = memo(function PromptWizard() {
     }
   }, [currentStepValid, wizardData, setShowError, finish, trackEvent, isMobile]);
 
-  const toggleAdvanced = useCallback(() => {
-    updateData({ show_advanced: !showAdvanced });
-  }, [showAdvanced, updateData]);
-
   const handleReset = useCallback(() => {
     trackEvent("data_reset", {
       page: "wizard",
@@ -294,7 +291,7 @@ export const PromptWizard = memo(function PromptWizard() {
                   <Switch
                     id="advanced-mode"
                     checked={showAdvanced}
-                    onCheckedChange={toggleAdvanced}
+                    onCheckedChange={toggleAdvancedMode}
                   />
                   <Label htmlFor="advanced-mode" className="text-sm font-mono">
                     <Settings2 className="w-4 h-4 inline mr-1" />

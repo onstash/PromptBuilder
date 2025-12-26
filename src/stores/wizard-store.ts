@@ -199,8 +199,6 @@ interface WizardState {
   completedSteps: Record<number, boolean>;
 
   // Derived (computed on demand)
-  getPromptText: () => string;
-  getCompressedData: () => string;
   isTaskIntentValid: () => boolean;
   isCurrentStepValid: () => boolean;
   getCurrentStepError: () => string | null;
@@ -214,6 +212,7 @@ interface WizardActions {
   finish: () => void;
   reset: () => void;
   initialize: (fromUrl?: { d: string; vld: 1 }) => void;
+  toggleAdvancedMode: () => void;
 }
 
 export type WizardStore = WizardState & WizardActions;
@@ -236,22 +235,6 @@ export const useWizardStore = create<WizardStore>()(
     // ─────────────────────────────────────────────────────────────────────────
     // Derived Getters
     // ─────────────────────────────────────────────────────────────────────────
-    getPromptText: () => generatePromptText(get().wizardData),
-
-    getCompressedData: () => {
-      const filtered: Partial<PromptWizardData> = {};
-      const data = get().wizardData;
-      for (const [key, value] of Object.entries(data)) {
-        if (key === "d") continue;
-        if (value === undefined || value === null || value === "") continue;
-        const defaultVal = WIZARD_DEFAULTS[key as keyof PromptWizardData];
-        if (value === defaultVal) continue;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (filtered as any)[key] = value;
-      }
-      return compress(JSON.stringify(filtered));
-    },
-
     isTaskIntentValid: () => get().wizardData.task_intent.trim().length >= 10,
 
     isCurrentStepValid: () => {
@@ -306,7 +289,6 @@ export const useWizardStore = create<WizardStore>()(
           ...state.wizardData,
           ...updates,
           updatedAt: Date.now(),
-          total_steps: updates.show_advanced ? 10 : TOTAL_REQUIRED_STEPS,
         };
 
         // If disabling advanced mode while on step > 5, go to step 5
@@ -314,6 +296,22 @@ export const useWizardStore = create<WizardStore>()(
           newData.step = 5;
         }
 
+        return {
+          wizardData: newData,
+          showError: false,
+        };
+      });
+    },
+
+    toggleAdvancedMode: () => {
+      set((state) => {
+        const showAdvancedUpdated = !state.wizardData.show_advanced;
+        const newData = {
+          ...state.wizardData,
+          show_advanced: showAdvancedUpdated,
+          total_steps: showAdvancedUpdated ? 10 : TOTAL_REQUIRED_STEPS,
+          updatedAt: Date.now(),
+        };
         return {
           wizardData: newData,
           showError: false,
