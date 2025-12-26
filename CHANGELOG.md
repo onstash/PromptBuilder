@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.0.0
+
+### Major Changes
+
+- 9d5ba9b: Add mobile web UI support with responsive layout and bottom sheet preview
+
+### Patch Changes
+
+- 65c1962: Improve Mixpanel event tracking by including device and OS in event names for better analytics segmentation
+
 ## 1.7.0
 
 ### Minor Changes
