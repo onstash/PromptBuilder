@@ -85,15 +85,7 @@ function ShareRouteComponent() {
   return (
     <div className="min-h-screen bg-background py-8 px-4">
       <div className="max-w-2xl mx-auto">
-        <WizardPreview
-          data={d}
-          compressed
-          source="share"
-          shareUrl={shareUrl ?? ""}
-          onClose={() => {
-            navigate({ to: "/wizard", search: { d: null, vld: 0 } });
-          }}
-        />
+        <WizardPreview data={d} compressed source="share" shareUrl={shareUrl ?? ""} />
       </div>
     </div>
   );

@@ -115,67 +115,56 @@ const depthMap: Record<string, string> = {
 };
 
 export function generatePromptText(finalData: PromptWizardData): string {
-  console.group("generatePromptText", finalData);
+  if (finalData.updatedAt === -1) {
+    return "";
+  }
   const sections: string[] = [];
 
   if (finalData.task_intent) {
     sections.push(`## Task\n${finalData.task_intent}`);
-    console.log("task_intent", finalData.task_intent);
   }
 
   if (finalData.context) {
     sections.push(`## Context\n${finalData.context}`);
-    console.log("context", finalData.context);
   }
 
   if (finalData.constraints) {
     sections.push(`## Constraints\n${finalData.constraints}`);
-    console.log("constraints", finalData.constraints);
   }
 
   const audienceLabel =
     finalData.target_audience === "custom" ? finalData.custom_audience : finalData.target_audience;
   if (audienceLabel) {
     sections.push(`## Target Audience\n${audienceLabel}`);
-    console.log("audienceLabel", audienceLabel);
   }
 
   if (finalData.output_format) {
     sections.push(
       `## Output Format\n${formatMap[finalData.output_format] || finalData.output_format}`
     );
-    console.log("output_format", finalData.output_format);
   }
 
   if (finalData.ai_role) {
     sections.push(`## Your Role\nAct as: ${finalData.ai_role}`);
-    console.log("ai_role", finalData.ai_role);
   }
 
   if (finalData.tone_style) {
     sections.push(`## Tone\nUse a ${finalData.tone_style} tone.`);
-    console.log("tone_style", finalData.tone_style);
   }
 
   if (finalData.reasoning_depth && finalData.reasoning_depth !== "moderate") {
     sections.push(`## Reasoning\n${depthMap[finalData.reasoning_depth]}`);
-    console.log("reasoning_depth", finalData.reasoning_depth);
   }
 
   if (finalData.self_check) {
     sections.push(
       `## Self-Check\nBefore finalizing, verify your response is accurate and complete.`
     );
-    console.log("self_check", finalData.self_check);
   }
 
   if (finalData.disallowed_content) {
     sections.push(`## Avoid\n${finalData.disallowed_content}`);
-    console.log("disallowed_content", finalData.disallowed_content);
   }
-  console.log("sections", sections);
-
-  console.groupEnd();
 
   return sections.join("\n\n");
 }
