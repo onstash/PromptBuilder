@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.0.1
+
+### Patch Changes
+
+- e1198c7: Refactored wizard store to centralize advanced mode toggle logic and removed unused derived getters (`getPromptText`, `getCompressedData`). This ensures `total_steps` is updated atomically with `show_advanced`, preventing potential state inconsistencies.
+
 ## 2.0.0
 
 ### Major Changes
