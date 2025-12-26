@@ -70,6 +70,15 @@ const mp = Mixpanel.init(import.meta.env.VITE_PUBLIC_MIXPANEL_PROJECT_TOKEN, {
 // USER-AGENT PARSING UTILITIES
 // ═══════════════════════════════════════════════════════════════════════════
 
+const browsers: [RegExp, string][] = [
+  [/Edg(?:e|A|iOS)?\/(\d+)/, "Edge"],
+  [/OPR\/(\d+)|Opera\/(\d+)/, "Opera"],
+  [/Chrome\/(\d+).*Safari/, "Chrome"],
+  [/Firefox\/(\d+)/, "Firefox"],
+  [/Safari\/(\d+)(?!.*Chrome)/, "Safari"],
+  [/MSIE (\d+)|Trident.*rv:(\d+)/, "Internet Explorer"],
+];
+
 /**
  * Parse browser name and version from user-agent string
  */
@@ -77,14 +86,6 @@ function parseBrowser(userAgent: string | null): string {
   if (!userAgent) return "Unknown";
 
   // Order matters - check more specific patterns first
-  const browsers: [RegExp, string][] = [
-    [/Edg(?:e|A|iOS)?\/(\d+)/, "Edge"],
-    [/OPR\/(\d+)|Opera\/(\d+)/, "Opera"],
-    [/Chrome\/(\d+).*Safari/, "Chrome"],
-    [/Firefox\/(\d+)/, "Firefox"],
-    [/Safari\/(\d+)(?!.*Chrome)/, "Safari"],
-    [/MSIE (\d+)|Trident.*rv:(\d+)/, "Internet Explorer"],
-  ];
 
   for (const [regex, name] of browsers) {
     const match = userAgent.match(regex);
@@ -185,14 +186,17 @@ export const trackMixpanelInServer = createServerFn({ method: "POST" })
     const ip = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip");
     const origin = request.headers.get("origin");
 
+    const device = parseDevice(userAgent);
+    const os = parseOS(userAgent);
+
     const finalData = {
       ...data.properties,
 
       // Browser/Device info
       $user_agent: userAgent,
       $browser: parseBrowser(userAgent),
-      $device: parseDevice(userAgent),
-      $os: parseOS(userAgent),
+      $device: device,
+      $os: os,
 
       // Referral tracking
       $referrer: referer,
@@ -211,7 +215,7 @@ export const trackMixpanelInServer = createServerFn({ method: "POST" })
       return;
     }
 
-    mp.track(`v${version}_${data.event}`, finalData);
+    mp.track(`v${version}_${data.event}_${device}_${os}`.toLowerCase(), finalData);
   });
 
 type MixpanelContextType = ReturnType<typeof useServerFn<typeof trackMixpanelInServer>>;
@@ -264,7 +268,7 @@ export function useTrackMixpanel() {
         },
       });
     },
-    [trackMixpanelFn]
+    []
   );
 
   return trackEvent;

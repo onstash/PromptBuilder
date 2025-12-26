@@ -130,12 +130,12 @@ function WizardPreviewForSharePage(props: WizardPreviewPropsForSharePage) {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-card border-4 border-foreground shadow-[8px_8px_0px_0px_hsl(var(--foreground))]"
+      className="bg-card border-4 border-foreground shadow-[8px_8px_0px_0px_hsl(var(--foreground))] md:shadow-[8px_8px_0px_0px_hsl(var(--foreground))] max-md:shadow-[4px_4px_0px_0px_hsl(var(--foreground))]"
     >
       {/* Header */}
-      <div className="p-4 border-b-4 border-foreground flex items-center justify-between">
+      <div className="p-4 border-b-4 border-foreground flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <h3 className="font-black uppercase text-lg">Your Prompt</h3>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {shareUrl && (
             <>
               <Button
@@ -272,12 +272,12 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-card border-4 border-foreground shadow-[8px_8px_0px_0px_hsl(var(--foreground))]"
+      className="bg-card border-4 border-foreground shadow-[8px_8px_0px_0px_hsl(var(--foreground))] md:shadow-[8px_8px_0px_0px_hsl(var(--foreground))] max-md:shadow-[4px_4px_0px_0px_hsl(var(--foreground))]"
     >
       {/* Header */}
-      <div className="p-4 border-b-4 border-foreground flex items-center justify-between">
+      <div className="p-4 border-b-4 border-foreground flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <h3 className="font-black uppercase text-lg">Your Prompt</h3>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {shareUrl && (
             <>
               <Button

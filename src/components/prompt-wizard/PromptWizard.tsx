@@ -1,12 +1,13 @@
-import { useCallback, useRef, useEffect, memo } from "react";
+import { useCallback, useRef, useEffect, memo, useState } from "react";
 
 import { motion } from "motion/react";
-import { Settings2, RotateCcw } from "lucide-react";
+import { Settings2, RotateCcw, Eye } from "lucide-react";
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 
 import { type PromptWizardData } from "@/utils/prompt-wizard/schema";
 
@@ -34,6 +35,8 @@ import { type MixpanelDataEvent, useTrackMixpanel } from "@/utils/analytics/Mixp
 import { useWizardStore } from "@/stores/wizard-store";
 // Utils
 import { compress } from "@/utils/prompt-wizard";
+// Hooks
+import { useIsMobile } from "@/hooks/use-mobile";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // STATIC CONFIGURATION
@@ -80,6 +83,12 @@ export const PromptWizard = memo(function PromptWizard() {
   const search = useSearch({ from: "/wizard" });
   const navigate = useNavigate({ from: "/wizard" });
   const trackEvent = useTrackMixpanel();
+  const isMobile = useIsMobile();
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Mobile Preview Sheet State
+  // ─────────────────────────────────────────────────────────────────────────
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   // ─────────────────────────────────────────────────────────────────────────
   // Zustand Store
@@ -204,7 +213,12 @@ export const PromptWizard = memo(function PromptWizard() {
     const dataCompressed = compress(JSON.stringify(wizardData));
     navigate({ to: "/wizard", search: { d: dataCompressed, vld: 1 } });
     finish();
-  }, [currentStepValid, wizardData, setShowError, finish, trackEvent]);
+
+    // On mobile, open the preview sheet after generating
+    if (isMobile) {
+      setIsPreviewOpen(true);
+    }
+  }, [currentStepValid, wizardData, setShowError, finish, trackEvent, isMobile]);
 
   const toggleAdvanced = useCallback(() => {
     updateData({ show_advanced: !showAdvanced });
@@ -250,17 +264,17 @@ export const PromptWizard = memo(function PromptWizard() {
   const stepHint = STEP_HINTS[currentStep] || "";
 
   return (
-    <div className="min-h-screen bg-background py-8 px-4">
+    <div className="min-h-screen bg-background py-8 px-4 md:px-[5%]">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className={`max-w-[90%] mx-auto flex items-start gap-6 justify-between`}
+        className="mx-auto flex flex-col md:flex-row md:items-start md:gap-6 md:justify-between md:max-w-[90%]"
       >
         {/* Wizard Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="max-w-[50%] bg-card border-4 border-foreground shadow-[8px_8px_0px_0px_hsl(var(--foreground))]"
+          className="w-full md:max-w-[50%] bg-card border-4 border-foreground shadow-[8px_8px_0px_0px_hsl(var(--foreground))]"
         >
           {/* Header */}
           <div className="p-6 border-b-4 border-foreground">
@@ -327,10 +341,11 @@ export const PromptWizard = memo(function PromptWizard() {
           </div>
         </motion.div>
 
+        {/* Desktop Preview - Hidden on mobile */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="max-w-[45%]"
+          className="hidden md:block md:max-w-[45%]"
         >
           <WizardPreview
             data={wizardData}
@@ -340,6 +355,42 @@ export const PromptWizard = memo(function PromptWizard() {
           />
         </motion.div>
       </motion.div>
+
+      {/* Mobile Preview Button - Fixed at bottom */}
+      {isMobile && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="fixed bottom-6 right-4 z-40"
+        >
+          <Button
+            onClick={() => setIsPreviewOpen(true)}
+            size="lg"
+            className="shadow-lg uppercase font-bold"
+          >
+            <Eye className="w-4 h-4 mr-2" />
+            View Prompt
+          </Button>
+        </motion.div>
+      )}
+
+      {/* Mobile Bottom Sheet */}
+      <Drawer open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
+        <DrawerContent className="max-h-[85vh]">
+          <DrawerHeader className="px-4">
+            <DrawerTitle className="font-black uppercase">Your Prompt</DrawerTitle>
+          </DrawerHeader>
+          <div className="px-4 pb-6 overflow-y-auto">
+            <WizardPreview
+              data={wizardData}
+              compressed={false}
+              source="wizard"
+              shareUrl={shareUrl!}
+            />
+          </div>
+        </DrawerContent>
+      </Drawer>
+
       {/* Back to Home */}
       <div className="mt-6 text-center">
         <Button variant="link" asChild>
