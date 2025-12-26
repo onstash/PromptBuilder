@@ -5,7 +5,7 @@ import { WIZARD_STEPS } from "@/utils/prompt-wizard/schema";
 interface WizardProgressProps {
   currentStep: number;
   totalSteps: number;
-  completedSteps: Set<number>;
+  completedSteps: Record<number, boolean>;
   onStepClick: (step: number) => void;
 }
 
@@ -21,8 +21,8 @@ export function WizardProgress({
     // Can only click on completed steps or the step right after last completed
     const canNavigate =
       stepNumber === 1 || // Always can go to step 1
-      completedSteps.has(stepNumber) || // Can go to completed steps
-      completedSteps.has(stepNumber - 1); // Can go to next step after completed
+      completedSteps[stepNumber] || // Can go to completed steps
+      completedSteps[stepNumber - 1]; // Can go to next step after completed
 
     if (canNavigate) {
       onStepClick(stepNumber);
@@ -36,7 +36,7 @@ export function WizardProgress({
         className="grid items-center gap-2 mb-4"
         style={{
           gridTemplateColumns: steps
-            .map((_, i) => (i < totalSteps - 1 ? "auto 1fr" : "auto"))
+            .map((_, i) => (i < steps.length - 1 ? "auto 1fr" : "auto"))
             .join(" "),
         }}
         layout
@@ -45,15 +45,13 @@ export function WizardProgress({
         <AnimatePresence mode="popLayout" initial={false}>
           {steps.map((step, index) => {
             const stepNumber = index + 1;
-            const isCompleted = completedSteps.has(stepNumber);
+            const isCompleted = completedSteps[stepNumber];
             const isActive = stepNumber === currentStep;
             const isUpcoming = !isCompleted && !isActive;
 
             // Can click if completed or is the next available step
             const isClickable =
-              stepNumber === 1 ||
-              completedSteps.has(stepNumber) ||
-              completedSteps.has(stepNumber - 1);
+              stepNumber === 1 || completedSteps[stepNumber] || completedSteps[stepNumber - 1];
 
             return (
               <>

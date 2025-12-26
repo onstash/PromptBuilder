@@ -196,7 +196,7 @@ interface WizardState {
   shareUrl: string | null;
   showError: boolean;
   dataSource: "default" | "localStorage" | "url";
-  completedSteps: Set<number>;
+  completedSteps: Record<number, boolean>;
 
   // Derived (computed on demand)
   getPromptText: () => string;
@@ -231,7 +231,7 @@ export const useWizardStore = create<WizardStore>()(
     shareUrl: getShareUrl(),
     showError: false,
     dataSource: "default",
-    completedSteps: new Set<number>(),
+    completedSteps: {},
 
     // ─────────────────────────────────────────────────────────────────────────
     // Derived Getters
@@ -274,20 +274,29 @@ export const useWizardStore = create<WizardStore>()(
       if (fromUrl?.d && fromUrl.vld) {
         const decompressed = decompressFullState(fromUrl.d);
         if (Object.keys(decompressed).length > 1) {
+          const completedSteps = Object.fromEntries(
+            Array.from({ length: decompressed.step }, (_, i) => [i + 1, true])
+          ) as Record<number, boolean>;
           set({
-            wizardData: decompressed,
+            wizardData: { ...decompressed, step: 1 },
             dataSource: "url",
             shareUrl: getShareUrl(),
+            completedSteps,
           });
           return;
         }
       }
 
       const [dataFromLocalStorage, source] = loadFromStorage();
+      const completedSteps = Object.fromEntries(
+        Array.from({ length: dataFromLocalStorage.step }, (_, i) => [i + 1, true])
+      ) as Record<number, boolean>;
+
       set({
-        wizardData: dataFromLocalStorage,
+        wizardData: { ...dataFromLocalStorage, step: 1 },
         dataSource: source,
         shareUrl: getShareUrl(),
+        completedSteps,
       });
     },
 
@@ -319,8 +328,7 @@ export const useWizardStore = create<WizardStore>()(
           step,
           updatedAt: Date.now(),
         };
-        const completedStepsUpdated = new Set(state.completedSteps);
-        completedStepsUpdated.add(step);
+        const completedStepsUpdated = { ...state.completedSteps, [step]: true };
         const url = generateShareUrl(wizardDataUpdated);
         saveShareUrl(url);
         return {

@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-router";
+import { createFileRoute, Link, useSearch } from "@tanstack/react-router";
 import { useMemo } from "react";
 import * as Sentry from "@sentry/tanstackstart-react";
 
@@ -50,7 +50,6 @@ export const Route = createFileRoute("/share")({
 
 function ShareRouteComponent() {
   const { d, vld } = useSearch({ from: "/share" });
-  const navigate = useNavigate({ from: "/share" });
 
   // Reconstruct the share URL from current location
   const shareUrl = useMemo(() => {

@@ -3,7 +3,6 @@ import { useCallback, useRef, useEffect, memo } from "react";
 import { motion } from "motion/react";
 import { Settings2, RotateCcw } from "lucide-react";
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
-import { useShallow } from "zustand/react/shallow";
 
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -85,14 +84,10 @@ export const PromptWizard = memo(function PromptWizard() {
   // ─────────────────────────────────────────────────────────────────────────
   // Zustand Store
   // ─────────────────────────────────────────────────────────────────────────
-  const { wizardData, shareUrl, showError, completedSteps } = useWizardStore(
-    useShallow((state) => ({
-      wizardData: state.wizardData,
-      shareUrl: state.shareUrl,
-      showError: state.showError,
-      completedSteps: state.completedSteps,
-    }))
-  );
+  const wizardData = useWizardStore((state) => state.wizardData);
+  const shareUrl = useWizardStore((state) => state.shareUrl);
+  const showError = useWizardStore((state) => state.showError);
+  const completedSteps = useWizardStore((state) => state.completedSteps);
 
   const updateData = useWizardStore((state) => state.updateData);
   const goToStep = useWizardStore((state) => state.goToStep);
@@ -106,11 +101,7 @@ export const PromptWizard = memo(function PromptWizard() {
   // ─────────────────────────────────────────────────────────────────────────
   // Initialization
   // ─────────────────────────────────────────────────────────────────────────
-  const initialized = useRef(false);
   useEffect(() => {
-    if (initialized.current) return;
-    initialized.current = true;
-
     trackEvent("page_viewed_wizard", {
       page: "wizard",
       timestamp: new Date().toISOString(),
