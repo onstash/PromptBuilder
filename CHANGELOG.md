@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.7.0
+
+### Minor Changes
+
+- 89a509f: Fix wizard step tracking with serializable Record type and resolve TanStack SSR serialization error
+
 ## 1.6.0
 
 ### Minor Changes
