@@ -99,19 +99,21 @@ export const promptWizardSchema = z.object({
   constraints: z.string().default(""),
   target_audience: z
     .enum(["general", "technical", "business", "children", "entrepreneur", "custom"])
-    .default("general"),
+    // @ts-expect-error
+    .default(""),
   custom_audience: z.string().optional(),
   output_format: z
     .enum([
+      "bullet-list",
       "1-paragraph",
       "2-paragraphs",
       "3-plus-paragraphs",
-      "bullet-list",
       "numbered-list",
       "table",
       "mixed",
     ])
-    .default("1-paragraph"),
+    // @ts-expect-error
+    .default(""),
 
   // ─────────────────────────────────────────────────────────────────────────
   // Optional (Enhancements) - Steps 6-10
@@ -120,15 +122,19 @@ export const promptWizardSchema = z.object({
   tone_style: z
     .enum(["formal", "casual", "technical", "friendly", "professional", "humorous"])
     .optional(),
-  reasoning_depth: z.enum(["brief", "moderate", "thorough"]).default("moderate"),
+  reasoning_depth: z
+    .enum(["brief", "moderate", "thorough"])
+    // @ts-expect-error
+    .default(""),
   self_check: z.boolean().default(false),
   disallowed_content: z.string().optional(),
-
   // ─────────────────────────────────────────────────────────────────────────
   // Wizard State
   // ─────────────────────────────────────────────────────────────────────────
   step: z.number().min(1).max(10).default(1),
   show_advanced: z.boolean().default(false),
+  updatedAt: z.number().default(-1),
+  currentMaxStep: z.number().min(1).max(10).default(1),
 });
 
 export type PromptWizardData = z.infer<typeof promptWizardSchema>;

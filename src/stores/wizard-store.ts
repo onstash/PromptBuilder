@@ -99,67 +99,83 @@ function getShareUrl(): string | null {
 // PROMPT GENERATION
 // ═══════════════════════════════════════════════════════════════════════════
 
+const formatMap: Record<string, string> = {
+  "1-paragraph": "Provide your response in a single paragraph.",
+  "2-paragraphs": "Provide your response in exactly 2 paragraphs.",
+  "3-plus-paragraphs": "Provide a detailed response with multiple paragraphs.",
+  "bullet-list": "Provide your response as a bulleted list.",
+  "numbered-list": "Provide your response as a numbered step-by-step list.",
+  table: "Provide your response in a table format.",
+  mixed: "Use a combination of paragraphs, lists, and other formatting.",
+};
+
+const depthMap: Record<string, string> = {
+  brief: "Be concise and direct.",
+  thorough: "Provide thorough, in-depth analysis.",
+};
+
 export function generatePromptText(finalData: PromptWizardData): string {
+  console.group("generatePromptText", finalData);
   const sections: string[] = [];
 
   if (finalData.task_intent) {
     sections.push(`## Task\n${finalData.task_intent}`);
+    console.log("task_intent", finalData.task_intent);
   }
 
   if (finalData.context) {
     sections.push(`## Context\n${finalData.context}`);
+    console.log("context", finalData.context);
   }
 
   if (finalData.constraints) {
     sections.push(`## Constraints\n${finalData.constraints}`);
+    console.log("constraints", finalData.constraints);
   }
 
   const audienceLabel =
     finalData.target_audience === "custom" ? finalData.custom_audience : finalData.target_audience;
   if (audienceLabel) {
     sections.push(`## Target Audience\n${audienceLabel}`);
+    console.log("audienceLabel", audienceLabel);
   }
 
-  const formatMap: Record<string, string> = {
-    "1-paragraph": "Provide your response in a single paragraph.",
-    "2-paragraphs": "Provide your response in exactly 2 paragraphs.",
-    "3-plus-paragraphs": "Provide a detailed response with multiple paragraphs.",
-    "bullet-list": "Provide your response as a bulleted list.",
-    "numbered-list": "Provide your response as a numbered step-by-step list.",
-    table: "Provide your response in a table format.",
-    mixed: "Use a combination of paragraphs, lists, and other formatting.",
-  };
   if (finalData.output_format) {
     sections.push(
       `## Output Format\n${formatMap[finalData.output_format] || finalData.output_format}`
     );
+    console.log("output_format", finalData.output_format);
   }
 
   if (finalData.ai_role) {
     sections.push(`## Your Role\nAct as: ${finalData.ai_role}`);
+    console.log("ai_role", finalData.ai_role);
   }
 
   if (finalData.tone_style) {
     sections.push(`## Tone\nUse a ${finalData.tone_style} tone.`);
+    console.log("tone_style", finalData.tone_style);
   }
 
   if (finalData.reasoning_depth && finalData.reasoning_depth !== "moderate") {
-    const depthMap: Record<string, string> = {
-      brief: "Be concise and direct.",
-      thorough: "Provide thorough, in-depth analysis.",
-    };
     sections.push(`## Reasoning\n${depthMap[finalData.reasoning_depth]}`);
+    console.log("reasoning_depth", finalData.reasoning_depth);
   }
 
   if (finalData.self_check) {
     sections.push(
       `## Self-Check\nBefore finalizing, verify your response is accurate and complete.`
     );
+    console.log("self_check", finalData.self_check);
   }
 
   if (finalData.disallowed_content) {
     sections.push(`## Avoid\n${finalData.disallowed_content}`);
+    console.log("disallowed_content", finalData.disallowed_content);
   }
+  console.log("sections", sections);
+
+  console.groupEnd();
 
   return sections.join("\n\n");
 }
@@ -289,7 +305,7 @@ export const useWizardStore = create<WizardStore>()(
 
     updateData: (updates) => {
       set((state) => {
-        const newData = { ...state.wizardData, ...updates };
+        const newData = { ...state.wizardData, ...updates, updatedAt: Date.now() };
 
         // If disabling advanced mode while on step > 5, go to step 5
         if (updates.show_advanced === false && state.wizardData.step > 5) {
@@ -305,7 +321,12 @@ export const useWizardStore = create<WizardStore>()(
 
     goToStep: (step) => {
       set((state) => {
-        const wizardDataUpdated = { ...state.wizardData, step };
+        const wizardDataUpdated = {
+          ...state.wizardData,
+          step,
+          currentMaxStep: Math.max(state.wizardData.currentMaxStep, step),
+          updatedAt: Date.now(),
+        };
         const url = generateShareUrl(wizardDataUpdated);
         saveShareUrl(url);
         return {

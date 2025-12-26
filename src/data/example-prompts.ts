@@ -1,6 +1,5 @@
 import type { PromptWizardData } from "@/utils/prompt-wizard/schema";
 import { compress } from "@/utils/prompt-wizard/url-compression";
-import { WIZARD_DEFAULTS } from "@/utils/prompt-wizard/search-params";
 import { Mail, GraduationCap, PenLine, Briefcase, MessageSquare, Code } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
