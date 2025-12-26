@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.6.0
+
+### Minor Changes
+
+- 12fe817: Move step completion tracking to Zustand store and optimize component subscriptions with useShallow
+
 ## 1.5.0
 
 ### Minor Changes
