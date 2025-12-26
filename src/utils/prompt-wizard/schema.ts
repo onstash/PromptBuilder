@@ -132,9 +132,9 @@ export const promptWizardSchema = z.object({
   // Wizard State
   // ─────────────────────────────────────────────────────────────────────────
   step: z.number().min(1).max(10).default(1),
+  total_steps: z.number().min(1).max(10).default(1),
   show_advanced: z.boolean().default(false),
   updatedAt: z.number().default(-1),
-  currentMaxStep: z.number().min(1).max(10).default(1),
 });
 
 export type PromptWizardData = z.infer<typeof promptWizardSchema>;

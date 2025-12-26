@@ -196,11 +196,11 @@ interface WizardState {
   shareUrl: string | null;
   showError: boolean;
   dataSource: "default" | "localStorage" | "url";
+  completedSteps: Set<number>;
 
   // Derived (computed on demand)
   getPromptText: () => string;
   getCompressedData: () => string;
-  getTotalSteps: () => number;
   isTaskIntentValid: () => boolean;
   isCurrentStepValid: () => boolean;
   getCurrentStepError: () => string | null;
@@ -231,6 +231,7 @@ export const useWizardStore = create<WizardStore>()(
     shareUrl: getShareUrl(),
     showError: false,
     dataSource: "default",
+    completedSteps: new Set<number>(),
 
     // ─────────────────────────────────────────────────────────────────────────
     // Derived Getters
@@ -250,8 +251,6 @@ export const useWizardStore = create<WizardStore>()(
       }
       return compress(JSON.stringify(filtered));
     },
-
-    getTotalSteps: () => (get().wizardData.show_advanced ? 10 : TOTAL_REQUIRED_STEPS),
 
     isTaskIntentValid: () => get().wizardData.task_intent.trim().length >= 10,
 
@@ -294,7 +293,12 @@ export const useWizardStore = create<WizardStore>()(
 
     updateData: (updates) => {
       set((state) => {
-        const newData = { ...state.wizardData, ...updates, updatedAt: Date.now() };
+        const newData: PromptWizardData = {
+          ...state.wizardData,
+          ...updates,
+          updatedAt: Date.now(),
+          total_steps: updates.show_advanced ? 10 : TOTAL_REQUIRED_STEPS,
+        };
 
         // If disabling advanced mode while on step > 5, go to step 5
         if (updates.show_advanced === false && state.wizardData.step > 5) {
@@ -313,15 +317,17 @@ export const useWizardStore = create<WizardStore>()(
         const wizardDataUpdated = {
           ...state.wizardData,
           step,
-          currentMaxStep: Math.max(state.wizardData.currentMaxStep, step),
           updatedAt: Date.now(),
         };
+        const completedStepsUpdated = new Set(state.completedSteps);
+        completedStepsUpdated.add(step);
         const url = generateShareUrl(wizardDataUpdated);
         saveShareUrl(url);
         return {
           wizardData: wizardDataUpdated,
           showError: false,
           shareUrl: url,
+          completedSteps: completedStepsUpdated,
         };
       });
     },

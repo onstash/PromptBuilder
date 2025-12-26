@@ -1,14 +1,15 @@
-import { useCallback, useMemo, useRef, useEffect, memo } from "react";
+import { useCallback, useRef, useEffect, memo } from "react";
 
 import { motion } from "motion/react";
 import { Settings2, RotateCcw } from "lucide-react";
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
+import { useShallow } from "zustand/react/shallow";
 
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 
-import { TOTAL_REQUIRED_STEPS, type PromptWizardData } from "@/utils/prompt-wizard/schema";
+import { type PromptWizardData } from "@/utils/prompt-wizard/schema";
 
 import { WizardProgress } from "./WizardProgress";
 import { WizardNavigation } from "./WizardNavigation";
@@ -84,9 +85,14 @@ export const PromptWizard = memo(function PromptWizard() {
   // ─────────────────────────────────────────────────────────────────────────
   // Zustand Store
   // ─────────────────────────────────────────────────────────────────────────
-  const wizardData = useWizardStore((state) => state.wizardData);
-  const shareUrl = useWizardStore((state) => state.shareUrl);
-  const showError = useWizardStore((state) => state.showError);
+  const { wizardData, shareUrl, showError, completedSteps } = useWizardStore(
+    useShallow((state) => ({
+      wizardData: state.wizardData,
+      shareUrl: state.shareUrl,
+      showError: state.showError,
+      completedSteps: state.completedSteps,
+    }))
+  );
 
   const updateData = useWizardStore((state) => state.updateData);
   const goToStep = useWizardStore((state) => state.goToStep);
@@ -96,7 +102,6 @@ export const PromptWizard = memo(function PromptWizard() {
   const initialize = useWizardStore((state) => state.initialize);
   const isCurrentStepValid = useWizardStore((state) => state.isCurrentStepValid);
   const getCurrentStepError = useWizardStore((state) => state.getCurrentStepError);
-  const isTaskIntentValid = useWizardStore((state) => state.isTaskIntentValid);
 
   // ─────────────────────────────────────────────────────────────────────────
   // Initialization
@@ -160,19 +165,8 @@ export const PromptWizard = memo(function PromptWizard() {
   // Derived Values
   // ─────────────────────────────────────────────────────────────────────────
   const currentStep = wizardData.step;
-  const currentMaxStep = wizardData.currentMaxStep;
   const showAdvanced = wizardData.show_advanced;
-  const totalSteps = showAdvanced ? 10 : TOTAL_REQUIRED_STEPS;
-  const taskIntentValid = isTaskIntentValid();
-
-  const completedSteps = useMemo(() => {
-    const completed = new Set<number>();
-    if (taskIntentValid) completed.add(1);
-    for (let i = 2; i <= totalSteps; i++) {
-      completed.add(i);
-    }
-    return completed;
-  }, [taskIntentValid, totalSteps]);
+  const totalSteps = wizardData.total_steps;
 
   const currentStepValid = isCurrentStepValid();
   const currentStepError = getCurrentStepError();
@@ -306,8 +300,7 @@ export const PromptWizard = memo(function PromptWizard() {
             </div>
             <WizardProgress
               currentStep={currentStep}
-              currentMaxStep={currentMaxStep}
-              showAdvanced={showAdvanced}
+              totalSteps={totalSteps}
               completedSteps={completedSteps}
               onStepClick={handleStepClick}
             />

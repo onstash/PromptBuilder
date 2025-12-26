@@ -1,23 +1,20 @@
 import { motion, AnimatePresence } from "motion/react";
 import { Check } from "lucide-react";
-import { TOTAL_REQUIRED_STEPS, WIZARD_STEPS } from "@/utils/prompt-wizard/schema";
+import { WIZARD_STEPS } from "@/utils/prompt-wizard/schema";
 
 interface WizardProgressProps {
   currentStep: number;
-  currentMaxStep: number;
-  showAdvanced: boolean;
+  totalSteps: number;
   completedSteps: Set<number>;
   onStepClick: (step: number) => void;
 }
 
 export function WizardProgress({
   currentStep,
-  currentMaxStep,
-  showAdvanced,
+  totalSteps,
   completedSteps,
   onStepClick,
 }: WizardProgressProps) {
-  const totalSteps = showAdvanced ? WIZARD_STEPS.length : TOTAL_REQUIRED_STEPS;
   const steps = WIZARD_STEPS.slice(0, totalSteps);
 
   const handleStepClick = (stepNumber: number) => {
@@ -39,7 +36,7 @@ export function WizardProgress({
         className="grid items-center gap-2 mb-4"
         style={{
           gridTemplateColumns: steps
-            .map((_, i) => (i < steps.length - 1 ? "auto 1fr" : "auto"))
+            .map((_, i) => (i < totalSteps - 1 ? "auto 1fr" : "auto"))
             .join(" "),
         }}
         layout
@@ -48,7 +45,7 @@ export function WizardProgress({
         <AnimatePresence mode="popLayout" initial={false}>
           {steps.map((step, index) => {
             const stepNumber = index + 1;
-            const isCompleted = completedSteps.has(stepNumber) || stepNumber <= currentMaxStep;
+            const isCompleted = completedSteps.has(stepNumber);
             const isActive = stepNumber === currentStep;
             const isUpcoming = !isCompleted && !isActive;
 
