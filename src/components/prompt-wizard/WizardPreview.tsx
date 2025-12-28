@@ -11,6 +11,7 @@ import { Link } from "@tanstack/react-router";
 import { useTrackMixpanel } from "@/utils/analytics/MixpanelProvider";
 import { generatePromptText } from "@/stores/wizard-store";
 import { withLatencyLoggingSync } from "@/utils/function-utils";
+import { StoredPromptsSection } from "./StoredPromptsSection";
 
 type WizardPreviewPropsForSharePage = {
   shareUrl: string;
@@ -88,7 +89,7 @@ function WizardPreviewForSharePage(props: WizardPreviewPropsForSharePage) {
   const handleCopyPrompt = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(promptText);
-      trackEvent("button_clicked_cta_share_copy_prompt", {
+      trackEvent("cta_clicked_copy_prompt", {
         data: wizardData,
         d: promptTextCompressed,
       });
@@ -105,7 +106,7 @@ function WizardPreviewForSharePage(props: WizardPreviewPropsForSharePage) {
     try {
       const fullUrl = `${window.location.origin}${shareUrl}`;
       await navigator.clipboard.writeText(fullUrl);
-      trackEvent("button_clicked_cta_share_copy_prompt_link", {
+      trackEvent("cta_clicked_copy_link", {
         data: wizardData,
         d: promptTextCompressed,
       });
@@ -118,7 +119,7 @@ function WizardPreviewForSharePage(props: WizardPreviewPropsForSharePage) {
   }, [shareUrl, promptTextCompressed, wizardData]);
 
   const handleEdit = useCallback(() => {
-    trackEvent("button_clicked_cta_share_edit", {
+    trackEvent("cta_clicked_edit", {
       data: wizardData,
       d: promptTextCompressed,
     });
@@ -127,79 +128,84 @@ function WizardPreviewForSharePage(props: WizardPreviewPropsForSharePage) {
   const EditOrOpenIcon = FilePen;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="bg-card border-4 border-foreground shadow-[8px_8px_0px_0px_hsl(var(--foreground))] md:shadow-[8px_8px_0px_0px_hsl(var(--foreground))] max-md:shadow-[4px_4px_0px_0px_hsl(var(--foreground))]"
-    >
-      {/* Header */}
-      <div className="p-4 border-b-4 border-foreground flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <h3 className="font-black uppercase text-lg">Your Prompt</h3>
-        <div className="flex flex-wrap gap-2">
-          {shareUrl && (
-            <>
-              <Button
-                onClick={handleCopyLink}
-                variant="outline"
-                size="sm"
-                className="font-mono text-xs"
-              >
-                {copiedLink ? (
-                  <>
-                    <Check className="w-4 h-4 mr-1" />
-                    Copied!
-                  </>
-                ) : (
-                  <>
-                    <Link2 className="w-4 h-4 mr-1" />
-                    Copy Link
-                  </>
-                )}
-              </Button>
-              <Button
-                onClick={handleEdit}
-                asChild
-                variant="outline"
-                size="sm"
-                className="font-mono text-xs"
-              >
-                <Link to="/wizard" search={{ d: promptTextCompressed, vld: 1 }}>
-                  <EditOrOpenIcon className="w-4 h-4 mr-1" />
-                  Edit
-                </Link>
-              </Button>
-            </>
-          )}
-          <Button onClick={handleCopyPrompt} size="sm" className="uppercase font-bold">
-            {copiedPrompt ? (
+    <>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-card border-4 border-foreground shadow-[8px_8px_0px_0px_hsl(var(--foreground))] md:shadow-[8px_8px_0px_0px_hsl(var(--foreground))] max-md:shadow-[4px_4px_0px_0px_hsl(var(--foreground))]"
+      >
+        {/* Header */}
+        <div className="p-4 border-b-4 border-foreground flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <h3 className="font-black uppercase text-lg">Your Prompt</h3>
+          <div className="flex flex-wrap gap-2">
+            {shareUrl && (
               <>
-                <Check className="w-4 h-4 mr-1" />
-                Copied!
-              </>
-            ) : (
-              <>
-                <Copy className="w-4 h-4 mr-1" />
-                Copy Prompt
+                <Button
+                  onClick={handleCopyLink}
+                  variant="outline"
+                  size="sm"
+                  className="font-mono text-xs"
+                >
+                  {copiedLink ? (
+                    <>
+                      <Check className="w-4 h-4 mr-1" />
+                      Copied!
+                    </>
+                  ) : (
+                    <>
+                      <Link2 className="w-4 h-4 mr-1" />
+                      Copy Link
+                    </>
+                  )}
+                </Button>
+                <Button
+                  onClick={handleEdit}
+                  asChild
+                  variant="outline"
+                  size="sm"
+                  className="font-mono text-xs"
+                >
+                  <Link to="/wizard" search={{ d: promptTextCompressed, vld: 1 }}>
+                    <EditOrOpenIcon className="w-4 h-4 mr-1" />
+                    Edit
+                  </Link>
+                </Button>
               </>
             )}
-          </Button>
+            <Button onClick={handleCopyPrompt} size="sm" className="uppercase font-bold">
+              {copiedPrompt ? (
+                <>
+                  <Check className="w-4 h-4 mr-1" />
+                  Copied!
+                </>
+              ) : (
+                <>
+                  <Copy className="w-4 h-4 mr-1" />
+                  Copy Prompt
+                </>
+              )}
+            </Button>
+          </div>
         </div>
-      </div>
 
-      {/* Prompt content */}
-      <div className="p-4 max-h-[400px] overflow-y-auto">
-        <pre className="whitespace-pre-wrap font-mono text-sm leading-relaxed">{promptText}</pre>
-      </div>
-
-      {/* Share URL indicator */}
-      {shareUrl && (
-        <div className="p-4 border-t-2 border-muted bg-muted/30">
-          <p className="text-xs font-mono text-muted-foreground">
-            🔗 Share link ready! Use "Copy Link" to share this prompt with others.
-          </p>
+        {/* Prompt content */}
+        <div className="p-4 max-h-[400px] overflow-y-auto">
+          <pre className="whitespace-pre-wrap font-mono text-sm leading-relaxed">{promptText}</pre>
         </div>
-      )}
-    </motion.div>
+
+        {/* Share URL indicator */}
+        {shareUrl && (
+          <div className="p-4 border-t-2 border-muted bg-muted/30">
+            <p className="text-xs font-mono text-muted-foreground">
+              🔗 Share link ready! Use "Copy Link" to share this prompt with others.
+            </p>
+          </div>
+        )}
+      </motion.div>
+
+      {/* Stored Prompts (only shows if user has saved prompts) */}
+      <StoredPromptsSection page="share" columns={2} />
+    </>
   );
 }
 
@@ -226,7 +232,7 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
     }
     try {
       await navigator.clipboard.writeText(promptText);
-      trackEvent("button_clicked_cta_wizard_copy_prompt", {
+      trackEvent("cta_clicked_copy_prompt", {
         data: wizardData,
         d: promptTextCompressed,
       });
@@ -247,7 +253,7 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
     try {
       const fullUrl = `${window.location.origin}${shareUrl}`;
       await navigator.clipboard.writeText(fullUrl);
-      trackEvent("button_clicked_cta_share_copy_prompt_link", {
+      trackEvent("cta_clicked_copy_link", {
         data: wizardData,
         d: promptTextCompressed,
       });
@@ -260,7 +266,7 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
   }, [shareUrl, promptTextCompressed, wizardData]);
 
   const handleEdit = useCallback(() => {
-    trackEvent("button_clicked_cta_share_edit", {
+    trackEvent("cta_clicked_edit", {
       data: wizardData,
       d: promptTextCompressed,
     });

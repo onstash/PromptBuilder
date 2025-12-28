@@ -1,7 +1,7 @@
 import { useCallback, useRef, useEffect, memo, useState } from "react";
 
 import { motion } from "motion/react";
-import { Settings2, RotateCcw, Eye } from "lucide-react";
+import { Settings2, RotateCcw, Eye, ArrowLeft, Plus } from "lucide-react";
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ import { WizardProgress } from "./WizardProgress";
 import { WizardNavigation } from "./WizardNavigation";
 import { WizardStep } from "./WizardStep";
 import { WizardPreview } from "./WizardPreview";
+import { StoredPromptsSection } from "./StoredPromptsSection";
 
 // Step components (Required: 1-5)
 import { TaskIntentStep } from "./steps/TaskIntentStep";
@@ -388,11 +389,31 @@ export const PromptWizard = memo(function PromptWizard() {
         </DrawerContent>
       </Drawer>
 
-      {/* Back to Home */}
-      <div className="mt-6 text-center">
-        <Button variant="link" asChild>
-          <Link to="/" className="text-muted-foreground font-mono text-sm">
-            ← Back to Home
+      {/* Stored Prompts (only shows if user has saved prompts) */}
+      <StoredPromptsSection page="wizard" columns={3} />
+
+      {/* Navigation Actions */}
+      <div className="mt-8 mb-8 flex justify-center gap-4">
+        <Button
+          variant="outline"
+          asChild
+          onClick={() => trackEvent("cta_clicked_back_to_home", { page: "wizard" })}
+        >
+          <Link to="/" className="font-mono text-sm">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back To Home
+          </Link>
+        </Button>
+        <Button
+          asChild
+          onClick={() => {
+            trackEvent("cta_clicked_create_new_prompt", { page: "wizard" });
+            reset();
+          }}
+        >
+          <Link to="/wizard" search={{ d: null, vld: 0 }} className="font-mono text-sm">
+            <Plus className="w-4 h-4 mr-2" />
+            Create New Prompt
           </Link>
         </Button>
       </div>

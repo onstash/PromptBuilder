@@ -40,7 +40,7 @@ export function Hero() {
             size="lg"
             className="text-lg px-10 py-7 h-auto uppercase font-black tracking-wide"
             onClick={() => {
-              trackEvent("button_clicked_cta_landing_start_building");
+              trackEvent("cta_clicked_start_building");
             }}
           >
             <Link to="/wizard" search={{ d: null, vld: 0 }} className="flex items-center gap-3">

@@ -172,3 +172,30 @@ export const REQUIRED_STEPS = WIZARD_STEPS.filter((s) => s.required);
 export const OPTIONAL_STEPS = WIZARD_STEPS.filter((s) => !s.required);
 export const TOTAL_REQUIRED_STEPS = REQUIRED_STEPS.length;
 export const TOTAL_STEPS = WIZARD_STEPS.length;
+
+// ═══════════════════════════════════════════════════════════════════════════
+// STORAGE TYPES (v2)
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * Storage version enum for future extensibility
+ */
+export const STORAGE_VERSIONS = ["v2", "v2.1", "v3"] as const;
+export type StorageVersion = (typeof STORAGE_VERSIONS)[number];
+
+/**
+ * Minimal stored prompt structure with ownership tracking
+ */
+export interface StoredPrompt {
+  data: PromptWizardData;
+  creator_distinct_id: string; // User session ID who created/loaded this prompt
+  storage_version: StorageVersion;
+}
+
+/**
+ * Root storage structure for list-based prompt storage
+ */
+export interface PromptStorageV2 {
+  version: StorageVersion;
+  prompts: StoredPrompt[];
+}

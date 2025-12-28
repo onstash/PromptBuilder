@@ -1,10 +1,11 @@
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
 
-import type { PromptWizardData } from "@/utils/prompt-wizard/schema";
+import type { PromptWizardData, StoredPrompt, PromptStorageV2 } from "@/utils/prompt-wizard/schema";
 import { TOTAL_REQUIRED_STEPS } from "@/utils/prompt-wizard/schema";
 import { compress, decompress } from "@/utils/prompt-wizard/url-compression";
 import { decompressFullState, WIZARD_DEFAULTS } from "@/utils/prompt-wizard/search-params";
+import { getOrCreateSessionId } from "@/utils/session";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // CONSTANTS
@@ -12,6 +13,8 @@ import { decompressFullState, WIZARD_DEFAULTS } from "@/utils/prompt-wizard/sear
 
 const STORAGE_KEY = "wizard-draft";
 const SHARE_URL_KEY = "wizard-share-url";
+const STORAGE_KEY_V2 = "wizard-prompts-v2";
+const MAX_PROMPTS = 15; // LRU limit
 
 // ═══════════════════════════════════════════════════════════════════════════
 // LOCAL STORAGE HELPERS
@@ -94,6 +97,124 @@ function getShareUrl(): string | null {
     return null;
   }
 }
+
+// ═══════════════════════════════════════════════════════════════════════════
+// V2 STORAGE HELPERS (List-based with LRU)
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * Get default empty v2 storage structure
+ */
+function getDefaultStorageV2(): PromptStorageV2 {
+  return {
+    version: "v2",
+    prompts: [],
+  };
+}
+
+/**
+ * Load v2 prompts from localStorage
+ */
+function loadPromptsV2(): PromptStorageV2 {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY_V2);
+    if (!stored) return getDefaultStorageV2();
+
+    let json: string;
+    if (isValidJson(stored)) {
+      json = stored;
+    } else {
+      const decompressed = decompress(stored);
+      if (!decompressed) return getDefaultStorageV2();
+      json = decompressed;
+    }
+
+    const parsed = JSON.parse(json) as PromptStorageV2;
+    return {
+      version: parsed.version || "v2",
+      prompts: Array.isArray(parsed.prompts) ? parsed.prompts : [],
+    };
+  } catch {
+    return getDefaultStorageV2();
+  }
+}
+
+/**
+ * Save v2 prompts to localStorage with LRU eviction
+ * Most recently saved prompts are kept at the end of the array
+ */
+function savePromptsV2(storage: PromptStorageV2): void {
+  try {
+    // LRU: Keep only the last MAX_PROMPTS prompts (most recent at end)
+    const truncatedPrompts = storage.prompts.slice(-MAX_PROMPTS);
+    const toSave: PromptStorageV2 = {
+      version: storage.version,
+      prompts: truncatedPrompts,
+    };
+
+    const json = JSON.stringify(toSave);
+    const compressed = compress(json);
+    localStorage.setItem(STORAGE_KEY_V2, compressed);
+  } catch {
+    // Storage full or unavailable
+  }
+}
+
+/**
+ * Add or update a prompt in v2 storage
+ * Moves the prompt to the end of the list (most recently used)
+ */
+function upsertPromptV2(data: PromptWizardData, distinctId: string): void {
+  const storage = loadPromptsV2();
+
+  // Create new stored prompt
+  const newPrompt: StoredPrompt = {
+    data,
+    creator_distinct_id: distinctId,
+    storage_version: "v2",
+  };
+
+  // For simplicity, add to end (LRU: most recent at end)
+  // Note: Without an ID field, we're treating each save as a new prompt
+  // If you want to dedupe, you'd need to add ID or hash-based matching
+  storage.prompts.push(newPrompt);
+
+  savePromptsV2(storage);
+}
+
+/**
+ * Get the current user's distinct_id for ownership tracking
+ */
+function getCurrentDistinctId(): string {
+  return getOrCreateSessionId();
+}
+
+/**
+ * Delete a prompt from v2 storage by index
+ */
+function deletePromptV2(index: number): void {
+  const storage = loadPromptsV2();
+  if (index >= 0 && index < storage.prompts.length) {
+    storage.prompts.splice(index, 1);
+    savePromptsV2(storage);
+  }
+}
+
+/**
+ * Exported for testing purposes only
+ * @internal
+ */
+export const __testing = {
+  STORAGE_KEY_V2,
+  MAX_PROMPTS,
+  getDefaultStorageV2,
+  loadPromptsV2,
+  savePromptsV2,
+  upsertPromptV2,
+  getCurrentDistinctId,
+  loadFromStorage, // v1 loader
+  deletePromptV2,
+};
 
 // ═══════════════════════════════════════════════════════════════════════════
 // PROMPT GENERATION
@@ -377,7 +498,12 @@ useWizardStore.subscribe(
       clearTimeout(saveTimeoutId);
     }
     saveTimeoutId = setTimeout(() => {
+      // Save to legacy storage (backward compatibility)
       saveToStorage(wizardData);
+
+      // Also save to v2 list-based storage with distinct_id
+      const distinctId = getCurrentDistinctId();
+      upsertPromptV2(wizardData, distinctId);
     }, 300);
   }
 );
