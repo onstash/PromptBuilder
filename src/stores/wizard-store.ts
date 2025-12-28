@@ -166,14 +166,17 @@ function savePromptsV2(storage: PromptStorageV2): void {
  * Moves the prompt to the end of the list (most recently used)
  */
 function upsertPromptV2(data: PromptWizardData, distinctId: string): void {
+  if (!data.task_intent) {
+    return;
+  }
   const storage = loadPromptsV2();
 
-  // Deduplicate: remove any existing prompts with the same task_intent
-  const taskIntent = data.task_intent?.trim().toLowerCase();
-  if (taskIntent) {
-    storage.prompts = storage.prompts.filter(
-      (p) => p.data.task_intent?.trim().toLowerCase() !== taskIntent
-    );
+  const taskIntent = data.task_intent;
+  const currentStoragePromptsCount = storage.prompts.length;
+  storage.prompts = storage.prompts.filter((p) => p.data.task_intent !== taskIntent);
+  const newStoragePromptsCount = storage.prompts.length;
+  if (currentStoragePromptsCount === newStoragePromptsCount) {
+    return;
   }
 
   // Create new stored prompt
