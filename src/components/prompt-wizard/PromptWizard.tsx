@@ -2,7 +2,7 @@ import { useCallback, useRef, useEffect, memo, useState } from "react";
 
 import { motion } from "motion/react";
 import { Settings2, RotateCcw, Eye } from "lucide-react";
-import { Link, useNavigate, useSearch } from "@tanstack/react-router";
+import { useNavigate, useSearch } from "@tanstack/react-router";
 
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -15,6 +15,8 @@ import { WizardProgress } from "./WizardProgress";
 import { WizardNavigation } from "./WizardNavigation";
 import { WizardStep } from "./WizardStep";
 import { WizardPreview } from "./WizardPreview";
+import { StoredPromptsSection } from "./StoredPromptsSection";
+import { NavigationActions } from "./NavigationActions";
 
 // Step components (Required: 1-5)
 import { TaskIntentStep } from "./steps/TaskIntentStep";
@@ -261,140 +263,139 @@ export const PromptWizard = memo(function PromptWizard() {
   const stepHint = STEP_HINTS[currentStep] || "";
 
   return (
-    <div className="min-h-screen bg-background py-8 px-4 md:px-[5%]">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="mx-auto flex flex-col md:flex-row md:items-start md:gap-6 md:justify-between md:max-w-[90%]"
-      >
-        {/* Wizard Card */}
+    <div className="min-h-screen bg-background">
+      {/* Navigation Actions - At Top */}
+      <NavigationActions page="wizard" />
+
+      <div className="py-8 px-4 md:px-[5%]">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="w-full md:max-w-[50%] bg-card border-4 border-foreground shadow-[8px_8px_0px_0px_hsl(var(--foreground))]"
+          className="mx-auto flex flex-col md:flex-row md:items-start md:gap-6 md:justify-between md:max-w-[90%]"
         >
-          {/* Header */}
-          <div className="p-6 border-b-4 border-foreground">
-            <div className="flex items-center justify-between mb-6">
-              <h1 className="text-xl font-black uppercase tracking-tight">Prompt Wizard</h1>
-              <div className="flex items-center gap-3">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleReset}
-                  className="text-muted-foreground hover:text-foreground"
-                  title="Reset form"
-                >
-                  <RotateCcw className="w-4 h-4" />
-                </Button>
-                <div className="flex items-center gap-2">
-                  <Switch
-                    id="advanced-mode"
-                    checked={showAdvanced}
-                    onCheckedChange={toggleAdvancedMode}
-                  />
-                  <Label htmlFor="advanced-mode" className="text-sm font-mono">
-                    <Settings2 className="w-4 h-4 inline mr-1" />
-                    Advanced
-                  </Label>
+          {/* Wizard Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="w-full md:max-w-[50%] bg-card border-4 border-foreground shadow-[8px_8px_0px_0px_hsl(var(--foreground))]"
+          >
+            {/* Header */}
+            <div className="p-6 border-b-4 border-foreground">
+              <div className="flex items-center justify-between mb-6">
+                <h1 className="text-xl font-black uppercase tracking-tight">Prompt Wizard</h1>
+                <div className="flex items-center gap-3">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleReset}
+                    className="text-muted-foreground hover:text-foreground"
+                    title="Reset form"
+                  >
+                    <RotateCcw className="w-4 h-4" />
+                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Switch
+                      id="advanced-mode"
+                      checked={showAdvanced}
+                      onCheckedChange={toggleAdvancedMode}
+                    />
+                    <Label htmlFor="advanced-mode" className="text-sm font-mono">
+                      <Settings2 className="w-4 h-4 inline mr-1" />
+                      Advanced
+                    </Label>
+                  </div>
                 </div>
               </div>
+              <WizardProgress
+                currentStep={currentStep}
+                totalSteps={totalSteps}
+                completedSteps={completedSteps}
+                onStepClick={handleStepClick}
+              />
             </div>
-            <WizardProgress
-              currentStep={currentStep}
-              totalSteps={totalSteps}
-              completedSteps={completedSteps}
-              onStepClick={handleStepClick}
-            />
-          </div>
 
-          {/* Step Content */}
-          <div className="p-6 min-h-[400px]">
-            <WizardStep stepKey={currentStep} direction={direction} hint={stepHint}>
-              <StepComponent data={wizardData} onUpdate={updateData} />
-            </WizardStep>
+            {/* Step Content */}
+            <div className="p-6 min-h-[400px]">
+              <WizardStep stepKey={currentStep} direction={direction} hint={stepHint}>
+                <StepComponent data={wizardData} onUpdate={updateData} />
+              </WizardStep>
 
-            {showError && currentStepError && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="mt-4 p-3 bg-destructive/10 border-2 border-destructive text-destructive text-sm font-mono"
-              >
-                ⚠️ {currentStepError}
-              </motion.div>
-            )}
-          </div>
+              {showError && currentStepError && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mt-4 p-3 bg-destructive/10 border-2 border-destructive text-destructive text-sm font-mono"
+                >
+                  ⚠️ {currentStepError}
+                </motion.div>
+              )}
+            </div>
 
-          {/* Navigation */}
-          <div className="p-6">
-            <WizardNavigation
-              currentStep={currentStep}
-              showAdvanced={showAdvanced}
-              onNext={handleNext}
-              onBack={handleBack}
-              onFinish={handleFinish}
-              canProceed={currentStepValid}
-            />
-          </div>
-        </motion.div>
+            {/* Navigation */}
+            <div className="p-6">
+              <WizardNavigation
+                currentStep={currentStep}
+                showAdvanced={showAdvanced}
+                onNext={handleNext}
+                onBack={handleBack}
+                onFinish={handleFinish}
+                canProceed={currentStepValid}
+              />
+            </div>
+          </motion.div>
 
-        {/* Desktop Preview - Hidden on mobile */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="hidden md:block md:max-w-[45%]"
-        >
-          <WizardPreview
-            data={wizardData}
-            compressed={false}
-            source="wizard"
-            shareUrl={shareUrl!}
-          />
-        </motion.div>
-      </motion.div>
-
-      {/* Mobile Preview Button - Fixed at bottom */}
-      {isMobile && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="fixed bottom-6 right-4 z-40"
-        >
-          <Button
-            onClick={() => setIsPreviewOpen(true)}
-            size="lg"
-            className="shadow-lg uppercase font-bold"
+          {/* Desktop Preview - Hidden on mobile */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="hidden md:block md:max-w-[45%]"
           >
-            <Eye className="w-4 h-4 mr-2" />
-            View Prompt
-          </Button>
-        </motion.div>
-      )}
-
-      {/* Mobile Bottom Sheet */}
-      <Drawer open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
-        <DrawerContent className="max-h-[85vh]">
-          <DrawerHeader className="px-4">
-            <DrawerTitle className="font-black uppercase">Your Prompt</DrawerTitle>
-          </DrawerHeader>
-          <div className="px-4 pb-6 overflow-y-auto">
             <WizardPreview
               data={wizardData}
               compressed={false}
               source="wizard"
               shareUrl={shareUrl!}
             />
-          </div>
-        </DrawerContent>
-      </Drawer>
+          </motion.div>
+        </motion.div>
 
-      {/* Back to Home */}
-      <div className="mt-6 text-center">
-        <Button variant="link" asChild>
-          <Link to="/" className="text-muted-foreground font-mono text-sm">
-            ← Back to Home
-          </Link>
-        </Button>
+        {/* Mobile Preview Button - Fixed at bottom */}
+        {isMobile && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="fixed bottom-6 right-4 z-40"
+          >
+            <Button
+              onClick={() => setIsPreviewOpen(true)}
+              size="lg"
+              className="shadow-lg uppercase font-bold"
+            >
+              <Eye className="w-4 h-4 mr-2" />
+              View Prompt
+            </Button>
+          </motion.div>
+        )}
+
+        {/* Mobile Bottom Sheet */}
+        <Drawer open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
+          <DrawerContent className="max-h-[85vh]">
+            <DrawerHeader className="px-4">
+              <DrawerTitle className="font-black uppercase">Your Prompt</DrawerTitle>
+            </DrawerHeader>
+            <div className="px-4 pb-6 overflow-y-auto">
+              <WizardPreview
+                data={wizardData}
+                compressed={false}
+                source="wizard"
+                shareUrl={shareUrl!}
+              />
+            </div>
+          </DrawerContent>
+        </Drawer>
+
+        {/* Stored Prompts (only shows if user has saved prompts) */}
+        <StoredPromptsSection page="wizard" columns={3} currentPrompt={wizardData} />
       </div>
     </div>
   );

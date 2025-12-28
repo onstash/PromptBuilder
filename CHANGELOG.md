@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.1.0
+
+### Minor Changes
+
+- f029f3e: v2 localStorage with LRU eviction and stored prompts showcase
+
 ## 2.0.1
 
 ### Patch Changes

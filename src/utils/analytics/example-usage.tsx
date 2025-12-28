@@ -21,7 +21,7 @@ export function ExampleComponent() {
 
   // Track button click
   const handleButtonClick = () => {
-    trackEvent("button_clicked_cta_landing_get_started_for_free", {
+    trackEvent("cta_clicked_get_started_for_free", {
       button_name: "submit",
       page: "example",
       action: "form_submission",
@@ -30,7 +30,7 @@ export function ExampleComponent() {
 
   // Track event without additional properties
   const handleSimpleEvent = () => {
-    trackEvent("button_clicked_cta_landing_start_building", { action: "simple" });
+    trackEvent("cta_clicked_start_building", { action: "simple" });
   };
 
   return (

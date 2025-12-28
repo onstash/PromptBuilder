@@ -19,20 +19,18 @@ const MixpanelDataSchema = z.object({
     "page_viewed_wizard_type_url",
     "page_viewed_wizard_type_localstorage",
     "page_viewed_share",
-    "button_clicked_cta_landing_get_started_for_free",
-    "button_clicked_cta_landing_start_building",
-    "button_clicked_cta_share_edit",
-    "button_clicked_cta_wizard_copy_prompt",
-    "button_clicked_cta_wizard_copy_prompt_link",
-    "button_clicked_cta_share_copy_prompt",
-    "button_clicked_cta_share_copy_prompt_link",
-    "example_clicked_work-email",
-    "example_clicked_exam-explainer",
-    "example_clicked_linkedin-post",
-    "example_clicked_job-application",
-    "example_clicked_social-caption",
-    "example_clicked_learn-coding",
-    "step_changed",
+    "cta_clicked_get_started_for_free",
+    "cta_clicked_start_building",
+    "cta_clicked_edit",
+    "cta_clicked_copy_prompt",
+    "cta_clicked_copy_link",
+    "cta_clicked_copy_link",
+    "cta_clicked_work-email",
+    "cta_clicked_exam-explainer",
+    "cta_clicked_linkedin-post",
+    "cta_clicked_job-application",
+    "cta_clicked_social-caption",
+    "cta_clicked_learn-coding",
     "step_changed_1",
     "step_changed_2",
     "step_changed_3",
@@ -52,6 +50,13 @@ const MixpanelDataSchema = z.object({
     "time_taken_json_stringify",
     "time_taken_localStorage_get",
     "time_taken_localStorage_set",
+    // Navigation
+    "cta_clicked_back_to_home",
+    "cta_clicked_create_new_prompt",
+    // Stored prompts
+    "stored_prompt_viewed",
+    "stored_prompt_edited",
+    "stored_prompt_deleted",
   ]),
   properties: z.looseObject({
     distinct_id: z.string(),
@@ -208,6 +213,7 @@ export const trackMixpanelInServer = createServerFn({ method: "POST" })
       // Network
       ip: ip,
       $origin: origin,
+      appVersion: version,
     };
 
     if (origin?.includes?.("localhost:3000")) {
@@ -215,7 +221,7 @@ export const trackMixpanelInServer = createServerFn({ method: "POST" })
       return;
     }
 
-    mp.track(`v${version}_${data.event}_${device}_${os}`.toLowerCase(), finalData);
+    mp.track(data.event.toLowerCase(), finalData);
   });
 
 type MixpanelContextType = ReturnType<typeof useServerFn<typeof trackMixpanelInServer>>;
@@ -243,7 +249,7 @@ function useMixpanelContext() {
  * const trackEvent = useTrackMixpanel();
  *
  * // Track an event with custom properties
- * trackEvent("button_clicked_cta_landing_get_started_for_free", { button_name: "submit", page: "wizard" });
+ * trackEvent("cta_clicked_get_started_for_free", { button_name: "submit", page: "wizard" });
  *
  * // Track an event without additional properties
  * trackEvent("page_viewed");
