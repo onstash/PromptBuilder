@@ -1,10 +1,11 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { FileText } from "lucide-react";
 
 import type { CardItem } from "@/components/ui/CardGrid";
 import { __testing } from "@/stores/wizard-store";
 import { EXAMPLE_PROMPTS } from "@/data/example-prompts";
 import { compress } from "@/utils/prompt-wizard/url-compression";
+import type { PromptWizardData } from "@/utils/prompt-wizard";
 
 const { loadPromptsV2, loadFromStorage, deletePromptV2 } = __testing;
 
@@ -16,6 +17,7 @@ export interface StoredPromptCardItem extends CardItem {
   compressedData: string;
   originalIndex: number; // Track original index for deletion
   taskIntent?: string; // For deduplication
+  currentPrompt?: PromptWizardData;
 }
 
 export interface ExamplePromptCardItem extends CardItem {
@@ -103,11 +105,15 @@ function loadStoredPrompts(): { items: StoredPromptCardItem[]; source: "stored" 
 /**
  * Returns stored prompts if any exist (v2 or v1), otherwise EXAMPLE_PROMPTS
  * Priority: v2 prompts → v1 prompt → examples
+ * Filters out the current prompt being edited if provided
  */
 export function usePromptsWithFallback(
-  opts: { includeExamples: boolean } = { includeExamples: true }
+  opts: { includeExamples: boolean; currentPrompt?: PromptWizardData } = {
+    includeExamples: true,
+    currentPrompt: undefined,
+  }
 ): UsePromptsWithFallbackResult {
-  const [items, setItems] = useState<PromptCardItem[]>(() => {
+  const [allItems, setAllItems] = useState<PromptCardItem[]>(() => {
     const { items: storedItems } = loadStoredPrompts();
     if (storedItems.length > 0) return storedItems;
 
@@ -125,6 +131,16 @@ export function usePromptsWithFallback(
     }));
   });
 
+  // Filter out current prompt being edited (reactive to currentPrompt changes)
+  const currentTaskIntent = opts.currentPrompt?.task_intent?.trim().toLowerCase();
+  const items = useMemo(() => {
+    if (!currentTaskIntent) return allItems;
+    return allItems.filter((item) => {
+      const itemTaskIntent = (item as StoredPromptCardItem).taskIntent;
+      return itemTaskIntent !== currentTaskIntent;
+    });
+  }, [allItems, currentTaskIntent]);
+
   const [source] = useState<"stored" | "examples">(() => {
     const { source } = loadStoredPrompts();
     return source || "examples";
@@ -134,7 +150,7 @@ export function usePromptsWithFallback(
     // Delete from storage using the original index stored in the item
     deletePromptV2(item.originalIndex);
     // Update local state to trigger re-render
-    setItems((prev) => prev.filter((i) => i.id !== item.id));
+    setAllItems((prev) => prev.filter((i) => i.id !== item.id));
   }, []);
 
   const title =

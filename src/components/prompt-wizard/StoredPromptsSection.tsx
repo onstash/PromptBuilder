@@ -19,17 +19,23 @@ import {
   getShareLink,
   type PromptCardItem,
 } from "@/hooks/usePromptsWithFallback";
+import type { PromptWizardData } from "@/utils/prompt-wizard";
 
 interface StoredPromptsSectionProps {
   page: string;
   columns?: 2 | 3;
+  currentPrompt?: PromptWizardData;
 }
 
 /**
  * Renders stored prompts grid ONLY if user has stored prompts.
  * Returns null if no stored prompts (no fallback to examples).
  */
-export function StoredPromptsSection({ page, columns = 2 }: StoredPromptsSectionProps) {
+export function StoredPromptsSection({
+  page,
+  columns = 2,
+  currentPrompt,
+}: StoredPromptsSectionProps) {
   const trackEvent = useTrackMixpanel();
   const {
     items,
@@ -37,7 +43,7 @@ export function StoredPromptsSection({ page, columns = 2 }: StoredPromptsSection
     title,
     subtitle,
     handleDelete: handleDeleteFromHook,
-  } = usePromptsWithFallback({ includeExamples: false });
+  } = usePromptsWithFallback({ includeExamples: false, currentPrompt });
 
   const [itemToDelete, setItemToDelete] = useState<PromptCardItem | null>(null);
 

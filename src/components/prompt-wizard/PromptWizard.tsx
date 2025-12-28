@@ -395,7 +395,7 @@ export const PromptWizard = memo(function PromptWizard() {
         </Drawer>
 
         {/* Stored Prompts (only shows if user has saved prompts) */}
-        <StoredPromptsSection page="wizard" columns={3} />
+        <StoredPromptsSection page="wizard" columns={3} currentPrompt={wizardData} />
       </div>
     </div>
   );

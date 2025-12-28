@@ -208,7 +208,7 @@ function WizardPreviewForSharePage(props: WizardPreviewPropsForSharePage) {
       </motion.div>
 
       {/* Stored Prompts (only shows if user has saved prompts) */}
-      <StoredPromptsSection page="share" columns={2} />
+      <StoredPromptsSection page="share" columns={2} currentPrompt={wizardData} />
     </>
   );
 }
