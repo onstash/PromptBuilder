@@ -185,7 +185,7 @@ function WizardPreviewForSharePage(props: WizardPreviewPropsForSharePage) {
               ) : (
                 <>
                   <Copy className="w-4 h-4 mr-1" />
-                  Copy Prompt
+                  Copy
                 </>
               )}
             </Button>
@@ -331,7 +331,7 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
             ) : (
               <>
                 <Copy className="w-4 h-4 mr-1" />
-                Copy Prompt
+                Copy
               </>
             )}
           </Button>
