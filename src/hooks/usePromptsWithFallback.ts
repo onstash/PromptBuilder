@@ -37,7 +37,11 @@ export interface UsePromptsWithFallbackResult {
  * Returns stored prompts if any exist (v2 or v1), otherwise EXAMPLE_PROMPTS
  * Priority: v2 prompts → v1 prompt → examples
  */
-export function usePromptsWithFallback(): UsePromptsWithFallbackResult {
+export function usePromptsWithFallback(
+  opts: { includeExamples: boolean } = {
+    includeExamples: true,
+  }
+): UsePromptsWithFallbackResult {
   return useMemo(() => {
     // 1. Try v2 prompts first
     const v2Storage = loadPromptsV2();
@@ -88,6 +92,15 @@ export function usePromptsWithFallback(): UsePromptsWithFallbackResult {
         items,
         source: "stored" as const,
         title: "Your Prompt",
+        subtitle: "Continue where you left off",
+      };
+    }
+
+    if (!opts.includeExamples) {
+      return {
+        items: [],
+        source: "stored" as const,
+        title: "Your Prompts",
         subtitle: "Continue where you left off",
       };
     }

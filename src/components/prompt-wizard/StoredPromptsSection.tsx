@@ -24,7 +24,7 @@ interface StoredPromptsSectionProps {
  */
 export function StoredPromptsSection({ page, columns = 2 }: StoredPromptsSectionProps) {
   const trackEvent = useTrackMixpanel();
-  const { items, source, title, subtitle } = usePromptsWithFallback();
+  const { items, source, title, subtitle } = usePromptsWithFallback({ includeExamples: false });
   const [, forceUpdate] = useState(0);
 
   const handleDelete = useCallback(
@@ -48,6 +48,10 @@ export function StoredPromptsSection({ page, columns = 2 }: StoredPromptsSection
 
   // Only show if we have stored prompts (not examples fallback)
   if (source !== "stored") {
+    return null;
+  }
+
+  if (!items || !items.length) {
     return null;
   }
 
