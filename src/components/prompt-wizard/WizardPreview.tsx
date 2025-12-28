@@ -12,6 +12,7 @@ import { useTrackMixpanel } from "@/utils/analytics/MixpanelProvider";
 import { generatePromptText } from "@/stores/wizard-store";
 import { withLatencyLoggingSync } from "@/utils/function-utils";
 import { StoredPromptsSection } from "./StoredPromptsSection";
+import { NavigationActions } from "./NavigationActions";
 
 type WizardPreviewPropsForSharePage = {
   shareUrl: string;
@@ -129,6 +130,9 @@ function WizardPreviewForSharePage(props: WizardPreviewPropsForSharePage) {
 
   return (
     <>
+      {/* Navigation Actions - At Top */}
+      <NavigationActions page="share" />
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

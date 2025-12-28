@@ -162,10 +162,19 @@ function savePromptsV2(storage: PromptStorageV2): void {
 
 /**
  * Add or update a prompt in v2 storage
+ * Deduplicates by task_intent - only keeps one prompt per task_intent
  * Moves the prompt to the end of the list (most recently used)
  */
 function upsertPromptV2(data: PromptWizardData, distinctId: string): void {
   const storage = loadPromptsV2();
+
+  // Deduplicate: remove any existing prompts with the same task_intent
+  const taskIntent = data.task_intent?.trim().toLowerCase();
+  if (taskIntent) {
+    storage.prompts = storage.prompts.filter(
+      (p) => p.data.task_intent?.trim().toLowerCase() !== taskIntent
+    );
+  }
 
   // Create new stored prompt
   const newPrompt: StoredPrompt = {
@@ -174,9 +183,7 @@ function upsertPromptV2(data: PromptWizardData, distinctId: string): void {
     storage_version: "v2",
   };
 
-  // For simplicity, add to end (LRU: most recent at end)
-  // Note: Without an ID field, we're treating each save as a new prompt
-  // If you want to dedupe, you'd need to add ID or hash-based matching
+  // Add to end (LRU: most recent at end)
   storage.prompts.push(newPrompt);
 
   savePromptsV2(storage);

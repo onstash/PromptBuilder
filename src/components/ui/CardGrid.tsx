@@ -28,6 +28,7 @@ interface CardGridProps<T extends CardItem> {
   subtitle?: string;
   emptyMessage?: string;
   columns?: 2 | 3;
+  layout?: "grid" | "horizontal"; // horizontal = scrollable row
 
   // Single action mode (for examples)
   actionLabel?: string;
@@ -48,12 +49,21 @@ export function CardGrid<T extends CardItem>({
   subtitle,
   emptyMessage = "No items to display",
   columns = 3,
+  layout = "grid",
   actionLabel = "Try it",
   onItemClick,
   getItemLink,
   actions,
 }: CardGridProps<T>) {
-  const gridCols = columns === 2 ? "md:grid-cols-2" : "md:grid-cols-2 lg:grid-cols-3";
+  const gridCols =
+    columns === 2 ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3";
+
+  const containerClass =
+    layout === "horizontal"
+      ? "flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide"
+      : `grid ${gridCols} gap-6`;
+
+  const cardWidthClass = layout === "horizontal" ? "min-w-[280px] max-w-[320px] snap-start" : "";
 
   if (items.length === 0) {
     return (
@@ -87,8 +97,8 @@ export function CardGrid<T extends CardItem>({
           </motion.div>
         )}
 
-        {/* Cards grid */}
-        <div className={`grid ${gridCols} gap-6`}>
+        {/* Cards container */}
+        <div className={containerClass}>
           {items.map((item, index) => {
             const Icon = item.icon || FileText;
             const colorClass = item.color || "bg-muted";
@@ -121,7 +131,7 @@ export function CardGrid<T extends CardItem>({
                     <ArrowRight className="w-4 h-4" />
                   </div>
                 ) : (
-                  <div className="flex items-center gap-3 mt-auto">
+                  <div className="flex flex-wrap items-center gap-2 mt-auto">
                     {actions?.map((action) => {
                       const ActionIcon = action.icon || ArrowRight;
                       const actionLinkProps = action.getLink?.(item);
@@ -136,7 +146,7 @@ export function CardGrid<T extends CardItem>({
                               e.stopPropagation();
                               action.onClick?.(item);
                             }}
-                            className="flex items-center gap-1.5 text-primary font-mono text-sm font-bold hover:gap-2 transition-all px-3 py-1.5 border-2 border-foreground shadow-[2px_2px_0px_0px_hsl(var(--foreground))] hover:shadow-[3px_3px_0px_0px_hsl(var(--foreground))] bg-background"
+                            className="flex items-center gap-1 text-primary font-mono text-xs font-bold hover:gap-1.5 transition-all px-2 py-1 border-2 border-foreground shadow-[2px_2px_0px_0px_hsl(var(--foreground))] hover:shadow-[3px_3px_0px_0px_hsl(var(--foreground))] bg-background"
                           >
                             <ActionIcon className="w-3.5 h-3.5" />
                             {action.label}
@@ -152,7 +162,7 @@ export function CardGrid<T extends CardItem>({
                             e.stopPropagation();
                             action.onClick?.(item);
                           }}
-                          className="flex items-center gap-1.5 text-primary font-mono text-sm font-bold hover:gap-2 transition-all px-3 py-1.5 border-2 border-foreground shadow-[2px_2px_0px_0px_hsl(var(--foreground))] hover:shadow-[3px_3px_0px_0px_hsl(var(--foreground))] bg-background"
+                          className="flex items-center gap-1 text-primary font-mono text-xs font-bold hover:gap-1.5 transition-all px-2 py-1 border-2 border-foreground shadow-[2px_2px_0px_0px_hsl(var(--foreground))] hover:shadow-[3px_3px_0px_0px_hsl(var(--foreground))] bg-background"
                         >
                           <ActionIcon className="w-3.5 h-3.5" />
                           {action.label}
@@ -171,18 +181,19 @@ export function CardGrid<T extends CardItem>({
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
+                className={cardWidthClass}
               >
                 {useSingleAction && linkProps ? (
                   <Link
                     to={linkProps.to}
                     search={linkProps.search}
                     onClick={() => onItemClick?.(item)}
-                    className="group block h-full bg-card border-4 border-foreground shadow-[4px_4px_0px_0px_hsl(var(--foreground))] p-6 hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[8px_8px_0px_0px_hsl(var(--foreground))] transition-all duration-200 flex flex-col"
+                    className="group block h-full bg-card border-4 border-foreground shadow-[4px_4px_0px_0px_hsl(var(--foreground))] p-4 md:p-6 hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[8px_8px_0px_0px_hsl(var(--foreground))] transition-all duration-200 flex flex-col overflow-hidden"
                   >
                     {cardContent}
                   </Link>
                 ) : (
-                  <div className="group block h-full bg-card border-4 border-foreground shadow-[4px_4px_0px_0px_hsl(var(--foreground))] p-6 flex flex-col">
+                  <div className="group block h-full bg-card border-4 border-foreground shadow-[4px_4px_0px_0px_hsl(var(--foreground))] p-4 md:p-6 flex flex-col overflow-hidden">
                     {cardContent}
                   </div>
                 )}
