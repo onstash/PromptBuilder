@@ -67,7 +67,7 @@ describe("wizard-store v2 storage", () => {
         version: "v2",
         prompts: [
           {
-            data: { ...WIZARD_DEFAULTS, task_intent: "test task" },
+            data: { ...WIZARD_DEFAULTS, task_intent: "test task", updatedAt: Date.now() },
             creator_distinct_id: "user-123",
             storage_version: "v2",
           },
