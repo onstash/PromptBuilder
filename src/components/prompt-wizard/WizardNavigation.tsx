@@ -23,6 +23,7 @@ export function WizardNavigation({
 }: WizardNavigationProps) {
   const totalSteps = showAdvanced ? 10 : TOTAL_REQUIRED_STEPS;
   const isFirstStep = currentStep === 1;
+  const isLastStep = currentStep === totalSteps;
   const hasFinished = useWizardStore((store) => store.wizardData.finishedAt !== -1);
 
   return (
@@ -54,14 +55,16 @@ export function WizardNavigation({
             <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
         </motion.div>
-        {hasFinished && (
-          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-            <Button onClick={onFinish} disabled={!canProceed} className="uppercase font-bold">
-              <Sparkles className="w-4 h-4 mr-2" />
-              Save Prompt
-            </Button>
-          </motion.div>
-        )}
+        <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+          <Button
+            onClick={onFinish}
+            disabled={!(canProceed || hasFinished || isLastStep)}
+            className="uppercase font-bold"
+          >
+            <Sparkles className="w-4 h-4 mr-2" />
+            Save Prompt
+          </Button>
+        </motion.div>
       </div>
     </div>
   );

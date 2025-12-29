@@ -237,9 +237,6 @@ export function upsertPromptV2(
   };
   if (promptIndex === -1) {
     // Add to end (LRU: most recent at end)
-    if (!confirm("Are you sure you want to add?")) {
-      return;
-    }
     storageUpdated.prompts.push(newPrompt);
   } else {
     storageUpdated.prompts[promptIndex] = newPrompt;

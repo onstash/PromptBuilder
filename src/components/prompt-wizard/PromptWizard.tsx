@@ -451,7 +451,12 @@ export const PromptWizard = memo(function PromptWizard() {
         </AlertDialog>
 
         {/* Stored Prompts (only shows if user has saved prompts) */}
-        <StoredPromptsSection page="wizard" columns={3} currentPrompt={wizardData} />
+        <StoredPromptsSection
+          page="wizard"
+          columns={3}
+          currentPrompt={wizardData}
+          key={wizardData.finishedAt}
+        />
       </div>
     </div>
   );
