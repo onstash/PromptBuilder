@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.5.0
+
+### Minor Changes
+
+- c866cde: feat(storage): add finishedAt tracking, improve storage deduplication, and enhance wizard navigation
+
 ## 2.4.0
 
 ### Minor Changes
