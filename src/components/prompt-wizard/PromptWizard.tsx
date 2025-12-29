@@ -258,6 +258,7 @@ export const PromptWizard = memo(function PromptWizard() {
   };
 
   const handleResetCore = useCallback(() => {
+    setIsResetCalled(false);
     trackEvent("data_reset", {
       page: "wizard",
       timestamp: new Date().toISOString(),
