@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.6.0
+
+### Minor Changes
+
+- 5e993c0: feat(schema): add partial prompt validation for draft sharing
+
 ## 2.5.0
 
 ### Minor Changes

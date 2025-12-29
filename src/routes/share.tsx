@@ -6,6 +6,7 @@ import { decompress } from "@/utils/prompt-wizard/url-compression";
 import { WIZARD_DEFAULTS } from "@/utils/prompt-wizard/search-params";
 import {
   promptWizardSchema,
+  partialPromptWizardSchema,
   type PromptWizardSearchParamsCompressed,
   type PromptWizardData,
 } from "@/utils/prompt-wizard/schema";
@@ -13,6 +14,7 @@ import { WizardPreview } from "@/components/prompt-wizard/WizardPreview";
 import { ErrorComponentWithSentry } from "@/components/ErrorComponentWithSentry";
 
 // Validate and decompress the ?d= parameter
+// Supports both complete and partial (draft) prompts
 function validateShareSearch(search: Record<string, unknown>): PromptWizardSearchParamsCompressed {
   try {
     console.log("validateShareSearch", { search });
@@ -45,26 +47,41 @@ function validateShareSearch(search: Record<string, unknown>): PromptWizardSearc
       search,
       parsed,
     });
-    const result = promptWizardSchema.safeParse({
+
+    // Try full validation first (complete prompt)
+    const fullResult = promptWizardSchema.safeParse({
       ...WIZARD_DEFAULTS,
       ...parsed,
     });
     console.log("validateShareSearch", {
       search,
       parsed,
-      result,
+      fullResult,
     });
 
-    if (result.success) {
-      return { d: search.d, vld: 1 };
+    if (fullResult.success) {
+      return { d: search.d, vld: 1, partial: false };
     }
+
+    // Fall back to partial validation (draft/incomplete prompt)
+    const partialResult = partialPromptWizardSchema.safeParse(parsed);
+    console.log("validateShareSearch partial validation", {
+      search,
+      parsed,
+      partialResult,
+    });
+
+    if (partialResult.success) {
+      return { d: search.d, vld: 1, partial: true };
+    }
+
     Sentry.captureException(new Error("Invalid share link - schema validation failed [3]"), {
       tags: { feature: "share_link_validation" },
-      extra: { compressedData: search.d ?? null, json, parsed, result },
+      extra: { compressedData: search.d ?? null, json, parsed, fullResult, partialResult },
     });
     throw new Error("Invalid share link - schema validation failed");
   } catch (error) {
-    return { d: null, vld: 0 };
+    return { d: null, vld: 0, partial: false };
   }
 }
 
@@ -96,7 +113,7 @@ function ShareRouteComponent() {
             </p>
             <Link
               to="/wizard"
-              search={{ d: null, vld: 0 }}
+              search={{ d: null, vld: 0, partial: false }}
               className="inline-block bg-primary text-primary-foreground font-bold uppercase px-6 py-3 border-4 border-foreground shadow-[4px_4px_0px_0px_hsl(var(--foreground))] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_hsl(var(--foreground))] transition-all"
             >
               Create New Prompt

@@ -28,7 +28,7 @@ export default function Header() {
             /> */}
             Home
           </Link>
-          <Link to="/wizard" search={{ d: null, vld: 0 }} className="ml-6">
+          <Link to="/wizard" search={{ d: null, vld: 0, partial: false }} className="ml-6">
             {/* <img
               src="/tanstack-word-logo-white.svg"
               alt="TanStack Logo"

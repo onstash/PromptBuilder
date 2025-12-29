@@ -162,7 +162,7 @@ export const PromptWizard = memo(function PromptWizard() {
       const wizardData = useWizardStore.getState().wizardData;
       if (dataSource === "localStorage") {
         const dataCompressed = compress(JSON.stringify(wizardData));
-        navigate({ to: "/wizard", search: { d: dataCompressed, vld: 1 } });
+        navigate({ to: "/wizard", search: { d: dataCompressed, vld: 1, partial: false } });
         trackEvent("page_viewed_wizard_type_localstorage", {
           page: "wizard",
           timestamp: new Date().toISOString(),
@@ -243,7 +243,7 @@ export const PromptWizard = memo(function PromptWizard() {
       data: wizardData,
     });
     const dataCompressed = compress(JSON.stringify(wizardData));
-    navigate({ to: "/wizard", search: { d: dataCompressed, vld: 1 } });
+    navigate({ to: "/wizard", search: { d: dataCompressed, vld: 1, partial: false } });
     finish();
 
     // On mobile, open the preview sheet after generating
@@ -264,7 +264,7 @@ export const PromptWizard = memo(function PromptWizard() {
       timestamp: new Date().toISOString(),
       data: wizardData,
     });
-    navigate({ to: "/wizard", search: { d: null, vld: 0 } });
+    navigate({ to: "/wizard", search: { d: null, vld: 0, partial: false } });
     reset();
   }, [wizardData, navigate, reset, trackEvent]);
 

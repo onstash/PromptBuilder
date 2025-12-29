@@ -141,14 +141,20 @@ export const promptWizardSchema = z.object({
 
 export type PromptWizardData = z.infer<typeof promptWizardSchema>;
 
+// Partial schema for validating incomplete/draft prompts (all fields optional)
+export const partialPromptWizardSchema = promptWizardSchema.partial();
+export type PartialPromptWizardData = z.infer<typeof partialPromptWizardSchema>;
+
 export type PromptWizardSearchParamsCompressed =
   | {
       d: string;
       vld: 1;
+      partial: boolean; // true = incomplete draft, false = complete prompt
     }
   | {
       d: null;
       vld: 0;
+      partial: false;
     };
 
 // ═══════════════════════════════════════════════════════════════════════════

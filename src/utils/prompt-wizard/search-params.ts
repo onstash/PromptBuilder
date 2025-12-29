@@ -1,5 +1,6 @@
 import {
   promptWizardSchema,
+  partialPromptWizardSchema,
   PromptWizardSearchParamsCompressed,
   type PromptWizardData,
 } from "./schema";
@@ -106,10 +107,18 @@ export function validateWizardSearch(
   if (typeof search.d === "string" && search.d) {
     let parsedData: Partial<PromptWizardData> = {};
     parsedData = decompressFullState(search.d);
-    const result = promptWizardSchema.safeParse(parsedData);
-    if (result.success) {
-      return { d: search.d, vld: 1 };
+
+    // Try full validation first
+    const fullResult = promptWizardSchema.safeParse(parsedData);
+    if (fullResult.success) {
+      return { d: search.d, vld: 1, partial: false };
+    }
+
+    // Fall back to partial validation for drafts
+    const partialResult = partialPromptWizardSchema.safeParse(parsedData);
+    if (partialResult.success) {
+      return { d: search.d, vld: 1, partial: true };
     }
   }
-  return { d: null, vld: 0 };
+  return { d: null, vld: 0, partial: false };
 }
