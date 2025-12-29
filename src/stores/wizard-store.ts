@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
+import { toast } from "sonner";
 
 import type { PromptWizardData, StoredPrompt, PromptStorageV2 } from "@/utils/prompt-wizard/schema";
 import { TOTAL_REQUIRED_STEPS } from "@/utils/prompt-wizard/schema";
@@ -165,31 +166,60 @@ function savePromptsV2(storage: PromptStorageV2): void {
  * Deduplicates by task_intent - only keeps one prompt per task_intent
  * Moves the prompt to the end of the list (most recently used)
  */
-function upsertPromptV2(data: PromptWizardData, distinctId: string): void {
+export function upsertPromptV2(
+  data: PromptWizardData,
+  callbackMap: {
+    noTaskIntent: () => void;
+    onSuccess: () => void;
+  } = {
+    noTaskIntent: () => {},
+    onSuccess: () => {},
+  },
+  opts: {
+    shouldExecute: boolean;
+  } = {
+    shouldExecute: false,
+  }
+): void {
+  if (!opts.shouldExecute) {
+    return;
+  }
   if (!data.task_intent) {
+    callbackMap.noTaskIntent();
     return;
   }
+  const distinctId: string = getCurrentDistinctId();
   const storage = loadPromptsV2();
+  const storageUpdated = { ...storage };
 
-  const taskIntent = data.task_intent;
-  const currentStoragePromptsCount = storage.prompts.length;
-  storage.prompts = storage.prompts.filter((p) => p.data.task_intent !== taskIntent);
-  const newStoragePromptsCount = storage.prompts.length;
-  if (currentStoragePromptsCount === newStoragePromptsCount) {
-    return;
+  const promptStr = JSON.stringify(data);
+  let promptIndex: number = -1;
+  let index = 0;
+  for (const promptStored of storageUpdated.prompts) {
+    if (JSON.stringify(promptStored.data) === promptStr) {
+      promptIndex = index;
+      break;
+    }
+    index += 1;
   }
-
   // Create new stored prompt
   const newPrompt: StoredPrompt = {
     data,
     creator_distinct_id: distinctId,
     storage_version: "v2",
   };
+  if (promptIndex === -1) {
+    // Add to end (LRU: most recent at end)
+    storageUpdated.prompts.push(newPrompt);
+  } else {
+    storageUpdated.prompts[promptIndex] = newPrompt;
+  }
+  storageUpdated.prompts = storageUpdated.prompts.sort(
+    (a, b) => a.data.updatedAt.valueOf() - b.data.updatedAt.valueOf()
+  );
 
-  // Add to end (LRU: most recent at end)
-  storage.prompts.push(newPrompt);
-
-  savePromptsV2(storage);
+  savePromptsV2(storageUpdated);
+  callbackMap.onSuccess();
 }
 
 /**
@@ -468,7 +498,7 @@ export const useWizardStore = create<WizardStore>()(
 
       const url = generateShareUrl(state.wizardData);
       saveShareUrl(url);
-      set({ shareUrl: url });
+      set({ shareUrl: url, wizardData: { ...state.wizardData, finishedAt: Date.now() } });
     },
 
     reset: () => {
@@ -496,12 +526,18 @@ useWizardStore.subscribe(
       clearTimeout(saveTimeoutId);
     }
     saveTimeoutId = setTimeout(() => {
-      // Save to legacy storage (backward compatibility)
-      saveToStorage(wizardData);
-
-      // Also save to v2 list-based storage with distinct_id
-      const distinctId = getCurrentDistinctId();
-      upsertPromptV2(wizardData, distinctId);
-    }, 300);
+      upsertPromptV2(
+        wizardData,
+        {
+          noTaskIntent: () => {},
+          onSuccess: () => {
+            toast.success("Prompt saved!");
+          },
+        },
+        {
+          shouldExecute: true,
+        }
+      );
+    }, 800);
   }
 );
