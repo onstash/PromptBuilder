@@ -400,18 +400,6 @@ export const useWizardStore = create<WizardStore>()(
           return;
         }
       }
-
-      const [dataFromLocalStorage, source] = loadFromStorage();
-      const completedSteps = Object.fromEntries(
-        Array.from({ length: dataFromLocalStorage.step }, (_, i) => [i + 1, true])
-      ) as Record<number, boolean>;
-
-      set({
-        wizardData: { ...dataFromLocalStorage, step: 1 },
-        dataSource: source,
-        shareUrl: getShareUrl(),
-        completedSteps,
-      });
     },
 
     updateData: (updates) => {
