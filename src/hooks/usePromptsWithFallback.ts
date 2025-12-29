@@ -16,7 +16,6 @@ const { loadPromptsV2, loadFromStorage, deletePromptV2 } = __testing;
 export interface StoredPromptCardItem extends CardItem {
   compressedData: string;
   originalIndex: number; // Track original index for deletion
-  taskIntent?: string; // For deduplication
   currentPrompt?: PromptWizardData;
 }
 
@@ -43,29 +42,30 @@ function loadStoredPrompts(): { items: StoredPromptCardItem[]; source: "stored" 
   // 1. Try v2 prompts first
   const v2Storage = loadPromptsV2();
   if (v2Storage.prompts.length > 0) {
-    const items: StoredPromptCardItem[] = v2Storage.prompts.map((prompt, index) => {
-      const taskIntent = prompt.data.task_intent || "";
-      const title =
-        taskIntent.length > 40 ? `${taskIntent.slice(0, 40)}...` : taskIntent || "Untitled";
-      const description = prompt.data.context?.slice(0, 80) || "No context provided";
-
-      return {
-        id: `stored-v2-${index}`,
-        title,
-        description,
-        icon: FileText,
-        color: "bg-primary",
-        compressedData: compress(JSON.stringify(prompt.data)),
-        originalIndex: index,
-        taskIntent: taskIntent.trim().toLowerCase(), // For deduplication
-      };
-    });
+    const items: StoredPromptCardItem[] = v2Storage.prompts
+      .filter((prompt) => {
+        if (!prompt.data.task_intent || prompt.data.updatedAt === -1) {
+          return false;
+        }
+        return true;
+      })
+      .map((prompt, index) => {
+        return {
+          id: `stored-v2-${index}`,
+          title: prompt.data.task_intent,
+          description: prompt.data.context,
+          icon: FileText,
+          color: "bg-primary",
+          compressedData: compress(JSON.stringify(prompt.data)),
+          originalIndex: index,
+        };
+      });
 
     // Deduplicate by taskIntent - keep only the last occurrence (most recent)
     const seen = new Set<string>();
     const deduped = items.reverse().filter((item) => {
-      if (!item.taskIntent || seen.has(item.taskIntent)) return false;
-      seen.add(item.taskIntent);
+      if (!item.title || seen.has(item.title)) return false;
+      seen.add(item.title);
       return true;
     });
 

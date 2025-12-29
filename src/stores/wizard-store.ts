@@ -1,12 +1,13 @@
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
 import { toast } from "sonner";
+import { distance } from "fastest-levenshtein";
 
 import type { PromptWizardData, StoredPrompt, PromptStorageV2 } from "@/utils/prompt-wizard/schema";
 import { TOTAL_REQUIRED_STEPS } from "@/utils/prompt-wizard/schema";
 import { compress, decompress } from "@/utils/prompt-wizard/url-compression";
 import { decompressFullState, WIZARD_DEFAULTS } from "@/utils/prompt-wizard/search-params";
-import { getOrCreateSessionId } from "@/utils/session";
+import { generateSessionId, getOrCreateSessionId } from "@/utils/session";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // CONSTANTS
@@ -53,6 +54,9 @@ function loadFromStorage(): [PromptWizardData, "default" | "localStorage"] {
       if (!decompressed) return [WIZARD_DEFAULTS, "default"];
       json = decompressed;
     }
+
+    localStorage.setItem(`_${STORAGE_KEY}_`, stored);
+    localStorage.removeItem(STORAGE_KEY);
 
     return [{ ...WIZARD_DEFAULTS, ...JSON.parse(json) }, "localStorage"];
   } catch {
@@ -131,9 +135,17 @@ function loadPromptsV2(): PromptStorageV2 {
     }
 
     const parsed = JSON.parse(json) as PromptStorageV2;
+    let parsedPrompts = Array.isArray(parsed.prompts)
+      ? parsed.prompts.filter((prompt) => {
+          if (!prompt.data.task_intent || prompt.data.updatedAt === -1) {
+            return false;
+          }
+          return true;
+        })
+      : [];
     return {
       version: parsed.version || "v2",
-      prompts: Array.isArray(parsed.prompts) ? parsed.prompts : [],
+      prompts: parsedPrompts,
     };
   } catch {
     return getDefaultStorageV2();
@@ -192,11 +204,26 @@ export function upsertPromptV2(
   const storage = loadPromptsV2();
   const storageUpdated = { ...storage };
 
-  const promptStr = JSON.stringify(data);
+  const { id, ...dataWithoutId } = data;
+
+  const promptStr = JSON.stringify(dataWithoutId);
   let promptIndex: number = -1;
   let index = 0;
   for (const promptStored of storageUpdated.prompts) {
-    if (JSON.stringify(promptStored.data) === promptStr) {
+    const {
+      data: { id: _id, ...promptStoredDataWithoutId },
+    } = promptStored;
+    if (id && _id && id === _id) {
+      promptIndex = index;
+      break;
+    }
+    const promptStoredDataString = JSON.stringify(promptStoredDataWithoutId);
+    if (promptStoredDataString === promptStr) {
+      promptIndex = index;
+      break;
+    }
+    const levenshteinDistanceVal = distance(promptStoredDataString, promptStr);
+    if (levenshteinDistanceVal < 10) {
       promptIndex = index;
       break;
     }
@@ -214,9 +241,14 @@ export function upsertPromptV2(
   } else {
     storageUpdated.prompts[promptIndex] = newPrompt;
   }
-  storageUpdated.prompts = storageUpdated.prompts.sort(
-    (a, b) => a.data.updatedAt.valueOf() - b.data.updatedAt.valueOf()
-  );
+  storageUpdated.prompts = storageUpdated.prompts
+    .map((prompt) => {
+      if (!prompt.data.id) {
+        prompt.data.id = generateSessionId();
+      }
+      return prompt;
+    })
+    .sort((a, b) => a.data.updatedAt.valueOf() - b.data.updatedAt.valueOf());
 
   savePromptsV2(storageUpdated);
   callbackMap.onSuccess();
@@ -517,27 +549,27 @@ export const useWizardStore = create<WizardStore>()(
 // DEBOUNCED PERSISTENCE SUBSCRIBER
 // ═══════════════════════════════════════════════════════════════════════════
 
-let saveTimeoutId: ReturnType<typeof setTimeout> | undefined;
+// let saveTimeoutId: ReturnType<typeof setTimeout> | undefined;
 
-useWizardStore.subscribe(
-  (state) => state.wizardData,
-  (wizardData) => {
-    if (saveTimeoutId) {
-      clearTimeout(saveTimeoutId);
-    }
-    saveTimeoutId = setTimeout(() => {
-      upsertPromptV2(
-        wizardData,
-        {
-          noTaskIntent: () => {},
-          onSuccess: () => {
-            toast.success("Prompt saved!");
-          },
-        },
-        {
-          shouldExecute: true,
-        }
-      );
-    }, 800);
-  }
-);
+// useWizardStore.subscribe(
+//   (state) => state.wizardData,
+//   (wizardData) => {
+//     if (saveTimeoutId) {
+//       clearTimeout(saveTimeoutId);
+//     }
+//     saveTimeoutId = setTimeout(() => {
+//       upsertPromptV2(
+//         wizardData,
+//         {
+//           noTaskIntent: () => {},
+//           onSuccess: () => {
+//             toast.success("Prompt saved!");
+//           },
+//         },
+//         {
+//           shouldExecute: true,
+//         }
+//       );
+//     }, 800);
+//   }
+// );
