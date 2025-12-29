@@ -9,7 +9,7 @@ const COOKIE_MAX_AGE = 365 * 24 * 60 * 60; // 1 year in seconds
 /**
  * Generates a unique session ID using crypto.randomUUID()
  */
-function generateSessionId(): string {
+export function generateSessionId(): string {
   return crypto.randomUUID();
 }
 

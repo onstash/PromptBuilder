@@ -136,6 +136,7 @@ export const promptWizardSchema = z.object({
   show_advanced: z.boolean().default(false),
   updatedAt: z.number().default(-1),
   finishedAt: z.number().default(-1),
+  id: z.string().optional(),
 });
 
 export type PromptWizardData = z.infer<typeof promptWizardSchema>;

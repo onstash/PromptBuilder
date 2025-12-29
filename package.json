@@ -43,6 +43,7 @@
     "@tanstack/router-plugin": "^1.132.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "fastest-levenshtein": "^1.0.16",
     "lucide-react": "^0.544.0",
     "lz-string": "^1.5.0",
     "mixpanel": "^0.19.1",

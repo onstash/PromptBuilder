@@ -34,11 +34,22 @@ import { DisallowedStep } from "./steps/DisallowedStep";
 // Analytics
 import { type MixpanelDataEvent, useTrackMixpanel } from "@/utils/analytics/MixpanelProvider";
 // Stores
-import { useWizardStore } from "@/stores/wizard-store";
+import { upsertPromptV2, useWizardStore } from "@/stores/wizard-store";
 // Utils
 import { compress } from "@/utils/prompt-wizard";
 // Hooks
 import { useIsMobile } from "@/hooks/use-mobile";
+import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../ui/alert-dialog";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // STATIC CONFIGURATION
@@ -92,10 +103,26 @@ export const PromptWizard = memo(function PromptWizard() {
   // ─────────────────────────────────────────────────────────────────────────
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
+  const [isResetCalled, setIsResetCalled] = useState(false);
+
   // ─────────────────────────────────────────────────────────────────────────
   // Zustand Store
   // ─────────────────────────────────────────────────────────────────────────
   const wizardData = useWizardStore((state) => state.wizardData);
+  const storeWizardDataInLocalStorage = () => {
+    upsertPromptV2(
+      wizardData,
+      {
+        noTaskIntent: () => {},
+        onSuccess: () => {
+          toast.success("Prompt saved!");
+        },
+      },
+      {
+        shouldExecute: true,
+      }
+    );
+  };
   const shareUrl = useWizardStore((state) => state.shareUrl);
   const showError = useWizardStore((state) => state.showError);
   const completedSteps = useWizardStore((state) => state.completedSteps);
@@ -178,7 +205,9 @@ export const PromptWizard = memo(function PromptWizard() {
   // Callbacks
   // ─────────────────────────────────────────────────────────────────────────
   const handleNext = useCallback(() => {
+    console.log("handleNext");
     if (!currentStepValid) {
+      console.log("currentStepValid", currentStepValid);
       setShowError(true);
       return;
     }
@@ -189,6 +218,7 @@ export const PromptWizard = memo(function PromptWizard() {
         timestamp: new Date().toISOString(),
         step: currentStep + 1,
       });
+      storeWizardDataInLocalStorage();
     }
   }, [currentStep, totalSteps, currentStepValid, goToStep, setShowError, trackEvent]);
 
@@ -200,6 +230,7 @@ export const PromptWizard = memo(function PromptWizard() {
         timestamp: new Date().toISOString(),
         step: currentStep - 1,
       });
+      storeWizardDataInLocalStorage();
     }
   }, [currentStep, goToStep, trackEvent]);
 
@@ -221,9 +252,14 @@ export const PromptWizard = memo(function PromptWizard() {
     if (isMobile) {
       setIsPreviewOpen(true);
     }
+    storeWizardDataInLocalStorage();
   }, [currentStepValid, wizardData, setShowError, finish, trackEvent, isMobile]);
 
-  const handleReset = useCallback(() => {
+  const handleReset = () => {
+    setIsResetCalled(true);
+  };
+
+  const handleResetCore = useCallback(() => {
     trackEvent("data_reset", {
       page: "wizard",
       timestamp: new Date().toISOString(),
@@ -242,6 +278,7 @@ export const PromptWizard = memo(function PromptWizard() {
           timestamp: new Date().toISOString(),
           step,
         });
+        storeWizardDataInLocalStorage();
         return;
       }
       if (step > currentStep && !currentStepValid) {
@@ -254,6 +291,7 @@ export const PromptWizard = memo(function PromptWizard() {
         timestamp: new Date().toISOString(),
         step,
       });
+      storeWizardDataInLocalStorage();
     },
     [currentStep, currentStepValid, goToStep, setShowError, trackEvent]
   );
@@ -393,6 +431,27 @@ export const PromptWizard = memo(function PromptWizard() {
             </div>
           </DrawerContent>
         </Drawer>
+
+        {/* Reset Confirmation Dialog */}
+        <AlertDialog open={isResetCalled} onOpenChange={(open) => !open && handleResetCore()}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Reset this prompt?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will reset the prompt data. This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleResetCore}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                Reset
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
 
         {/* Stored Prompts (only shows if user has saved prompts) */}
         <StoredPromptsSection page="wizard" columns={3} currentPrompt={wizardData} />
