@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.3.0
+
+### Minor Changes
+
+- 7d7868a: feat: remove localStorage auto load v1
+
 ## 2.2.0
 
 ### Minor Changes
