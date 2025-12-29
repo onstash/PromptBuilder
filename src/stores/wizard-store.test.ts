@@ -142,7 +142,7 @@ describe("wizard-store v2 storage", () => {
         task_intent: "test task",
       };
 
-      upsertPromptV2(testData, "my-distinct-id");
+      upsertPromptV2(testData);
 
       expect(localStorageMock.setItem).toHaveBeenCalledWith(STORAGE_KEY_V2, expect.any(String));
     });
@@ -153,7 +153,7 @@ describe("wizard-store v2 storage", () => {
         task_intent: "another test",
       };
 
-      upsertPromptV2(testData, "another-id");
+      upsertPromptV2(testData);
 
       // Verify the function completed without error
       expect(localStorageMock.setItem).toHaveBeenCalled();
