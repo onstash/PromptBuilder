@@ -15,29 +15,55 @@ import { ErrorComponentWithSentry } from "@/components/ErrorComponentWithSentry"
 // Validate and decompress the ?d= parameter
 function validateShareSearch(search: Record<string, unknown>): PromptWizardSearchParamsCompressed {
   try {
+    console.log("validateShareSearch", { search });
     if (typeof search.d !== "string" || !search.d) {
+      console.log("validateShareSearch", {
+        search,
+        error: "Invalid share link - missing or invalid data [1]",
+      });
+      Sentry.captureException(new Error("Invalid share link - missing or invalid data [1]"), {
+        tags: { feature: "share_link_validation" },
+        extra: { compressedData: search.d ?? null },
+      });
       throw new Error("Invalid share link - missing or invalid data");
     }
     const json = decompress(search.d);
     if (!json) {
+      console.log("validateShareSearch", {
+        search,
+        error: "Invalid share link - invalid data [2]",
+      });
+      Sentry.captureException(new Error("Invalid share link - invalid data [2]"), {
+        tags: { feature: "share_link_validation" },
+        extra: { compressedData: search.d ?? null },
+      });
       throw new Error("Invalid share link - invalid data");
     }
 
     const parsed = JSON.parse(json) as Partial<PromptWizardData>;
+    console.log("validateShareSearch", {
+      search,
+      parsed,
+    });
     const result = promptWizardSchema.safeParse({
       ...WIZARD_DEFAULTS,
       ...parsed,
+    });
+    console.log("validateShareSearch", {
+      search,
+      parsed,
+      result,
     });
 
     if (result.success) {
       return { d: search.d, vld: 1 };
     }
+    Sentry.captureException(new Error("Invalid share link - schema validation failed [3]"), {
+      tags: { feature: "share_link_validation" },
+      extra: { compressedData: search.d ?? null, json, parsed, result },
+    });
     throw new Error("Invalid share link - schema validation failed");
   } catch (error) {
-    Sentry.captureException(error, {
-      tags: { feature: "share_link_validation" },
-      extra: { compressedData: search.d ?? null },
-    });
     return { d: null, vld: 0 };
   }
 }

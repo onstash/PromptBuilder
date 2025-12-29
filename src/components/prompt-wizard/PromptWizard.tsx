@@ -218,7 +218,6 @@ export const PromptWizard = memo(function PromptWizard() {
         timestamp: new Date().toISOString(),
         step: currentStep + 1,
       });
-      storeWizardDataInLocalStorage();
     }
   }, [currentStep, totalSteps, currentStepValid, goToStep, setShowError, trackEvent]);
 
@@ -230,7 +229,6 @@ export const PromptWizard = memo(function PromptWizard() {
         timestamp: new Date().toISOString(),
         step: currentStep - 1,
       });
-      storeWizardDataInLocalStorage();
     }
   }, [currentStep, goToStep, trackEvent]);
 
@@ -278,7 +276,6 @@ export const PromptWizard = memo(function PromptWizard() {
           timestamp: new Date().toISOString(),
           step,
         });
-        storeWizardDataInLocalStorage();
         return;
       }
       if (step > currentStep && !currentStepValid) {
@@ -291,7 +288,6 @@ export const PromptWizard = memo(function PromptWizard() {
         timestamp: new Date().toISOString(),
         step,
       });
-      storeWizardDataInLocalStorage();
     },
     [currentStep, currentStepValid, goToStep, setShowError, trackEvent]
   );
