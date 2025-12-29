@@ -43,7 +43,11 @@ export function Hero() {
               trackEvent("cta_clicked_start_building");
             }}
           >
-            <Link to="/wizard" search={{ d: null, vld: 0 }} className="flex items-center gap-3">
+            <Link
+              to="/wizard"
+              search={{ d: null, vld: 0, partial: false }}
+              className="flex items-center gap-3"
+            >
               Start Building
               <ArrowRight className="w-5 h-5" />
             </Link>

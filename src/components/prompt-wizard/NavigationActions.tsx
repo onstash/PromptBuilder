@@ -35,7 +35,11 @@ export function NavigationActions({ page }: NavigationActionsProps) {
           reset();
         }}
       >
-        <Link to="/wizard" search={{ d: null, vld: 0 }} className="font-mono text-sm">
+        <Link
+          to="/wizard"
+          search={{ d: null, vld: 0, partial: false }}
+          className="font-mono text-sm"
+        >
           <Plus className="w-4 h-4" />
           Create New
         </Link>

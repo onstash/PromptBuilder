@@ -169,7 +169,7 @@ function WizardPreviewForSharePage(props: WizardPreviewPropsForSharePage) {
                   size="sm"
                   className="font-mono text-xs"
                 >
-                  <Link to="/wizard" search={{ d: promptTextCompressed, vld: 1 }}>
+                  <Link to="/wizard" search={{ d: promptTextCompressed, vld: 1, partial: false }}>
                     <EditOrOpenIcon className="w-4 h-4 mr-1" />
                     Edit
                   </Link>
@@ -315,7 +315,7 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
                 size="sm"
                 className="font-mono text-xs"
               >
-                <Link to="/share" search={{ d: promptTextCompressed, vld: 1 }}>
+                <Link to="/share" search={{ d: promptTextCompressed, vld: 1, partial: false }}>
                   <EditOrOpenIcon className="w-4 h-4 mr-1" />
                   Open
                 </Link>

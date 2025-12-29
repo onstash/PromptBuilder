@@ -32,6 +32,7 @@ const localStorageMock = (() => {
 // Mock session
 vi.mock("@/utils/session", () => ({
   getOrCreateSessionId: vi.fn(() => "test-session-id-123"),
+  generateSessionId: vi.fn(() => "generated-id-" + Math.random().toString(36).slice(2)),
 }));
 
 Object.defineProperty(globalThis, "localStorage", { value: localStorageMock });
@@ -142,7 +143,11 @@ describe("wizard-store v2 storage", () => {
         task_intent: "test task",
       };
 
-      upsertPromptV2(testData);
+      upsertPromptV2(
+        testData,
+        { noTaskIntent: () => {}, onSuccess: () => {} },
+        { shouldExecute: true }
+      );
 
       expect(localStorageMock.setItem).toHaveBeenCalledWith(STORAGE_KEY_V2, expect.any(String));
     });
@@ -153,7 +158,11 @@ describe("wizard-store v2 storage", () => {
         task_intent: "another test",
       };
 
-      upsertPromptV2(testData);
+      upsertPromptV2(
+        testData,
+        { noTaskIntent: () => {}, onSuccess: () => {} },
+        { shouldExecute: true }
+      );
 
       // Verify the function completed without error
       expect(localStorageMock.setItem).toHaveBeenCalled();
