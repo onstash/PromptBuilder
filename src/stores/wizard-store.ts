@@ -289,6 +289,7 @@ const formatMap: Record<string, string> = {
 
 const depthMap: Record<string, string> = {
   brief: "Be concise and direct.",
+  moderate: "Provide a balanced response with moderate detail.",
   thorough: "Provide thorough, in-depth analysis.",
 };
 
