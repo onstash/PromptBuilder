@@ -132,7 +132,7 @@ export const promptWizardSchema = z.object({
   // Wizard State
   // ─────────────────────────────────────────────────────────────────────────
   step: z.number().min(1).max(10).default(1),
-  total_steps: z.number().min(1).max(10).default(1),
+  total_steps: z.number().min(1).max(10).default(5),
   show_advanced: z.boolean().default(false),
   updatedAt: z.number().default(-1),
   finishedAt: z.number().default(-1),
@@ -161,19 +161,24 @@ export type PromptWizardSearchParamsCompressed =
 // STEP DEFINITIONS
 // ═══════════════════════════════════════════════════════════════════════════
 
-export const WIZARD_STEPS = [
-  // Required steps
+export const WIZARD_STEPS_REQUIRED = [
   { id: 1, key: "task_intent", title: "What do you want?", required: true },
   { id: 2, key: "context", title: "Give some context", required: true },
   { id: 3, key: "constraints", title: "Any constraints?", required: true },
   { id: 4, key: "target_audience", title: "Who is this for?", required: true },
   { id: 5, key: "output_format", title: "Output format", required: true },
+];
+
+export const WIZARD_STEPS = [
+  // Required steps
+  ...WIZARD_STEPS_REQUIRED,
   // Optional steps
   { id: 6, key: "ai_role", title: "AI Role", required: false },
   { id: 7, key: "tone_style", title: "Tone & Style", required: false },
   { id: 8, key: "reasoning_depth", title: "Reasoning Depth", required: false },
   { id: 9, key: "self_check", title: "Self-Check", required: false },
   { id: 10, key: "disallowed_content", title: "Avoid", required: false },
+  ,
 ] as const;
 
 export const REQUIRED_STEPS = WIZARD_STEPS.filter((s) => s.required);

@@ -1,12 +1,9 @@
 import { motion } from "motion/react";
 import { ArrowLeft, ArrowRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { TOTAL_REQUIRED_STEPS } from "@/utils/prompt-wizard/schema";
 import { useWizardStore } from "@/stores/wizard-store";
 
 interface WizardNavigationProps {
-  currentStep: number;
-  showAdvanced: boolean;
   onNext: () => void;
   onBack: () => void;
   onFinish: () => void;
@@ -14,14 +11,13 @@ interface WizardNavigationProps {
 }
 
 export function WizardNavigation({
-  currentStep,
-  showAdvanced,
   onNext,
   onBack,
   onFinish,
   canProceed = true,
 }: WizardNavigationProps) {
-  const totalSteps = showAdvanced ? 10 : TOTAL_REQUIRED_STEPS;
+  const currentStep = useWizardStore((state) => state.wizardData.step);
+  const totalSteps = useWizardStore((state) => state.wizardData.total_steps);
   const isFirstStep = currentStep === 1;
   const isLastStep = currentStep === totalSteps;
   const hasFinished = useWizardStore((store) => store.wizardData.finishedAt !== -1);
