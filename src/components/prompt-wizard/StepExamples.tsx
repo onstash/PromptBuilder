@@ -23,10 +23,13 @@ export function StepExamples({ field, currentValue = "", onExampleClick }: StepE
 
   // Check if example is already used (either exact match for chips, or contained for text)
   const isExampleUsed = (example: string) => {
+    if (!currentValue || !currentValue.length) {
+      return false;
+    }
     if (isChipsMode) {
       return currentValue === example;
     }
-    return currentValue.includes(example);
+    return currentValue.includes(example) || example.includes(currentValue);
   };
 
   return (

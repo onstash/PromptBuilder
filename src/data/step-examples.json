@@ -20,20 +20,25 @@
     "items": [
       "Always use first principles thinking with objective & rational scientific thinking.",
       "Keep it under 200 words",
-      "Don't use jargon or technical terms",
+      "Keep it concise",
+      "Keep it concise for WhatsApp message, Status",
+      "Keep it concise for Facebook post, comment, Status",
+      "Keep it concise for Instagram post, comment, story, reel",
+      "Keep it concise for LinkedIn post, message, comment",
+      "Keep it concise for Twitter tweet, DM",
       "Must include a call-to-action",
       "When referring to scientific concepts or answering them, use ONLY top & credible scientific sources & clearly mention & link them.",
-      "And when specific questions are asked about resources, always refer to the original document for references and quote them.",
-      "And always verify your output is in line with the question asked. If not, this is a critial issue and you need to rethink from objective & rational scientific thinking."
+      "When specific questions are asked about resources, always refer to the original document for references and quote them.",
+      "Always verify your output is in line with the question asked. If not, this is a critical issue and you need to rethink using objective & rational scientific thinking."
     ]
   },
   "ai_role": {
     "label": "Popular roles",
     "items": [
+      "Entrepreneur",
       "IT Professional",
       "Senior Principal Engineer",
       "Product Manager",
-      "Entrepreneur",
       "Content Creator"
     ],
     "type": "chips"
@@ -41,11 +46,12 @@
   "disallowed_content": {
     "label": "Examples",
     "items": [
-      "Never cite news articles, opinions, op-eds, or Wikipedia for scientific concepts",
+      "Do not hallucinate",
       "Do not fabricate or derive text when referencing specific resources",
-      "Do not use outdated statistics or unverified claims",
       "Do not sound pushy or salesy",
-      "Do not use jargon or technical terms"
+      "Do not use jargon or technical terms",
+      "Do not use outdated statistics or unverified claims",
+      "Never cite news articles, opinions, op-eds, or Wikipedia for scientific concepts"
     ]
   }
 }
