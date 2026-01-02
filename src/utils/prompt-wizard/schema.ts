@@ -92,16 +92,10 @@ export type ReasoningDepth = (typeof REASONING_DEPTHS)[number]["value"];
 
 export const promptWizardSchema = z.object({
   // ─────────────────────────────────────────────────────────────────────────
-  // Required (Core) - Steps 1-5
+  // Required (Core) - Steps 1-4
   // ─────────────────────────────────────────────────────────────────────────
-  task_intent: z.string().default(""),
-  context: z.string().default(""),
-  constraints: z.string().default(""),
-  target_audience: z
-    .enum(["general", "technical", "business", "children", "entrepreneur", "custom"])
-    // @ts-expect-error
-    .default(""),
-  custom_audience: z.string().optional(),
+  ai_role: z.string().default(""), // Step 1: Act as...
+  task_intent: z.string().default(""), // Step 2: Task
   output_format: z
     .enum([
       "bullet-list",
@@ -113,27 +107,34 @@ export const promptWizardSchema = z.object({
       "mixed",
     ])
     // @ts-expect-error
-    .default(""),
+    .default(""), // Step 2: Format
+  context: z.string().default(""), // Step 3: Context
+  examples: z.string().default(""), // Step 3: Few-shot examples (new)
+  constraints: z.string().default(""), // Step 4: Guardrails (part 1)
+  disallowed_content: z.string().default(""), // Step 4: Guardrails (part 2)
 
   // ─────────────────────────────────────────────────────────────────────────
-  // Optional (Enhancements) - Steps 6-10
+  // Optional (Enhancements) - Steps 5-6
   // ─────────────────────────────────────────────────────────────────────────
-  ai_role: z.string().optional(),
+  reasoning_depth: z.enum(["brief", "moderate", "thorough"]).default("brief"), // Step 5: Reasoning mode - default to brief
+  self_check: z.boolean().default(true), // Step 6: Verification - default to enabled
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Legacy fields (kept for backward compatibility)
+  // ─────────────────────────────────────────────────────────────────────────
+  target_audience: z
+    .enum(["general", "technical", "business", "children", "entrepreneur", "custom"])
+    .optional(),
+  custom_audience: z.string().optional(),
   tone_style: z
     .enum(["formal", "casual", "technical", "friendly", "professional", "humorous"])
     .optional(),
-  reasoning_depth: z
-    .enum(["brief", "moderate", "thorough"])
-    // @ts-expect-error
-    .default(""),
-  self_check: z.boolean().default(false),
-  disallowed_content: z.string().optional(),
+
   // ─────────────────────────────────────────────────────────────────────────
   // Wizard State
   // ─────────────────────────────────────────────────────────────────────────
-  step: z.number().min(1).max(10).default(1),
-  total_steps: z.number().min(1).max(10).default(5),
-  show_advanced: z.boolean().default(false),
+  step: z.number().min(1).max(6).default(1),
+  total_steps: z.number().min(1).max(6).default(6),
   updatedAt: z.number().default(-1),
   finishedAt: z.number().default(-1),
   id: z.string().optional(),
@@ -158,33 +159,82 @@ export type PromptWizardSearchParamsCompressed =
     };
 
 // ═══════════════════════════════════════════════════════════════════════════
-// STEP DEFINITIONS
+// STEP DEFINITIONS (Expert 6-Step Structure)
 // ═══════════════════════════════════════════════════════════════════════════
 
 export const WIZARD_STEPS_REQUIRED = [
-  { id: 1, key: "task_intent", title: "What do you want?", required: true },
-  { id: 2, key: "context", title: "Give some context", required: true },
-  { id: 3, key: "constraints", title: "Any constraints?", required: true },
-  { id: 4, key: "target_audience", title: "Who is this for?", required: true },
-  { id: 5, key: "output_format", title: "Output format", required: true },
+  { id: 1, key: "ai_role", title: "Act as...", required: true },
+  { id: 2, key: "task_intent", title: "What do you want?", required: true },
+  { id: 3, key: "context", title: "Give context", required: true },
+  { id: 4, key: "constraints", title: "Set guardrails", required: true },
 ];
 
 export const WIZARD_STEPS = [
-  // Required steps
+  // Required steps (1-4)
   ...WIZARD_STEPS_REQUIRED,
-  // Optional steps
-  { id: 6, key: "ai_role", title: "AI Role", required: false },
-  { id: 7, key: "tone_style", title: "Tone & Style", required: false },
-  { id: 8, key: "reasoning_depth", title: "Reasoning Depth", required: false },
-  { id: 9, key: "self_check", title: "Self-Check", required: false },
-  { id: 10, key: "disallowed_content", title: "Avoid", required: false },
-  ,
+  // Optional steps (5-6)
+  { id: 5, key: "reasoning_depth", title: "Reasoning mode", required: false },
+  { id: 6, key: "self_check", title: "Verification", required: false },
 ] as const;
 
-export const REQUIRED_STEPS = WIZARD_STEPS.filter((s) => s.required);
-export const OPTIONAL_STEPS = WIZARD_STEPS.filter((s) => !s.required);
+export const REQUIRED_STEPS = WIZARD_STEPS.filter((s) => s!.required);
+export const OPTIONAL_STEPS = WIZARD_STEPS.filter((s) => !s!.required);
 export const TOTAL_REQUIRED_STEPS = REQUIRED_STEPS.length;
 export const TOTAL_STEPS = WIZARD_STEPS.length;
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PER-STEP VALIDATION SCHEMAS (Expert 6-Step Structure)
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * Per-step validation schemas for granular form validation.
+ * Used to validate only the fields relevant to each step.
+ */
+export const stepValidationSchemas = {
+  // Step 1: Act as... (Role)
+  1: z.object({
+    ai_role: z.string().min(3, "Please describe the AI's role (at least 3 characters)"),
+  }),
+  // Step 2: What do you want? (Task + Format)
+  2: z.object({
+    task_intent: z.string().min(10, "Please describe what you want (at least 10 characters)"),
+    output_format: z.enum(
+      [
+        "bullet-list",
+        "1-paragraph",
+        "2-paragraphs",
+        "3-plus-paragraphs",
+        "numbered-list",
+        "table",
+        "mixed",
+      ],
+      { message: "Please select an output format" }
+    ),
+  }),
+  // Step 3: Give context (Context + Examples)
+  3: z.object({
+    context: z.string().optional(),
+    examples: z.string().optional(),
+  }),
+  // Step 4: Set guardrails (Constraints + Avoid)
+  4: z.object({
+    constraints: z.string().optional(),
+    disallowed_content: z.string().optional(),
+  }),
+  // Optional steps (5-6) - no validation requirements
+  5: z.object({ reasoning_depth: z.enum(["brief", "moderate", "thorough"]).optional() }),
+  6: z.object({ self_check: z.boolean().optional() }),
+} as const;
+
+/** Maps step number to its field name(s) */
+export const STEP_FIELDS: Record<number, (keyof PromptWizardData)[]> = {
+  1: ["ai_role"],
+  2: ["task_intent", "output_format"],
+  3: ["context", "examples"],
+  4: ["constraints", "disallowed_content"],
+  5: ["reasoning_depth"],
+  6: ["self_check"],
+};
 
 // ═══════════════════════════════════════════════════════════════════════════
 // STORAGE TYPES (v2)

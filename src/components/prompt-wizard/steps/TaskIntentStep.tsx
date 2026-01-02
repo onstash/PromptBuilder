@@ -1,5 +1,6 @@
 import { Textarea } from "@/components/ui/textarea";
 import type { PromptWizardData } from "@/utils/prompt-wizard/schema";
+import { StepExamples } from "../StepExamples";
 
 interface StepProps {
   data: PromptWizardData;
@@ -7,6 +8,12 @@ interface StepProps {
 }
 
 export function TaskIntentStep({ data, onUpdate }: StepProps) {
+  const handleExampleClick = (example: string) => {
+    const current = data.task_intent || "";
+    const newValue = current ? `${current}\n${example}` : example;
+    onUpdate({ task_intent: newValue });
+  };
+
   return (
     <div className="space-y-4">
       <Textarea
@@ -16,15 +23,11 @@ export function TaskIntentStep({ data, onUpdate }: StepProps) {
         className="min-h-[150px] resize-none text-lg"
         autoFocus
       />
-
-      <div className="text-sm text-muted-foreground">
-        <p className="font-mono uppercase tracking-wider mb-2">Examples:</p>
-        <ul className="space-y-1 list-disc list-inside">
-          <li>Write a professional email declining a job offer politely</li>
-          <li>Explain blockchain technology to a 10-year-old</li>
-          <li>Create a 30-day workout plan for beginners</li>
-        </ul>
-      </div>
+      <StepExamples
+        field="task_intent"
+        currentValue={data.task_intent}
+        onExampleClick={handleExampleClick}
+      />
     </div>
   );
 }

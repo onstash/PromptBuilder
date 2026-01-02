@@ -1,10 +1,9 @@
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
-import { toast } from "sonner";
 import { distance } from "fastest-levenshtein";
 
 import type { PromptWizardData, StoredPrompt, PromptStorageV2 } from "@/utils/prompt-wizard/schema";
-import { TOTAL_REQUIRED_STEPS } from "@/utils/prompt-wizard/schema";
+// TOTAL_REQUIRED_STEPS removed
 import { compress, decompress } from "@/utils/prompt-wizard/url-compression";
 import { decompressFullState, WIZARD_DEFAULTS } from "@/utils/prompt-wizard/search-params";
 import { generateSessionId, getOrCreateSessionId } from "@/utils/session";
@@ -61,20 +60,6 @@ function loadFromStorage(): [PromptWizardData, "default" | "localStorage"] {
     return [{ ...WIZARD_DEFAULTS, ...JSON.parse(json) }, "localStorage"];
   } catch {
     return [WIZARD_DEFAULTS, "default"];
-  }
-}
-
-/**
- * Save wizard data to localStorage using LZ-String compression
- * Reduces storage size by ~30-50% compared to raw JSON
- */
-function saveToStorage(data: PromptWizardData): void {
-  try {
-    const json = JSON.stringify(data);
-    const compressed = compress(json);
-    localStorage.setItem(STORAGE_KEY, compressed);
-  } catch {
-    // Storage full or unavailable
   }
 }
 
@@ -313,39 +298,43 @@ export function generatePromptText(finalData: PromptWizardData): string {
   }
   const sections: string[] = [];
 
+  // 1. Role (Who)
+  if (finalData.ai_role) {
+    sections.push(`## Role\nAct as: ${finalData.ai_role}`);
+  }
+
+  // 2. Task (What)
   if (finalData.task_intent) {
     sections.push(`## Task\n${finalData.task_intent}`);
   }
 
+  // 3. Context (Why/Background)
   if (finalData.context) {
     sections.push(`## Context\n${finalData.context}`);
   }
 
+  if (finalData.examples) {
+    sections.push(`## Examples\n${finalData.examples}`);
+  }
+
+  // 4. Guardrails (How NOT to do it)
   if (finalData.constraints) {
     sections.push(`## Constraints\n${finalData.constraints}`);
   }
 
-  const audienceLabel =
-    finalData.target_audience === "custom" ? finalData.custom_audience : finalData.target_audience;
-  if (audienceLabel) {
-    sections.push(`## Target Audience\n${audienceLabel}`);
+  if (finalData.disallowed_content) {
+    sections.push(`## Avoid\n${finalData.disallowed_content}`);
   }
 
+  // 5. Format (How to present it)
   if (finalData.output_format) {
     sections.push(
       `## Output Format\n${formatMap[finalData.output_format] || finalData.output_format}`
     );
   }
 
-  if (finalData.ai_role) {
-    sections.push(`## Your Role\nAct as: ${finalData.ai_role}`);
-  }
-
-  if (finalData.tone_style) {
-    sections.push(`## Tone\nUse a ${finalData.tone_style} tone.`);
-  }
-
-  if (finalData.reasoning_depth && finalData.reasoning_depth !== "moderate") {
+  // 6. Refinements (Optional extras)
+  if (finalData.reasoning_depth && finalData.reasoning_depth !== "brief") {
     sections.push(`## Reasoning\n${depthMap[finalData.reasoning_depth]}`);
   }
 
@@ -355,8 +344,15 @@ export function generatePromptText(finalData: PromptWizardData): string {
     );
   }
 
-  if (finalData.disallowed_content) {
-    sections.push(`## Avoid\n${finalData.disallowed_content}`);
+  // Legacy fields (appended if present)
+  const audienceLabel =
+    finalData.target_audience === "custom" ? finalData.custom_audience : finalData.target_audience;
+  if (audienceLabel) {
+    sections.push(`## Target Audience\n${audienceLabel}`);
+  }
+
+  if (finalData.tone_style) {
+    sections.push(`## Tone\nUse a ${finalData.tone_style} tone.`);
   }
 
   return sections.join("\n\n");
@@ -405,7 +401,6 @@ interface WizardActions {
   finish: () => void;
   reset: () => void;
   initialize: (fromUrl?: { d: string; vld: 1 }) => void;
-  toggleAdvancedMode: () => void;
 }
 
 export type WizardStore = WizardState & WizardActions;
@@ -472,11 +467,6 @@ export const useWizardStore = create<WizardStore>()(
           updatedAt: Date.now(),
         };
 
-        // If disabling advanced mode while on step > 5, go to step 5
-        if (updates.show_advanced === false && state.wizardData.step > 5) {
-          newData.step = 5;
-        }
-
         return {
           wizardData: newData,
           showError: false,
@@ -484,21 +474,7 @@ export const useWizardStore = create<WizardStore>()(
       });
     },
 
-    toggleAdvancedMode: () => {
-      set((state) => {
-        const showAdvancedUpdated = !state.wizardData.show_advanced;
-        const newData = {
-          ...state.wizardData,
-          show_advanced: showAdvancedUpdated,
-          total_steps: showAdvancedUpdated ? 10 : TOTAL_REQUIRED_STEPS,
-          updatedAt: Date.now(),
-        };
-        return {
-          wizardData: newData,
-          showError: false,
-        };
-      });
-    },
+    // toggleAdvancedMode removed - all 6 steps now always visible
 
     goToStep: (step) => {
       set((state) => {
@@ -544,32 +520,3 @@ export const useWizardStore = create<WizardStore>()(
     },
   }))
 );
-
-// ═══════════════════════════════════════════════════════════════════════════
-// DEBOUNCED PERSISTENCE SUBSCRIBER
-// ═══════════════════════════════════════════════════════════════════════════
-
-// let saveTimeoutId: ReturnType<typeof setTimeout> | undefined;
-
-// useWizardStore.subscribe(
-//   (state) => state.wizardData,
-//   (wizardData) => {
-//     if (saveTimeoutId) {
-//       clearTimeout(saveTimeoutId);
-//     }
-//     saveTimeoutId = setTimeout(() => {
-//       upsertPromptV2(
-//         wizardData,
-//         {
-//           noTaskIntent: () => {},
-//           onSuccess: () => {
-//             toast.success("Prompt saved!");
-//           },
-//         },
-//         {
-//           shouldExecute: true,
-//         }
-//       );
-//     }, 800);
-//   }
-// );

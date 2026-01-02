@@ -1,30 +1,22 @@
 import { motion, AnimatePresence } from "motion/react";
 import { Check } from "lucide-react";
-import { WIZARD_STEPS, WIZARD_STEPS_REQUIRED } from "@/utils/prompt-wizard/schema";
+import { WIZARD_STEPS } from "@/utils/prompt-wizard/schema";
 import { useWizardStore } from "@/stores/wizard-store";
 
 interface WizardProgressProps {
   onStepClick: (step: number) => void;
+  /** Check if a step has validation errors */
+  hasStepErrors?: (step: number) => boolean;
 }
 
-export function WizardProgress({ onStepClick }: WizardProgressProps) {
+export function WizardProgress({ onStepClick, hasStepErrors }: WizardProgressProps) {
   const currentStep = useWizardStore((state) => state.wizardData.step);
-  const totalSteps = useWizardStore((state) => state.wizardData.total_steps);
-  const showAdvanced = useWizardStore((state) => state.wizardData.show_advanced);
   const completedSteps = useWizardStore((state) => state.completedSteps);
-  const updatedAt = useWizardStore((state) => state.wizardData.updatedAt);
-  const steps = showAdvanced ? WIZARD_STEPS : WIZARD_STEPS_REQUIRED;
+  const steps = WIZARD_STEPS; // Always show all 6 steps
 
+  // Free navigation - users can click any step
   const handleStepClick = (stepNumber: number) => {
-    // Can only click on completed steps or the step right after last completed
-    const canNavigate =
-      stepNumber === 1 || // Always can go to step 1
-      completedSteps[stepNumber] || // Can go to completed steps
-      completedSteps[stepNumber - 1]; // Can go to next step after completed
-
-    if (canNavigate) {
-      onStepClick(stepNumber);
-    }
+    onStepClick(stepNumber);
   };
 
   return (
@@ -48,33 +40,25 @@ export function WizardProgress({ onStepClick }: WizardProgressProps) {
               const isActive = stepNumber === currentStep;
               const isUpcoming = !isCompleted && !isActive;
 
-              // Can click if completed or is the next available step
-              const isClickable =
-                stepNumber === 1 || completedSteps[stepNumber] || stepNumber > 1
-                  ? completedSteps[stepNumber - 1]
-                  : false;
-
-              console.log("\tWizardProgress", {
-                step,
-                stepNumber,
-                isClickable,
-              });
+              // Free navigation - all steps are clickable
+              const isClickable = true;
+              const stepHasErrors = hasStepErrors?.(stepNumber) ?? false;
 
               return (
                 <>
                   {/* Step dot */}
                   <motion.button
-                    key={`step-${step!.id}-${updatedAt}`}
+                    key={`step-${step!.id}`}
                     onClick={() => handleStepClick(stepNumber)}
                     disabled={!isClickable}
                     className={`
                       relative flex items-center justify-center w-10 h-10
                       border-4 border-foreground font-mono text-sm font-bold
-                      transition-all
+                      transition-all cursor-pointer hover:scale-110
                       ${isCompleted ? "bg-primary text-primary-foreground" : ""}
                       ${isActive ? "bg-secondary text-secondary-foreground" : ""}
                       ${isUpcoming ? "bg-muted text-muted-foreground" : ""}
-                      ${isClickable ? "cursor-pointer hover:scale-110" : "cursor-not-allowed opacity-60"}
+                      ${stepHasErrors ? "ring-2 ring-destructive ring-offset-2" : ""}
                     `}
                     layout
                     initial={{ opacity: 0, scale: 0.8 }}
@@ -84,13 +68,9 @@ export function WizardProgress({ onStepClick }: WizardProgressProps) {
                     }}
                     exit={{ opacity: 0, scale: 0.8 }}
                     transition={{ duration: 0.3 }}
-                    whileHover={isClickable ? { scale: 1.1 } : {}}
-                    whileTap={isClickable ? { scale: 0.95 } : {}}
-                    title={
-                      isClickable
-                        ? `Go to Step ${stepNumber}: ${step!.title}`
-                        : "Complete previous steps first"
-                    }
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                    title={`Go to Step ${stepNumber}: ${step!.title}${stepHasErrors ? " (has errors)" : ""}`}
                   >
                     {isCompleted ? <Check className="w-5 h-5" /> : <span>{stepNumber}</span>}
                   </motion.button>
@@ -125,7 +105,7 @@ export function WizardProgress({ onStepClick }: WizardProgressProps) {
       {/* Step title */}
       <div className="text-center">
         <span className="text-sm font-mono text-muted-foreground uppercase tracking-wider">
-          Step {currentStep} of {totalSteps}
+          Step {currentStep} of {steps.length}
         </span>
         <h2 className="text-2xl font-black text-foreground uppercase mt-1">
           {steps[currentStep - 1]?.title || ""}

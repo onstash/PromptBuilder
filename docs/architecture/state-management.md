@@ -103,7 +103,6 @@ interface PromptWizardData {
 
   // Wizard state
   step: number;
-  show_advanced: boolean;
 }
 ```
 

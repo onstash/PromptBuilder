@@ -136,7 +136,7 @@ export function usePromptsWithFallback(
   const items = useMemo(() => {
     if (!currentTaskIntent) return allItems;
     return allItems.filter((item) => {
-      const itemTaskIntent = (item as StoredPromptCardItem).taskIntent;
+      const itemTaskIntent = (item as StoredPromptCardItem).title;
       return itemTaskIntent !== currentTaskIntent;
     });
   }, [allItems, currentTaskIntent]);

@@ -26,23 +26,28 @@ import { compress, decompress } from "./url-compression";
 // ═══════════════════════════════════════════════════════════════════════════
 
 export const WIZARD_DEFAULTS: PromptWizardData = {
+  // Step 1: Role
+  ai_role: "",
+  // Step 2: Task + Format
   task_intent: "",
-  context: "",
-  constraints: "",
-  // @ts-expect-error
-  target_audience: "",
   // @ts-expect-error
   output_format: "",
-  // @ts-expect-error
-  reasoning_depth: "",
-  // @ts-expect-error
-  self_check: null,
-  step: 1,
-  show_advanced: false,
+  // Step 3: Context + Examples
+  context: "",
+  examples: "",
+  // Step 4: Guardrails
+  constraints: "",
+  disallowed_content: "",
+  // Step 5-6: Now always visible
+  reasoning_depth: "brief",
+  self_check: true,
+  // Legacy fields (optional)
+  target_audience: undefined,
   custom_audience: undefined,
-  ai_role: undefined,
   tone_style: undefined,
-  disallowed_content: undefined,
+  // Wizard state
+  step: 1,
+  total_steps: 6,
   updatedAt: -1,
   finishedAt: -1,
 };

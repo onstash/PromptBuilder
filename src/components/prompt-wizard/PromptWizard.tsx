@@ -1,12 +1,11 @@
 import { useCallback, useRef, useEffect, memo, useState } from "react";
 
 import { motion } from "motion/react";
-import { Settings2, RotateCcw, Eye } from "lucide-react";
+import { RotateCcw, Eye } from "lucide-react";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
+
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 
 import { type PromptWizardData } from "@/utils/prompt-wizard/schema";
@@ -18,18 +17,13 @@ import { WizardPreview } from "./WizardPreview";
 import { StoredPromptsSection } from "./StoredPromptsSection";
 import { NavigationActions } from "./NavigationActions";
 
-// Step components (Required: 1-5)
-import { TaskIntentStep } from "./steps/TaskIntentStep";
-import { ContextStep } from "./steps/ContextStep";
-import { ConstraintsStep } from "./steps/ConstraintsStep";
-import { AudienceStep } from "./steps/AudienceStep";
-import { OutputFormatStep } from "./steps/OutputFormatStep";
-// Step components (Advanced: 6-10)
+// Step components (Expert 6-Step Structure)
 import { RoleStep } from "./steps/RoleStep";
-import { ToneStep } from "./steps/ToneStep";
+import { TaskFormatStep } from "./steps/TaskFormatStep";
+import { ContextStep } from "./steps/ContextStep";
+import { GuardrailsStep } from "./steps/GuardrailsStep";
 import { ReasoningStep } from "./steps/ReasoningStep";
 import { SelfCheckStep } from "./steps/SelfCheckStep";
-import { DisallowedStep } from "./steps/DisallowedStep";
 
 // Analytics
 import { type MixpanelDataEvent, useTrackMixpanel } from "@/utils/analytics/MixpanelProvider";
@@ -39,6 +33,7 @@ import { upsertPromptV2, useWizardStore } from "@/stores/wizard-store";
 import { compress } from "@/utils/prompt-wizard";
 // Hooks
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useWizardForm, type ValidationError } from "@/hooks/useWizardForm";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -52,7 +47,7 @@ import {
 } from "../ui/alert-dialog";
 
 // ═══════════════════════════════════════════════════════════════════════════
-// STATIC CONFIGURATION
+// STATIC CONFIGURATION (Expert 6-Step Structure)
 // ═══════════════════════════════════════════════════════════════════════════
 
 interface StepProps {
@@ -63,29 +58,21 @@ interface StepProps {
 type StepComponent = React.ComponentType<StepProps>;
 
 const STEP_COMPONENTS: Record<number, StepComponent> = {
-  1: TaskIntentStep,
-  2: ContextStep,
-  3: ConstraintsStep,
-  4: AudienceStep,
-  5: OutputFormatStep,
-  6: RoleStep,
-  7: ToneStep,
-  8: ReasoningStep,
-  9: SelfCheckStep,
-  10: DisallowedStep,
+  1: RoleStep, // Act as...
+  2: TaskFormatStep, // What do you want? + Output Format
+  3: ContextStep, // Give context + Examples
+  4: GuardrailsStep, // Set guardrails (Constraints + Avoid)
+  5: ReasoningStep, // Reasoning mode (optional)
+  6: SelfCheckStep, // Verification (optional)
 };
 
 const STEP_HINTS: Record<number, string> = {
-  1: 'Be specific. Example: "Write a professional email declining a job offer"',
-  2: "Include relevant background that helps the AI understand your situation (optional)",
-  3: "What should the AI NOT do? Any limits on length, format, or content? (optional)",
-  4: "Who will read this output? Their expertise level matters",
-  5: "Choose how you want the response structured",
-  6: "Give the AI a persona or role to adopt (optional)",
-  7: "How should the AI communicate? (optional)",
-  8: "How detailed should the reasoning be?",
-  9: "Should the AI double-check its work?",
-  10: "Specify topics or content the AI should avoid (optional)",
+  1: "Define the AI's role and expertise level - this sets the foundation",
+  2: "Be specific about what you want AND how you want it formatted",
+  3: "Provide background info and examples to guide the AI",
+  4: "Set boundaries - what the AI must do and must avoid",
+  5: "How deeply should the AI reason through the problem? (optional)",
+  6: "Should the AI verify its own work before responding? (optional)",
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -102,13 +89,20 @@ export const PromptWizard = memo(function PromptWizard() {
   // Mobile Preview Sheet State
   // ─────────────────────────────────────────────────────────────────────────
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-
   const [isResetCalled, setIsResetCalled] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
+  const [showValidationAlert, setShowValidationAlert] = useState(false);
 
   // ─────────────────────────────────────────────────────────────────────────
   // Zustand Store
   // ─────────────────────────────────────────────────────────────────────────
   const wizardData = useWizardStore((state) => state.wizardData);
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Validation Hook (must be after wizardData)
+  // ─────────────────────────────────────────────────────────────────────────
+  const { validateAllSteps, hasStepErrors } = useWizardForm(wizardData);
+
   const storeWizardDataInLocalStorage = () => {
     upsertPromptV2(
       wizardData,
@@ -124,17 +118,12 @@ export const PromptWizard = memo(function PromptWizard() {
     );
   };
   const shareUrl = useWizardStore((state) => state.shareUrl);
-  const showError = useWizardStore((state) => state.showError);
 
   const updateData = useWizardStore((state) => state.updateData);
   const goToStep = useWizardStore((state) => state.goToStep);
-  const setShowError = useWizardStore((state) => state.setShowError);
   const finish = useWizardStore((state) => state.finish);
   const reset = useWizardStore((state) => state.reset);
   const initialize = useWizardStore((state) => state.initialize);
-  const isCurrentStepValid = useWizardStore((state) => state.isCurrentStepValid);
-  const getCurrentStepError = useWizardStore((state) => state.getCurrentStepError);
-  const toggleAdvancedMode = useWizardStore((state) => state.toggleAdvancedMode);
 
   // ─────────────────────────────────────────────────────────────────────────
   // Initialization
@@ -193,26 +182,13 @@ export const PromptWizard = memo(function PromptWizard() {
   // ─────────────────────────────────────────────────────────────────────────
   // Derived Values
   // ─────────────────────────────────────────────────────────────────────────
-  const {
-    updatedAt,
-    step: currentStep,
-    show_advanced: showAdvanced,
-    total_steps: totalSteps,
-  } = wizardData;
-
-  const currentStepValid = isCurrentStepValid();
-  const currentStepError = getCurrentStepError();
+  const { step: currentStep, total_steps: totalSteps } = wizardData;
 
   // ─────────────────────────────────────────────────────────────────────────
   // Callbacks
   // ─────────────────────────────────────────────────────────────────────────
+  // Free navigation - just go to next step
   const handleNext = useCallback(() => {
-    console.log("handleNext");
-    if (!currentStepValid) {
-      console.log("currentStepValid", currentStepValid);
-      setShowError(true);
-      return;
-    }
     if (currentStep < totalSteps) {
       goToStep(currentStep + 1);
       trackEvent(`step_changed_${currentStep + 1}` as MixpanelDataEvent, {
@@ -221,7 +197,7 @@ export const PromptWizard = memo(function PromptWizard() {
         step: currentStep + 1,
       });
     }
-  }, [currentStep, totalSteps, currentStepValid, goToStep, setShowError, trackEvent]);
+  }, [currentStep, totalSteps, goToStep, trackEvent]);
 
   const handleBack = useCallback(() => {
     if (currentStep > 1) {
@@ -235,8 +211,11 @@ export const PromptWizard = memo(function PromptWizard() {
   }, [currentStep, goToStep, trackEvent]);
 
   const handleFinish = useCallback(() => {
-    if (!currentStepValid) {
-      setShowError(true);
+    // Validate all steps before saving
+    const errors = validateAllSteps();
+    if (errors.length > 0) {
+      setValidationErrors(errors);
+      setShowValidationAlert(true);
       return;
     }
     trackEvent("form_submitted", {
@@ -253,7 +232,7 @@ export const PromptWizard = memo(function PromptWizard() {
       setIsPreviewOpen(true);
     }
     storeWizardDataInLocalStorage();
-  }, [currentStepValid, wizardData, setShowError, finish, trackEvent, isMobile]);
+  }, [wizardData, validateAllSteps, finish, trackEvent, isMobile, navigate]);
 
   const handleReset = () => {
     setIsResetCalled(true);
@@ -270,21 +249,9 @@ export const PromptWizard = memo(function PromptWizard() {
     reset();
   }, [wizardData, navigate, reset, trackEvent]);
 
+  // Free navigation - no validation required to navigate between steps
   const handleStepClick = useCallback(
     (step: number) => {
-      if (step < currentStep) {
-        goToStep(step);
-        trackEvent(`step_changed_${step}` as MixpanelDataEvent, {
-          page: "wizard",
-          timestamp: new Date().toISOString(),
-          step,
-        });
-        return;
-      }
-      if (step > currentStep && !currentStepValid) {
-        setShowError(true);
-        return;
-      }
       goToStep(step);
       trackEvent(`step_changed_${step}` as MixpanelDataEvent, {
         page: "wizard",
@@ -292,11 +259,11 @@ export const PromptWizard = memo(function PromptWizard() {
         step,
       });
     },
-    [currentStep, currentStepValid, goToStep, setShowError, trackEvent]
+    [goToStep, trackEvent]
   );
 
   // Get step component and props
-  const StepComponent = STEP_COMPONENTS[currentStep] || TaskIntentStep;
+  const StepComponent = STEP_COMPONENTS[currentStep] || RoleStep;
   const stepHint = STEP_HINTS[currentStep] || "";
 
   return (
@@ -330,21 +297,9 @@ export const PromptWizard = memo(function PromptWizard() {
                   >
                     <RotateCcw className="w-4 h-4" />
                   </Button>
-                  <div className="flex items-center gap-2">
-                    <Switch
-                      id="advanced-mode"
-                      key={updatedAt}
-                      checked={showAdvanced}
-                      onCheckedChange={toggleAdvancedMode}
-                    />
-                    <Label htmlFor="advanced-mode" className="text-sm font-mono">
-                      <Settings2 className="w-4 h-4 inline mr-1" />
-                      Advanced
-                    </Label>
-                  </div>
                 </div>
               </div>
-              <WizardProgress onStepClick={handleStepClick} />
+              <WizardProgress onStepClick={handleStepClick} hasStepErrors={hasStepErrors} />
             </div>
 
             {/* Step Content */}
@@ -352,26 +307,11 @@ export const PromptWizard = memo(function PromptWizard() {
               <WizardStep stepKey={currentStep} direction={direction} hint={stepHint}>
                 <StepComponent data={wizardData} onUpdate={updateData} />
               </WizardStep>
-
-              {showError && currentStepError && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="mt-4 p-3 bg-destructive/10 border-2 border-destructive text-destructive text-sm font-mono"
-                >
-                  ⚠️ {currentStepError}
-                </motion.div>
-              )}
             </div>
 
             {/* Navigation */}
             <div className="p-6">
-              <WizardNavigation
-                onNext={handleNext}
-                onBack={handleBack}
-                onFinish={handleFinish}
-                canProceed={currentStepValid}
-              />
+              <WizardNavigation onNext={handleNext} onBack={handleBack} onFinish={handleFinish} />
             </div>
           </motion.div>
 
@@ -441,6 +381,40 @@ export const PromptWizard = memo(function PromptWizard() {
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               >
                 Reset
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        {/* Validation Errors Alert */}
+        <AlertDialog open={showValidationAlert} onOpenChange={setShowValidationAlert}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle className="text-destructive">
+                ⚠️ Please fix the following errors
+              </AlertDialogTitle>
+              <AlertDialogDescription asChild>
+                <div className="space-y-2">
+                  {validationErrors.map((error, index) => (
+                    <div key={index} className="flex items-start gap-2 text-sm">
+                      <span className="font-mono text-muted-foreground">Step {error.step}:</span>
+                      <span>{error.message}</span>
+                    </div>
+                  ))}
+                </div>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogAction
+                onClick={() => {
+                  setShowValidationAlert(false);
+                  // Navigate to the first step with an error
+                  if (validationErrors.length > 0) {
+                    goToStep(validationErrors[0].step);
+                  }
+                }}
+              >
+                Fix Errors
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
