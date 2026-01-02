@@ -1,0 +1,51 @@
+{
+  "task_intent": {
+    "label": "Examples",
+    "items": [
+      "Create a 2026 New Year resolution tracker with weekly milestones",
+      "Write a February newsletter announcing our AI product launch",
+      "Plan a budget-friendly Valentine's Day date with creative ideas"
+    ]
+  },
+  "context": {
+    "label": "Include things like",
+    "items": [
+      "Your current situation or role",
+      "Relevant past experience or knowledge",
+      "Specific requirements or preferences"
+    ]
+  },
+  "constraints": {
+    "label": "Examples",
+    "items": [
+      "Always use first principles thinking with objective & rational scientific thinking.",
+      "Keep it under 200 words",
+      "Don't use jargon or technical terms",
+      "Must include a call-to-action",
+      "When referring to scientific concepts or answering them, use ONLY top & credible scientific sources & clearly mention & link them.",
+      "And when specific questions are asked about resources, always refer to the original document for references and quote them.",
+      "And always verify your output is in line with the question asked. If not, this is a critial issue and you need to rethink from objective & rational scientific thinking."
+    ]
+  },
+  "ai_role": {
+    "label": "Popular roles",
+    "items": [
+      "IT Professional",
+      "Senior Principal Engineer",
+      "Product Manager",
+      "Entrepreneur",
+      "Content Creator"
+    ],
+    "type": "chips"
+  },
+  "disallowed_content": {
+    "label": "Examples",
+    "items": [
+      "Never cite news articles, opinions, op-eds, or Wikipedia for scientific concepts",
+      "Do not fabricate or derive text when referencing specific resources",
+      "Do not use outdated statistics or unverified claims",
+      "Do not sound pushy or salesy",
+      "Do not use jargon or technical terms"
+    ]
+  }
+}

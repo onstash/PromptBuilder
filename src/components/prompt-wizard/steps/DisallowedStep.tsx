@@ -1,5 +1,6 @@
 import { Textarea } from "@/components/ui/textarea";
 import type { PromptWizardData } from "@/utils/prompt-wizard/schema";
+import { StepExamples } from "../StepExamples";
 
 interface StepProps {
   data: PromptWizardData;
@@ -7,6 +8,12 @@ interface StepProps {
 }
 
 export function DisallowedStep({ data, onUpdate }: StepProps) {
+  const handleExampleClick = (example: string) => {
+    const current = data.disallowed_content || "";
+    const newValue = current ? `${current}\n${example}` : example;
+    onUpdate({ disallowed_content: newValue });
+  };
+
   return (
     <div className="space-y-4">
       <Textarea
@@ -16,16 +23,11 @@ export function DisallowedStep({ data, onUpdate }: StepProps) {
         className="min-h-[150px] resize-none text-lg"
         autoFocus
       />
-
-      <div className="text-sm text-muted-foreground">
-        <p className="font-mono uppercase tracking-wider mb-2">Examples:</p>
-        <ul className="space-y-1 list-disc list-inside">
-          <li>Don't mention competitor products</li>
-          <li>Avoid controversial topics</li>
-          <li>No profanity or offensive language</li>
-          <li>Don't include pricing information</li>
-        </ul>
-      </div>
+      <StepExamples
+        field="disallowed_content"
+        currentValue={data.disallowed_content || ""}
+        onExampleClick={handleExampleClick}
+      />
     </div>
   );
 }

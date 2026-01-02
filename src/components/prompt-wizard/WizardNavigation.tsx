@@ -7,20 +7,13 @@ interface WizardNavigationProps {
   onNext: () => void;
   onBack: () => void;
   onFinish: () => void;
-  canProceed?: boolean;
 }
 
-export function WizardNavigation({
-  onNext,
-  onBack,
-  onFinish,
-  canProceed = true,
-}: WizardNavigationProps) {
+export function WizardNavigation({ onNext, onBack, onFinish }: WizardNavigationProps) {
   const currentStep = useWizardStore((state) => state.wizardData.step);
   const totalSteps = useWizardStore((state) => state.wizardData.total_steps);
   const isFirstStep = currentStep === 1;
   const isLastStep = currentStep === totalSteps;
-  const hasFinished = useWizardStore((store) => store.wizardData.finishedAt !== -1);
 
   return (
     <div className="flex items-center justify-between pt-6 border-t-4 border-foreground">
@@ -42,21 +35,16 @@ export function WizardNavigation({
 
       {/* Next / Finish button */}
       <div className="flex items-center justify-between gap-4">
-        <motion.div
-          whileHover={!canProceed ? {} : { x: 4 }}
-          whileTap={!canProceed ? {} : { scale: 0.98 }}
-        >
-          <Button onClick={onNext} disabled={!canProceed} className="uppercase font-bold">
-            Next
-            <ArrowRight className="w-4 h-4 ml-2" />
-          </Button>
-        </motion.div>
+        {!isLastStep && (
+          <motion.div whileHover={{ x: 4 }} whileTap={{ scale: 0.98 }}>
+            <Button onClick={onNext} className="uppercase font-bold">
+              Next
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          </motion.div>
+        )}
         <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-          <Button
-            onClick={onFinish}
-            disabled={!(canProceed || hasFinished || isLastStep)}
-            className="uppercase font-bold"
-          >
+          <Button onClick={onFinish} className="uppercase font-bold">
             <Sparkles className="w-4 h-4 mr-2" />
             Save Prompt
           </Button>
