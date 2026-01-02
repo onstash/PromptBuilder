@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.0.1
+
+### Patch Changes
+
+- a2c48f1: fix: reasoning undefined issue
+
 ## 3.0.0
 
 ### Major Changes
