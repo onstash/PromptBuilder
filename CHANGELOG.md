@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.0.0
+
+### Major Changes
+
+- abdb6be: feat(wizard): streamline wizard flow, enhance validation, and update examples
+
 ## 2.6.0
 
 ### Minor Changes
