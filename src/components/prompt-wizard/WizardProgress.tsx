@@ -1,21 +1,19 @@
 import { motion, AnimatePresence } from "motion/react";
 import { Check } from "lucide-react";
-import { WIZARD_STEPS } from "@/utils/prompt-wizard/schema";
+import { WIZARD_STEPS, WIZARD_STEPS_REQUIRED } from "@/utils/prompt-wizard/schema";
+import { useWizardStore } from "@/stores/wizard-store";
 
 interface WizardProgressProps {
-  currentStep: number;
-  totalSteps: number;
-  completedSteps: Record<number, boolean>;
   onStepClick: (step: number) => void;
 }
 
-export function WizardProgress({
-  currentStep,
-  totalSteps,
-  completedSteps,
-  onStepClick,
-}: WizardProgressProps) {
-  const steps = WIZARD_STEPS.slice(0, totalSteps);
+export function WizardProgress({ onStepClick }: WizardProgressProps) {
+  const currentStep = useWizardStore((state) => state.wizardData.step);
+  const totalSteps = useWizardStore((state) => state.wizardData.total_steps);
+  const showAdvanced = useWizardStore((state) => state.wizardData.show_advanced);
+  const completedSteps = useWizardStore((state) => state.completedSteps);
+  const updatedAt = useWizardStore((state) => state.wizardData.updatedAt);
+  const steps = showAdvanced ? WIZARD_STEPS : WIZARD_STEPS_REQUIRED;
 
   const handleStepClick = (stepNumber: number) => {
     // Can only click on completed steps or the step right after last completed
@@ -52,24 +50,32 @@ export function WizardProgress({
 
               // Can click if completed or is the next available step
               const isClickable =
-                stepNumber === 1 || completedSteps[stepNumber] || completedSteps[stepNumber - 1];
+                stepNumber === 1 || completedSteps[stepNumber] || stepNumber > 1
+                  ? completedSteps[stepNumber - 1]
+                  : false;
+
+              console.log("\tWizardProgress", {
+                step,
+                stepNumber,
+                isClickable,
+              });
 
               return (
                 <>
                   {/* Step dot */}
                   <motion.button
-                    key={`step-${step.id}`}
+                    key={`step-${step!.id}-${updatedAt}`}
                     onClick={() => handleStepClick(stepNumber)}
                     disabled={!isClickable}
                     className={`
-                  relative flex items-center justify-center w-10 h-10
-                  border-4 border-foreground font-mono text-sm font-bold
-                  transition-all
-                  ${isCompleted ? "bg-primary text-primary-foreground" : ""}
-                  ${isActive ? "bg-secondary text-secondary-foreground" : ""}
-                  ${isUpcoming ? "bg-muted text-muted-foreground" : ""}
-                  ${isClickable ? "cursor-pointer hover:scale-110" : "cursor-not-allowed opacity-60"}
-                `}
+                      relative flex items-center justify-center w-10 h-10
+                      border-4 border-foreground font-mono text-sm font-bold
+                      transition-all
+                      ${isCompleted ? "bg-primary text-primary-foreground" : ""}
+                      ${isActive ? "bg-secondary text-secondary-foreground" : ""}
+                      ${isUpcoming ? "bg-muted text-muted-foreground" : ""}
+                      ${isClickable ? "cursor-pointer hover:scale-110" : "cursor-not-allowed opacity-60"}
+                    `}
                     layout
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{
@@ -82,7 +88,7 @@ export function WizardProgress({
                     whileTap={isClickable ? { scale: 0.95 } : {}}
                     title={
                       isClickable
-                        ? `Go to Step ${stepNumber}: ${step.title}`
+                        ? `Go to Step ${stepNumber}: ${step!.title}`
                         : "Complete previous steps first"
                     }
                   >
@@ -92,7 +98,7 @@ export function WizardProgress({
                   {/* Connecting line */}
                   {index < steps.length - 1 && (
                     <motion.div
-                      key={`line-${step.id}`}
+                      key={`line-${step!.id}`}
                       className="h-1 bg-muted border-y-2 border-foreground relative overflow-hidden"
                       layout
                       initial={{ opacity: 0 }}

@@ -125,7 +125,6 @@ export const PromptWizard = memo(function PromptWizard() {
   };
   const shareUrl = useWizardStore((state) => state.shareUrl);
   const showError = useWizardStore((state) => state.showError);
-  const completedSteps = useWizardStore((state) => state.completedSteps);
 
   const updateData = useWizardStore((state) => state.updateData);
   const goToStep = useWizardStore((state) => state.goToStep);
@@ -194,9 +193,12 @@ export const PromptWizard = memo(function PromptWizard() {
   // ─────────────────────────────────────────────────────────────────────────
   // Derived Values
   // ─────────────────────────────────────────────────────────────────────────
-  const currentStep = wizardData.step;
-  const showAdvanced = wizardData.show_advanced;
-  const totalSteps = wizardData.total_steps;
+  const {
+    updatedAt,
+    step: currentStep,
+    show_advanced: showAdvanced,
+    total_steps: totalSteps,
+  } = wizardData;
 
   const currentStepValid = isCurrentStepValid();
   const currentStepError = getCurrentStepError();
@@ -331,6 +333,7 @@ export const PromptWizard = memo(function PromptWizard() {
                   <div className="flex items-center gap-2">
                     <Switch
                       id="advanced-mode"
+                      key={updatedAt}
                       checked={showAdvanced}
                       onCheckedChange={toggleAdvancedMode}
                     />
@@ -341,12 +344,7 @@ export const PromptWizard = memo(function PromptWizard() {
                   </div>
                 </div>
               </div>
-              <WizardProgress
-                currentStep={currentStep}
-                totalSteps={totalSteps}
-                completedSteps={completedSteps}
-                onStepClick={handleStepClick}
-              />
+              <WizardProgress onStepClick={handleStepClick} />
             </div>
 
             {/* Step Content */}
@@ -369,8 +367,6 @@ export const PromptWizard = memo(function PromptWizard() {
             {/* Navigation */}
             <div className="p-6">
               <WizardNavigation
-                currentStep={currentStep}
-                showAdvanced={showAdvanced}
                 onNext={handleNext}
                 onBack={handleBack}
                 onFinish={handleFinish}
