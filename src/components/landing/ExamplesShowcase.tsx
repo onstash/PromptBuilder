@@ -60,6 +60,8 @@ export function ExamplesShowcase() {
           items={items}
           title={title}
           subtitle={subtitle}
+          columns={2}
+          layout="horizontal"
           emptyMessage="No prompts saved yet"
           actions={[
             {
