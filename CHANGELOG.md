@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.2.0
+
+### Minor Changes
+
+- 5440b79: refactor(compression): implement versioned prompt compression with better error handling
+
 ## 3.1.0
 
 ### Minor Changes
