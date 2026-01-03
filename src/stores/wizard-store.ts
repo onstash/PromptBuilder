@@ -195,7 +195,6 @@ export const __testing = {
   savePromptsV2,
   upsertPromptV2,
   getCurrentDistinctId,
-  loadFromStorage, // v1 loader
   deletePromptV2,
 };
 
