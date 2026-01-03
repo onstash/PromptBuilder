@@ -7,7 +7,7 @@ import { EXAMPLE_PROMPTS } from "@/data/example-prompts";
 import { compressPrompt } from "@/utils/prompt-wizard/url-compression";
 import type { PromptWizardData } from "@/utils/prompt-wizard";
 
-const { loadPromptsV2, loadFromStorage, deletePromptV2 } = __testing;
+const { loadPromptsV2, deletePromptV2 } = __testing;
 
 // ═══════════════════════════════════════════════════════════════════════════
 // TYPES
@@ -70,29 +70,6 @@ function loadStoredPrompts(): { items: StoredPromptCardItem[]; source: "stored" 
     });
 
     return { items: deduped, source: "stored" };
-  }
-
-  // 2. Try v1 prompt (single prompt in wizard-draft)
-  const [v1Data, v1Source] = loadFromStorage();
-  if (v1Source === "localStorage" && v1Data.task_intent) {
-    const taskIntent = v1Data.task_intent;
-    const title = taskIntent.length > 40 ? `${taskIntent.slice(0, 40)}...` : taskIntent;
-    const description = v1Data.context?.slice(0, 80) || "No context provided";
-
-    return {
-      items: [
-        {
-          id: "stored-v1-0",
-          title,
-          description,
-          icon: FileText,
-          color: "bg-primary",
-          compressedData: compressPrompt({ ...v1Data, examples: "", step: 1, finishedAt: -1 }),
-          originalIndex: 0,
-        },
-      ],
-      source: "stored",
-    };
   }
 
   return { items: [], source: null };

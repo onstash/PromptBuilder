@@ -4,7 +4,12 @@ import { distance } from "fastest-levenshtein";
 
 import type { PromptWizardData, StoredPrompt, PromptStorageV2 } from "@/utils/prompt-wizard/schema";
 // TOTAL_REQUIRED_STEPS removed
-import { compress, decompress, decompressPrompt } from "@/utils/prompt-wizard/url-compression";
+import {
+  compress,
+  compressPrompt,
+  decompress,
+  decompressPrompt,
+} from "@/utils/prompt-wizard/url-compression";
 import { WIZARD_DEFAULTS } from "@/utils/prompt-wizard/search-params";
 import { generateSessionId, getOrCreateSessionId } from "@/utils/session";
 
@@ -12,81 +17,8 @@ import { generateSessionId, getOrCreateSessionId } from "@/utils/session";
 // CONSTANTS
 // ═══════════════════════════════════════════════════════════════════════════
 
-const STORAGE_KEY = "wizard-draft";
-const SHARE_URL_KEY = "wizard-share-url";
 const STORAGE_KEY_V2 = "wizard-prompts-v2";
 const MAX_PROMPTS = 15; // LRU limit
-
-// ═══════════════════════════════════════════════════════════════════════════
-// LOCAL STORAGE HELPERS
-// ═══════════════════════════════════════════════════════════════════════════
-
-/**
- * Check if a string is valid JSON (uncompressed legacy format)
- */
-function isValidJson(str: string): boolean {
-  try {
-    JSON.parse(str);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-/**
- * Load wizard data from localStorage with auto-detection for compressed/uncompressed data
- * Backward compatible: handles both legacy raw JSON and new compressed format
- */
-function loadFromStorage(): [PromptWizardData, "default" | "localStorage"] {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (!stored) return [WIZARD_DEFAULTS, "default"];
-
-    let json: string;
-
-    // Auto-detect: if it starts with '{', it's legacy uncompressed JSON
-    if (isValidJson(stored)) {
-      json = stored;
-    } else {
-      // New compressed format - decompress first
-      const decompressed = decompress(stored);
-      if (!decompressed) return [WIZARD_DEFAULTS, "default"];
-      json = decompressed;
-    }
-
-    localStorage.setItem(`_${STORAGE_KEY}_`, stored);
-    localStorage.removeItem(STORAGE_KEY);
-
-    return [{ ...WIZARD_DEFAULTS, ...JSON.parse(json) }, "localStorage"];
-  } catch {
-    return [WIZARD_DEFAULTS, "default"];
-  }
-}
-
-function clearStorage(): void {
-  try {
-    localStorage.removeItem(STORAGE_KEY);
-    localStorage.removeItem(SHARE_URL_KEY);
-  } catch {
-    // Ignore
-  }
-}
-
-function saveShareUrl(url: string): void {
-  try {
-    localStorage.setItem(SHARE_URL_KEY, url);
-  } catch {
-    // Ignore
-  }
-}
-
-function getShareUrl(): string | null {
-  try {
-    return localStorage.getItem(SHARE_URL_KEY);
-  } catch {
-    return null;
-  }
-}
 
 // ═══════════════════════════════════════════════════════════════════════════
 // V2 STORAGE HELPERS (List-based with LRU)
@@ -110,16 +42,10 @@ function loadPromptsV2(): PromptStorageV2 {
     const stored = localStorage.getItem(STORAGE_KEY_V2);
     if (!stored) return getDefaultStorageV2();
 
-    let json: string;
-    if (isValidJson(stored)) {
-      json = stored;
-    } else {
-      const decompressed = decompress(stored);
-      if (!decompressed) return getDefaultStorageV2();
-      json = decompressed;
-    }
+    const decompressed = decompress(stored);
+    if (!decompressed) return getDefaultStorageV2();
 
-    const parsed = JSON.parse(json) as PromptStorageV2;
+    const parsed = JSON.parse(decompressed) as PromptStorageV2;
     let parsedPrompts = Array.isArray(parsed.prompts)
       ? parsed.prompts.filter((prompt) => {
           if (!prompt.data.task_intent || prompt.data.updatedAt === -1) {
@@ -350,7 +276,7 @@ export function generatePromptText(finalData: PromptWizardData): string {
 
 function generateShareUrl(data: PromptWizardData): string {
   // Only include non-default values
-  const filtered: Partial<PromptWizardData> = {};
+  const filtered = {} as PromptWizardData;
   for (const [key, value] of Object.entries(data)) {
     if (key === "d") continue;
     if (value === undefined || value === null || value === "") continue;
@@ -360,9 +286,7 @@ function generateShareUrl(data: PromptWizardData): string {
     (filtered as any)[key] = value;
   }
 
-  const json = JSON.stringify(filtered);
-  const compressed = compress(json);
-  return `/share?d=${compressed}`;
+  return `/share?d=${compressPrompt(filtered)}`;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -405,7 +329,7 @@ export const useWizardStore = create<WizardStore>()(
     // Initial State
     // ─────────────────────────────────────────────────────────────────────────
     wizardData: WIZARD_DEFAULTS,
-    shareUrl: getShareUrl(),
+    shareUrl: null,
     showError: false,
     dataSource: "default",
     completedSteps: {},
@@ -441,9 +365,9 @@ export const useWizardStore = create<WizardStore>()(
             Array.from({ length: decompressed.step }, (_, i) => [i + 1, true])
           ) as Record<number, boolean>;
           set({
-            wizardData: { ...decompressed, step: 1 },
+            wizardData: { ...decompressed, examples: "", step: 1, finishedAt: -1 },
             dataSource: "url",
-            shareUrl: getShareUrl(),
+            shareUrl: generateShareUrl(decompressed),
             completedSteps,
           });
           return;
@@ -477,7 +401,6 @@ export const useWizardStore = create<WizardStore>()(
         };
         const completedStepsUpdated = { ...state.completedSteps, [step]: true };
         const url = generateShareUrl(wizardDataUpdated);
-        saveShareUrl(url);
         return {
           wizardData: wizardDataUpdated,
           showError: false,
@@ -497,12 +420,10 @@ export const useWizardStore = create<WizardStore>()(
       }
 
       const url = generateShareUrl(state.wizardData);
-      saveShareUrl(url);
       set({ shareUrl: url, wizardData: { ...state.wizardData, finishedAt: Date.now() } });
     },
 
     reset: () => {
-      clearStorage();
       set({
         wizardData: WIZARD_DEFAULTS,
         shareUrl: null,
