@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 
-import { type PromptWizardData } from "@/utils/prompt-wizard/schema";
+import { TOTAL_STEPS, type PromptWizardData } from "@/utils/prompt-wizard/schema";
 
 import { WizardProgress } from "./WizardProgress";
 import { WizardNavigation } from "./WizardNavigation";
@@ -30,7 +30,7 @@ import { type MixpanelDataEvent, useTrackMixpanel } from "@/utils/analytics/Mixp
 // Stores
 import { upsertPromptV2, useWizardStore } from "@/stores/wizard-store";
 // Utils
-import { compress } from "@/utils/prompt-wizard";
+import { compressPrompt } from "@/utils/prompt-wizard";
 // Hooks
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useWizardForm, type ValidationError } from "@/hooks/useWizardForm";
@@ -149,7 +149,7 @@ export const PromptWizard = memo(function PromptWizard() {
       const dataSource = useWizardStore.getState().dataSource;
       const wizardData = useWizardStore.getState().wizardData;
       if (dataSource === "localStorage") {
-        const dataCompressed = compress(JSON.stringify(wizardData));
+        const dataCompressed = compressPrompt(wizardData);
         navigate({ to: "/wizard", search: { d: dataCompressed, vld: 1, partial: false } });
         trackEvent("page_viewed_wizard_type_localstorage", {
           page: "wizard",
@@ -182,14 +182,14 @@ export const PromptWizard = memo(function PromptWizard() {
   // ─────────────────────────────────────────────────────────────────────────
   // Derived Values
   // ─────────────────────────────────────────────────────────────────────────
-  const { step: currentStep, total_steps: totalSteps } = wizardData;
+  const { step: currentStep } = wizardData;
 
   // ─────────────────────────────────────────────────────────────────────────
   // Callbacks
   // ─────────────────────────────────────────────────────────────────────────
   // Free navigation - just go to next step
   const handleNext = useCallback(() => {
-    if (currentStep < totalSteps) {
+    if (currentStep < TOTAL_STEPS) {
       goToStep(currentStep + 1);
       trackEvent(`step_changed_${currentStep + 1}` as MixpanelDataEvent, {
         page: "wizard",
@@ -197,7 +197,7 @@ export const PromptWizard = memo(function PromptWizard() {
         step: currentStep + 1,
       });
     }
-  }, [currentStep, totalSteps, goToStep, trackEvent]);
+  }, [currentStep, goToStep, trackEvent]);
 
   const handleBack = useCallback(() => {
     if (currentStep > 1) {
@@ -223,7 +223,7 @@ export const PromptWizard = memo(function PromptWizard() {
       timestamp: new Date().toISOString(),
       data: wizardData,
     });
-    const dataCompressed = compress(JSON.stringify(wizardData));
+    const dataCompressed = compressPrompt(wizardData);
     navigate({ to: "/wizard", search: { d: dataCompressed, vld: 1, partial: false } });
     finish();
 

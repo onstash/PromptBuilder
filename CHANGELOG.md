@@ -1,5 +1,17 @@
 # Changelog
 
+## 3.2.0
+
+### Minor Changes
+
+- 5440b79: refactor(compression): implement versioned prompt compression with better error handling
+
+## 3.1.0
+
+### Minor Changes
+
+- 3f87602: optimize URL compression with sha256 IDs and remove legacy fields
+
 ## 3.0.1
 
 ### Patch Changes

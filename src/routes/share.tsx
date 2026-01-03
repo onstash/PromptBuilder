@@ -1,93 +1,13 @@
 import { createFileRoute, Link, useSearch } from "@tanstack/react-router";
 import { useMemo } from "react";
-import * as Sentry from "@sentry/tanstackstart-react";
 
-import { decompress } from "@/utils/prompt-wizard/url-compression";
-import { WIZARD_DEFAULTS } from "@/utils/prompt-wizard/search-params";
-import {
-  promptWizardSchema,
-  partialPromptWizardSchema,
-  type PromptWizardSearchParamsCompressed,
-  type PromptWizardData,
-} from "@/utils/prompt-wizard/schema";
 import { WizardPreview } from "@/components/prompt-wizard/WizardPreview";
 import { ErrorComponentWithSentry } from "@/components/ErrorComponentWithSentry";
-
-// Validate and decompress the ?d= parameter
-// Supports both complete and partial (draft) prompts
-function validateShareSearch(search: Record<string, unknown>): PromptWizardSearchParamsCompressed {
-  try {
-    console.log("validateShareSearch", { search });
-    if (typeof search.d !== "string" || !search.d) {
-      console.log("validateShareSearch", {
-        search,
-        error: "Invalid share link - missing or invalid data [1]",
-      });
-      Sentry.captureException(new Error("Invalid share link - missing or invalid data [1]"), {
-        tags: { feature: "share_link_validation" },
-        extra: { compressedData: search.d ?? null },
-      });
-      throw new Error("Invalid share link - missing or invalid data");
-    }
-    const json = decompress(search.d);
-    if (!json) {
-      console.log("validateShareSearch", {
-        search,
-        error: "Invalid share link - invalid data [2]",
-      });
-      Sentry.captureException(new Error("Invalid share link - invalid data [2]"), {
-        tags: { feature: "share_link_validation" },
-        extra: { compressedData: search.d ?? null },
-      });
-      throw new Error("Invalid share link - invalid data");
-    }
-
-    const parsed = JSON.parse(json) as Partial<PromptWizardData>;
-    console.log("validateShareSearch", {
-      search,
-      parsed,
-    });
-
-    // Try full validation first (complete prompt)
-    const fullResult = promptWizardSchema.safeParse({
-      ...WIZARD_DEFAULTS,
-      ...parsed,
-    });
-    console.log("validateShareSearch", {
-      search,
-      parsed,
-      fullResult,
-    });
-
-    if (fullResult.success) {
-      return { d: search.d, vld: 1, partial: false };
-    }
-
-    // Fall back to partial validation (draft/incomplete prompt)
-    const partialResult = partialPromptWizardSchema.safeParse(parsed);
-    console.log("validateShareSearch partial validation", {
-      search,
-      parsed,
-      partialResult,
-    });
-
-    if (partialResult.success) {
-      return { d: search.d, vld: 1, partial: true };
-    }
-
-    Sentry.captureException(new Error("Invalid share link - schema validation failed [3]"), {
-      tags: { feature: "share_link_validation" },
-      extra: { compressedData: search.d ?? null, json, parsed, fullResult, partialResult },
-    });
-    throw new Error("Invalid share link - schema validation failed");
-  } catch (error) {
-    return { d: null, vld: 0, partial: false };
-  }
-}
+import { validateWizardSearch } from "@/utils/prompt-wizard/search-params";
 
 export const Route = createFileRoute("/share")({
   component: ShareRouteComponent,
-  validateSearch: validateShareSearch,
+  validateSearch: validateWizardSearch,
   errorComponent: ErrorComponentWithSentry,
 });
 

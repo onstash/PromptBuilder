@@ -4,8 +4,8 @@ import { distance } from "fastest-levenshtein";
 
 import type { PromptWizardData, StoredPrompt, PromptStorageV2 } from "@/utils/prompt-wizard/schema";
 // TOTAL_REQUIRED_STEPS removed
-import { compress, decompress } from "@/utils/prompt-wizard/url-compression";
-import { decompressFullState, WIZARD_DEFAULTS } from "@/utils/prompt-wizard/search-params";
+import { compress, decompress, decompressPrompt } from "@/utils/prompt-wizard/url-compression";
+import { WIZARD_DEFAULTS } from "@/utils/prompt-wizard/search-params";
 import { generateSessionId, getOrCreateSessionId } from "@/utils/session";
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -345,17 +345,6 @@ export function generatePromptText(finalData: PromptWizardData): string {
     );
   }
 
-  // Legacy fields (appended if present)
-  const audienceLabel =
-    finalData.target_audience === "custom" ? finalData.custom_audience : finalData.target_audience;
-  if (audienceLabel) {
-    sections.push(`## Target Audience\n${audienceLabel}`);
-  }
-
-  if (finalData.tone_style) {
-    sections.push(`## Tone\nUse a ${finalData.tone_style} tone.`);
-  }
-
   return sections.join("\n\n");
 }
 
@@ -444,8 +433,10 @@ export const useWizardStore = create<WizardStore>()(
     // ─────────────────────────────────────────────────────────────────────────
     initialize: (fromUrl) => {
       if (fromUrl?.d && fromUrl.vld) {
-        const decompressed = decompressFullState(fromUrl.d);
-        if (Object.keys(decompressed).length > 1) {
+        const { data: decompressed, valid } = decompressPrompt(fromUrl.d, {
+          _source_: "wizard-store initialize",
+        });
+        if (valid && Object.keys(decompressed).length > 1) {
           const completedSteps = Object.fromEntries(
             Array.from({ length: decompressed.step }, (_, i) => [i + 1, true])
           ) as Record<number, boolean>;

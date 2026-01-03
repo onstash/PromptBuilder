@@ -4,7 +4,7 @@ import { FileText } from "lucide-react";
 import type { CardItem } from "@/components/ui/CardGrid";
 import { __testing } from "@/stores/wizard-store";
 import { EXAMPLE_PROMPTS } from "@/data/example-prompts";
-import { compress } from "@/utils/prompt-wizard/url-compression";
+import { compressPrompt } from "@/utils/prompt-wizard/url-compression";
 import type { PromptWizardData } from "@/utils/prompt-wizard";
 
 const { loadPromptsV2, loadFromStorage, deletePromptV2 } = __testing;
@@ -56,7 +56,7 @@ function loadStoredPrompts(): { items: StoredPromptCardItem[]; source: "stored" 
           description: prompt.data.context,
           icon: FileText,
           color: "bg-primary",
-          compressedData: compress(JSON.stringify(prompt.data)),
+          compressedData: compressPrompt({ ...prompt.data, examples: "", step: 1, finishedAt: -1 }),
           originalIndex: index,
         };
       });
@@ -87,7 +87,7 @@ function loadStoredPrompts(): { items: StoredPromptCardItem[]; source: "stored" 
           description,
           icon: FileText,
           color: "bg-primary",
-          compressedData: compress(JSON.stringify(v1Data)),
+          compressedData: compressPrompt({ ...v1Data, examples: "", step: 1, finishedAt: -1 }),
           originalIndex: 0,
         },
       ],

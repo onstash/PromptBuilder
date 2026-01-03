@@ -50,7 +50,6 @@ import { getOrCreateSessionId, clearSessionId } from "@/utils/session";
 
 // Get or create session ID (automatically syncs between cookie and localStorage)
 const sessionId = getOrCreateSessionId();
-console.log("Current session ID:", sessionId);
 
 // Clear session ID (useful for logout)
 export function handleLogout() {

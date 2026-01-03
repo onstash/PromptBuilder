@@ -6,7 +6,7 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import type { PromptWizardData } from "@/utils/prompt-wizard/schema";
-import { compressFullState, decompress } from "@/utils/prompt-wizard";
+import { compressPrompt, decompressPrompt } from "@/utils/prompt-wizard";
 import { Link } from "@tanstack/react-router";
 import { useTrackMixpanel } from "@/utils/analytics/MixpanelProvider";
 import { generatePromptText } from "@/stores/wizard-store";
@@ -64,8 +64,11 @@ function WizardPreviewForSharePage(props: WizardPreviewPropsForSharePage) {
     [string, PromptWizardData, string]
   >(() => {
     const compressedData = data as string;
-    const decompressedData = withLatencyLoggingSync(
-      () => decompress(compressedData),
+    const { data: wizardData, valid } = withLatencyLoggingSync(
+      () =>
+        decompressPrompt(compressedData, {
+          _source_: "WizardPreviewForSharePage",
+        }),
       (latency) => {
         trackEvent("time_taken_decompress", {
           latency,
@@ -73,16 +76,9 @@ function WizardPreviewForSharePage(props: WizardPreviewPropsForSharePage) {
         });
       }
     );
-    const wizardData = withLatencyLoggingSync(
-      () => JSON.parse(decompressedData) as PromptWizardData,
-      (latency) => {
-        trackEvent("time_taken_json_parse", {
-          latency,
-          compressedData,
-          decompressedData,
-        });
-      }
-    );
+    if (!valid) {
+      return ["", null, ""];
+    }
     analyticsWrapper.trackPageLoadEvent(wizardData);
     return [generatePromptStringFromCompressed(wizardData), wizardData, compressedData];
   });
@@ -224,7 +220,7 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
   // This ensures promptText re-computes whenever `data` changes
   const [promptText, wizardData, promptTextCompressed] = useMemo(() => {
     const wizardData = data as PromptWizardData;
-    return [generatePromptText(wizardData), wizardData, compressFullState(wizardData)];
+    return [generatePromptText(wizardData), wizardData, compressPrompt(wizardData)];
   }, [data]);
 
   const hasUserInteracted = wizardData.updatedAt > -1;

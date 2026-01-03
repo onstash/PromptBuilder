@@ -82,9 +82,8 @@ export function useWizardForm(wizardData: PromptWizardData): UseWizardFormReturn
    */
   const validateAllSteps = useCallback((): ValidationError[] => {
     const errors: ValidationError[] = [];
-    const totalSteps = TOTAL_STEPS; // Always 6 steps
 
-    for (let step = 1; step <= totalSteps; step++) {
+    for (let step = 1; step <= TOTAL_STEPS; step++) {
       const schema = stepValidationSchemas[step as keyof typeof stepValidationSchemas];
       if (!schema) continue;
 
