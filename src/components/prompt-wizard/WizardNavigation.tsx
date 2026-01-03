@@ -2,6 +2,7 @@ import { motion } from "motion/react";
 import { ArrowLeft, ArrowRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useWizardStore } from "@/stores/wizard-store";
+import { TOTAL_STEPS } from "@/utils/prompt-wizard";
 
 interface WizardNavigationProps {
   onNext: () => void;
@@ -11,9 +12,8 @@ interface WizardNavigationProps {
 
 export function WizardNavigation({ onNext, onBack, onFinish }: WizardNavigationProps) {
   const currentStep = useWizardStore((state) => state.wizardData.step);
-  const totalSteps = useWizardStore((state) => state.wizardData.total_steps);
   const isFirstStep = currentStep === 1;
-  const isLastStep = currentStep === totalSteps;
+  const isLastStep = currentStep === TOTAL_STEPS;
 
   return (
     <div className="flex items-center justify-between pt-6 border-t-4 border-foreground">

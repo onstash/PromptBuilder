@@ -91,7 +91,6 @@ interface PromptWizardData {
   task_intent: string;
   context: string;
   constraints: string;
-  target_audience: TargetAudience;
   output_format: OutputFormat;
 
   // Optional (Steps 6-10)

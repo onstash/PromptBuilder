@@ -6,7 +6,7 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import type { PromptWizardData } from "@/utils/prompt-wizard/schema";
-import { compressFullState, decompress } from "@/utils/prompt-wizard";
+import { compressFullState, compressPrompt, decompress } from "@/utils/prompt-wizard";
 import { Link } from "@tanstack/react-router";
 import { useTrackMixpanel } from "@/utils/analytics/MixpanelProvider";
 import { generatePromptText } from "@/stores/wizard-store";
@@ -224,7 +224,7 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
   // This ensures promptText re-computes whenever `data` changes
   const [promptText, wizardData, promptTextCompressed] = useMemo(() => {
     const wizardData = data as PromptWizardData;
-    return [generatePromptText(wizardData), wizardData, compressFullState(wizardData)];
+    return [generatePromptText(wizardData), wizardData, compressPrompt(wizardData)];
   }, [data]);
 
   const hasUserInteracted = wizardData.updatedAt > -1;

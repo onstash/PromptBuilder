@@ -120,27 +120,24 @@ export const promptWizardSchema = z.object({
   self_check: z.boolean().default(true), // Step 6: Verification - default to enabled
 
   // ─────────────────────────────────────────────────────────────────────────
-  // Legacy fields (kept for backward compatibility)
-  // ─────────────────────────────────────────────────────────────────────────
-  target_audience: z
-    .enum(["general", "technical", "business", "children", "entrepreneur", "custom"])
-    .optional(),
-  custom_audience: z.string().optional(),
-  tone_style: z
-    .enum(["formal", "casual", "technical", "friendly", "professional", "humorous"])
-    .optional(),
-
-  // ─────────────────────────────────────────────────────────────────────────
   // Wizard State
   // ─────────────────────────────────────────────────────────────────────────
   step: z.number().min(1).max(6).default(1),
-  total_steps: z.number().min(1).max(6).default(6),
   updatedAt: z.number().default(-1),
   finishedAt: z.number().default(-1),
   id: z.string().optional(),
 });
 
 export type PromptWizardData = z.infer<typeof promptWizardSchema>;
+
+const promptWizardCompressedCoreSchema = promptWizardSchema.omit({
+  id: true,
+  step: true,
+  examples: true,
+  finishedAt: true,
+});
+
+export type PromptWizardDataCompressedCore = z.infer<typeof promptWizardCompressedCoreSchema>;
 
 // Partial schema for validating incomplete/draft prompts (all fields optional)
 export const partialPromptWizardSchema = promptWizardSchema.partial();
@@ -250,7 +247,7 @@ export type StorageVersion = (typeof STORAGE_VERSIONS)[number];
  * Minimal stored prompt structure with ownership tracking
  */
 export interface StoredPrompt {
-  data: PromptWizardData;
+  data: PromptWizardDataCompressedCore;
   creator_distinct_id: string; // User session ID who created/loaded this prompt
   storage_version: StorageVersion;
 }

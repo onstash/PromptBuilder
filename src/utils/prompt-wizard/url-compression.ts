@@ -1,4 +1,7 @@
 import LZString from "lz-string";
+import { sha256 } from "@noble/hashes/sha256";
+
+import { PromptWizardData, PromptWizardDataCompressedCore } from "./schema";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // URL COMPRESSION UTILITIES
@@ -14,9 +17,37 @@ import LZString from "lz-string";
  * compress('console.log({hello: "world"});')
  * // → 'MYewdgziA2CmB00QHMAUBvAFraSBcABAEQDuIATtACZEC+AlANwBQzQA'
  */
-export function compress(text: string): string {
+function compress(text: string): string {
   if (!text) return "";
   return LZString.compressToEncodedURIComponent(text);
+}
+
+function computePromptId(data: PromptWizardData) {
+  const canonicalJson = JSON.stringify(data);
+  const hash = sha256(canonicalJson);
+  return hash.slice(0, 8); // or 12 hex chars
+}
+
+export function compressPrompt(data: PromptWizardData) {
+  const { id, step, examples, finishedAt, ...restOfData } = data;
+  const coreData: PromptWizardDataCompressedCore = restOfData;
+  return compress(JSON.stringify({ version: 3, data: coreData }));
+}
+
+export function decompressPrompt(compressed: string): { version: number; data: PromptWizardData } {
+  const _data: { version: number; data: PromptWizardDataCompressedCore } | PromptWizardData =
+    JSON.parse(decompress(compressed));
+  if (!(_data as { version: number; data: PromptWizardDataCompressedCore }).version) {
+    return { version: 1, data: _data as PromptWizardData };
+  }
+  const fullData: PromptWizardData = {
+    ...(_data as { version: number; data: PromptWizardDataCompressedCore }).data,
+    step: 1,
+    examples: "",
+    finishedAt: -1,
+  };
+  fullData.id = computePromptId(fullData);
+  return { ..._data, data: fullData } as { version: number; data: PromptWizardData };
 }
 
 /**
