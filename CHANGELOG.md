@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.3.1
+
+### Patch Changes
+
+- afce2ca: fix: P0 issue loadFromStorage
+
 ## 3.3.0
 
 ### Minor Changes
