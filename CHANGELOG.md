@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.1.0
+
+### Minor Changes
+
+- 3f87602: optimize URL compression with sha256 IDs and remove legacy fields
+
 ## 3.0.1
 
 ### Patch Changes
