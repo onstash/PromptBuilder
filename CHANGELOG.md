@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.3.0
+
+### Minor Changes
+
+- 1ee0911: refactor(storage): remove legacy v1 storage handling and simplify wizard-store
+
 ## 3.2.0
 
 ### Minor Changes
