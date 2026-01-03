@@ -1,10 +1,12 @@
+import * as Sentry from "@sentry/tanstackstart-react";
+
 import {
   promptWizardSchema,
   partialPromptWizardSchema,
   PromptWizardSearchParamsCompressed,
   type PromptWizardData,
 } from "./schema";
-import { compress, decompress, decompressPrompt } from "./url-compression";
+import { decompressPrompt } from "./url-compression";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // URL PARAMS STRUCTURE
@@ -61,20 +63,42 @@ export function validateWizardSearch(
   search: Record<string, unknown>
 ): PromptWizardSearchParamsCompressed {
   // Check for compressed format
-  if (typeof search.d === "string" && search.d) {
-    const { data: parsedData } = decompressPrompt(search.d);
+  try {
+    if (typeof search.d === "string" && search.d) {
+      const { data: parsedData, valid } = decompressPrompt(search.d, {
+        _source_: "search-params validateWizardSearch",
+      });
+      if (!valid) {
+        Sentry.captureException(new Error("Invalid share link - missing or invalid data [1]"), {
+          tags: { feature: "share_link_validation" },
+          extra: { compressedData: search.d ?? null },
+        });
+        return { d: null, vld: 0, partial: false };
+      }
 
-    // Try full validation first
-    const fullResult = promptWizardSchema.safeParse(parsedData);
-    if (fullResult.success) {
-      return { d: search.d, vld: 1, partial: false };
-    }
+      // Try full validation first
+      const fullResult = promptWizardSchema.safeParse(parsedData);
+      if (fullResult.success) {
+        return { d: search.d, vld: 1, partial: false };
+      }
 
-    // Fall back to partial validation for drafts
-    const partialResult = partialPromptWizardSchema.safeParse(parsedData);
-    if (partialResult.success) {
-      return { d: search.d, vld: 1, partial: true };
+      // Fall back to partial validation for drafts
+      const partialResult = partialPromptWizardSchema.safeParse(parsedData);
+      if (partialResult.success) {
+        return { d: search.d, vld: 1, partial: true };
+      }
+      Sentry.captureException(new Error("Invalid share link - schema validation failed [3]"), {
+        tags: { feature: "share_link_validation" },
+        extra: { compressedData: search.d ?? null, json: parsedData, fullResult, partialResult },
+      });
+      throw new Error("Invalid share link - schema validation failed");
     }
+    Sentry.captureException(new Error("Invalid share link - missing or invalid data [2]"), {
+      tags: { feature: "share_link_validation" },
+      extra: { compressedData: search.d ?? null },
+    });
+    throw new Error("Invalid share link - missing or invalid data [2]");
+  } catch (error) {
+    return { d: null, vld: 0, partial: false };
   }
-  return { d: null, vld: 0, partial: false };
 }

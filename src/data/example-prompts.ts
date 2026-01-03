@@ -1,5 +1,5 @@
 import type { PromptWizardData } from "@/utils/prompt-wizard/schema";
-import { compress } from "@/utils/prompt-wizard/url-compression";
+import { compressPrompt } from "@/utils/prompt-wizard/url-compression";
 import { Mail, GraduationCap, PenLine, Briefcase, MessageSquare, Code } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -14,11 +14,11 @@ export interface ExamplePrompt {
   description: string;
   icon: LucideIcon;
   color: string;
-  data: Partial<PromptWizardData>;
+  data: PromptWizardData;
   d: string;
 }
 
-export const EXAMPLE_PROMPTS = [
+const EXAMPLE_PROMPTS_CORE: Omit<ExamplePrompt, "d">[] = [
   {
     id: "work-email",
     title: "Work Email",
@@ -35,10 +35,11 @@ export const EXAMPLE_PROMPTS = [
       constraints: "Keep it polite and professional. Under 100 words. Include dates clearly.",
       disallowed_content: "Avoid slang, emojis, or overly casual language.",
       output_format: "1-paragraph",
-      tone_style: "professional",
       reasoning_depth: "brief",
       self_check: true,
-      step: 6,
+      step: 1,
+      updatedAt: Date.now(),
+      finishedAt: -1,
     },
   },
   {
@@ -56,10 +57,11 @@ export const EXAMPLE_PROMPTS = [
       constraints: "Simple language. Include one real example. Add 3 key points to remember.",
       disallowed_content: "Do not use complex jargon without definition.",
       output_format: "bullet-list",
-      tone_style: "friendly",
       reasoning_depth: "moderate",
       self_check: true,
-      step: 6,
+      step: 1,
+      updatedAt: Date.now(),
+      finishedAt: -1,
     },
   },
   {
@@ -79,10 +81,11 @@ export const EXAMPLE_PROMPTS = [
         "Personal tone but not preachy. Under 1200 characters. Start with a hook. End with a question.",
       disallowed_content: "Do not be humble; do not use hashtags in the middle of sentences.",
       output_format: "mixed",
-      tone_style: "casual",
       reasoning_depth: "brief",
       self_check: true,
-      step: 6,
+      step: 1,
+      updatedAt: Date.now(),
+      finishedAt: -1,
     },
   },
   {
@@ -101,10 +104,11 @@ export const EXAMPLE_PROMPTS = [
         "Highlight transferable skills. Keep under 250 words. Sound confident but not arrogant.",
       disallowed_content: "Do not use generic phrases like 'hard worker'.",
       output_format: "3-plus-paragraphs",
-      tone_style: "professional",
       reasoning_depth: "moderate",
       self_check: true,
-      step: 6,
+      step: 1,
+      updatedAt: Date.now(),
+      finishedAt: -1,
     },
   },
   {
@@ -122,10 +126,11 @@ export const EXAMPLE_PROMPTS = [
       constraints: "Keep each under 150 characters. Include relevant emojis. Make it shareable.",
       disallowed_content: "Do not use hashtags irrelevant to coffee.",
       output_format: "numbered-list",
-      tone_style: "casual",
       reasoning_depth: "brief",
       self_check: true,
-      step: 6,
+      step: 1,
+      updatedAt: Date.now(),
+      finishedAt: -1,
     },
   },
   {
@@ -143,18 +148,21 @@ export const EXAMPLE_PROMPTS = [
       constraints: "Use simple analogies. Include a basic code example. Explain step by step.",
       disallowed_content: "Do not use advanced concepts like Generators or Web Workers yet.",
       output_format: "mixed",
-      tone_style: "friendly",
       reasoning_depth: "moderate",
       self_check: true,
-      step: 6,
+      step: 1,
+      updatedAt: Date.now(),
+      finishedAt: -1,
     },
   },
-].map((prompt) => {
+];
+
+export const EXAMPLE_PROMPTS: ExamplePrompt[] = EXAMPLE_PROMPTS_CORE.map((prompt) => {
   return {
     ...prompt,
-    d: compress(JSON.stringify(prompt.data)),
+    d: compressPrompt(prompt.data),
   };
-}) as ExamplePrompt[];
+});
 
 // ═══════════════════════════════════════════════════════════════════════════
 // HELPERS

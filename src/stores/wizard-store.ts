@@ -4,7 +4,7 @@ import { distance } from "fastest-levenshtein";
 
 import type { PromptWizardData, StoredPrompt, PromptStorageV2 } from "@/utils/prompt-wizard/schema";
 // TOTAL_REQUIRED_STEPS removed
-import { decompress, decompressPrompt } from "@/utils/prompt-wizard/url-compression";
+import { compress, decompress, decompressPrompt } from "@/utils/prompt-wizard/url-compression";
 import { WIZARD_DEFAULTS } from "@/utils/prompt-wizard/search-params";
 import { generateSessionId, getOrCreateSessionId } from "@/utils/session";
 
@@ -433,8 +433,10 @@ export const useWizardStore = create<WizardStore>()(
     // ─────────────────────────────────────────────────────────────────────────
     initialize: (fromUrl) => {
       if (fromUrl?.d && fromUrl.vld) {
-        const { data: decompressed } = decompressPrompt(fromUrl.d);
-        if (Object.keys(decompressed).length > 1) {
+        const { data: decompressed, valid } = decompressPrompt(fromUrl.d, {
+          _source_: "wizard-store initialize",
+        });
+        if (valid && Object.keys(decompressed).length > 1) {
           const completedSteps = Object.fromEntries(
             Array.from({ length: decompressed.step }, (_, i) => [i + 1, true])
           ) as Record<number, boolean>;

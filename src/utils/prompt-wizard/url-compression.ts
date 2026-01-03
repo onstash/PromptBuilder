@@ -1,5 +1,5 @@
 import LZString from "lz-string";
-import { sha256 } from "@noble/hashes/sha256";
+import { sha256 } from "@noble/hashes/sha2.js";
 
 import { PromptWizardData, PromptWizardDataCompressedCore } from "./schema";
 
@@ -17,15 +17,15 @@ import { PromptWizardData, PromptWizardDataCompressedCore } from "./schema";
  * compress('console.log({hello: "world"});')
  * // → 'MYewdgziA2CmB00QHMAUBvAFraSBcABAEQDuIATtACZEC+AlANwBQzQA'
  */
-function compress(text: string): string {
+export function compress(text: string): string {
   if (!text) return "";
   return LZString.compressToEncodedURIComponent(text);
 }
 
 function computePromptId(data: PromptWizardData) {
   const canonicalJson = JSON.stringify(data);
-  const hash = sha256(canonicalJson);
-  return hash.slice(0, 8); // or 12 hex chars
+  const hash = sha256(Uint8Array.from(canonicalJson));
+  return hash.slice(0, 8).toString(); // or 12 hex chars
 }
 
 export function compressPrompt(data: PromptWizardData) {
@@ -34,20 +34,35 @@ export function compressPrompt(data: PromptWizardData) {
   return compress(JSON.stringify({ version: 3, data: coreData }));
 }
 
-export function decompressPrompt(compressed: string): { version: number; data: PromptWizardData } {
-  const _data: { version: number; data: PromptWizardDataCompressedCore } | PromptWizardData =
-    JSON.parse(decompress(compressed));
-  if (!(_data as { version: number; data: PromptWizardDataCompressedCore }).version) {
-    return { version: 1, data: _data as PromptWizardData };
+export function decompressPrompt(
+  compressed: string,
+  opts?: {
+    _source_: string;
   }
-  const fullData: PromptWizardData = {
-    ...(_data as { version: number; data: PromptWizardDataCompressedCore }).data,
-    step: 1,
-    examples: "",
-    finishedAt: -1,
-  };
-  fullData.id = computePromptId(fullData);
-  return { ..._data, data: fullData } as { version: number; data: PromptWizardData };
+):
+  | { version: number; data: PromptWizardData; valid: true }
+  | { version: number; data: null; valid: false } {
+  try {
+    const _data: { version: number; data: PromptWizardDataCompressedCore } | PromptWizardData =
+      JSON.parse(decompress(compressed));
+    if (!(_data as { version: number; data: PromptWizardDataCompressedCore }).version) {
+      return {
+        version: 1,
+        data: { ..._data, step: 1, examples: "", finishedAt: -1 } as PromptWizardData,
+        valid: true,
+      };
+    }
+    const fullData: PromptWizardData = {
+      ...(_data as { version: number; data: PromptWizardDataCompressedCore }).data,
+      step: 1,
+      examples: "",
+      finishedAt: -1,
+    };
+    fullData.id = computePromptId(fullData);
+    return { version: 3, data: fullData, valid: true };
+  } catch {
+    return { version: 1, data: null, valid: false };
+  }
 }
 
 /**

@@ -6,7 +6,7 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import type { PromptWizardData } from "@/utils/prompt-wizard/schema";
-import { compressFullState, compressPrompt, decompress } from "@/utils/prompt-wizard";
+import { compressPrompt, decompressPrompt } from "@/utils/prompt-wizard";
 import { Link } from "@tanstack/react-router";
 import { useTrackMixpanel } from "@/utils/analytics/MixpanelProvider";
 import { generatePromptText } from "@/stores/wizard-store";
@@ -64,8 +64,11 @@ function WizardPreviewForSharePage(props: WizardPreviewPropsForSharePage) {
     [string, PromptWizardData, string]
   >(() => {
     const compressedData = data as string;
-    const decompressedData = withLatencyLoggingSync(
-      () => decompress(compressedData),
+    const { data: wizardData, valid } = withLatencyLoggingSync(
+      () =>
+        decompressPrompt(compressedData, {
+          _source_: "WizardPreviewForSharePage",
+        }),
       (latency) => {
         trackEvent("time_taken_decompress", {
           latency,
@@ -73,16 +76,9 @@ function WizardPreviewForSharePage(props: WizardPreviewPropsForSharePage) {
         });
       }
     );
-    const wizardData = withLatencyLoggingSync(
-      () => JSON.parse(decompressedData) as PromptWizardData,
-      (latency) => {
-        trackEvent("time_taken_json_parse", {
-          latency,
-          compressedData,
-          decompressedData,
-        });
-      }
-    );
+    if (!valid) {
+      return ["", null, ""];
+    }
     analyticsWrapper.trackPageLoadEvent(wizardData);
     return [generatePromptStringFromCompressed(wizardData), wizardData, compressedData];
   });
