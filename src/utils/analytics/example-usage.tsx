@@ -17,7 +17,7 @@ export function ExampleComponent() {
       page_name: "example_page",
       timestamp: new Date().toISOString(),
     });
-  }, [trackEvent]);
+  }, []);
 
   // Track button click
   const handleButtonClick = () => {

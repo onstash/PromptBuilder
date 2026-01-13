@@ -57,6 +57,14 @@ const MixpanelDataSchema = z.object({
     "stored_prompt_viewed",
     "stored_prompt_edited",
     "stored_prompt_deleted",
+    // V2 Landing Page
+    "page_viewed_landing_v2",
+    "example_selected_v2",
+    "cta_clicked_try_prompt_v2",
+    "cta_clicked_start_building_v2",
+    "cta_clicked_copy_prompt_v2",
+    "cta_clicked_copy_link_v2",
+    "cta_clicked_edit_v2",
   ]),
   properties: z.looseObject({
     distinct_id: z.string(),

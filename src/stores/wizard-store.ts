@@ -11,7 +11,7 @@ import {
   decompressPrompt,
 } from "@/utils/prompt-wizard/url-compression";
 import { WIZARD_DEFAULTS } from "@/utils/prompt-wizard/search-params";
-import { generateSessionId, getOrCreateSessionId } from "@/utils/session";
+import { getOrCreateSessionId } from "@/utils/session";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // CONSTANTS
@@ -115,24 +115,24 @@ export function upsertPromptV2(
   const storage = loadPromptsV2();
   const storageUpdated = { ...storage };
 
-  const { id, ...dataWithoutId } = data;
+  // Extract id if it exists (it's optional in PromptWizardData)
+  const { id: _removedId, ...dataWithoutId } = data;
 
   const promptStr = JSON.stringify(dataWithoutId);
   let promptIndex: number = -1;
   let index = 0;
   for (const promptStored of storageUpdated.prompts) {
-    const {
-      data: { id: _id, ...promptStoredDataWithoutId },
-    } = promptStored;
-    if (id && _id && id === _id) {
-      promptIndex = index;
-      break;
-    }
-    const promptStoredDataString = JSON.stringify(promptStoredDataWithoutId);
+    // StoredPrompt.data is PromptWizardDataCompressedCore which doesn't have id
+    const promptStoredData = promptStored.data;
+    const promptStoredDataString = JSON.stringify(promptStoredData);
+
+    // Check for exact string match
     if (promptStoredDataString === promptStr) {
       promptIndex = index;
       break;
     }
+
+    // Check for fuzzy match using Levenshtein distance
     const levenshteinDistanceVal = distance(promptStoredDataString, promptStr);
     if (levenshteinDistanceVal < 10) {
       promptIndex = index;
@@ -140,23 +140,26 @@ export function upsertPromptV2(
     }
     index += 1;
   }
-  // Create new stored prompt
+
+  // Create new stored prompt (without id, as StoredPrompt.data is PromptWizardDataCompressedCore)
   const newPrompt: StoredPrompt = {
-    data,
+    data: dataWithoutId,
     creator_distinct_id: distinctId,
     storage_version: "v2",
   };
+
   if (promptIndex === -1) {
     // Add to end (LRU: most recent at end)
     storageUpdated.prompts.push(newPrompt);
   } else {
     storageUpdated.prompts[promptIndex] = newPrompt;
   }
+
+  // Generate IDs for prompts that don't have them and sort by updatedAt
   storageUpdated.prompts = storageUpdated.prompts
     .map((prompt) => {
-      if (!prompt.data.id) {
-        prompt.data.id = generateSessionId();
-      }
+      // Note: prompt.data is PromptWizardDataCompressedCore, which doesn't have id
+      // IDs are generated when loading prompts for display, not stored
       return prompt;
     })
     .sort((a, b) => a.data.updatedAt.valueOf() - b.data.updatedAt.valueOf());
@@ -273,7 +276,7 @@ export function generatePromptText(finalData: PromptWizardData): string {
   return sections.join("\n\n");
 }
 
-function generateShareUrl(data: PromptWizardData): string {
+export function generateShareUrl(data: PromptWizardData): string {
   // Only include non-default values
   const filtered = {} as PromptWizardData;
   for (const [key, value] of Object.entries(data)) {
