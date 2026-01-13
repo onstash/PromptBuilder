@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.4.0
+
+### Minor Changes
+
+- db7cd22: feat: implement role-based landing page and wizard enhancements
+
 ## 3.3.1
 
 ### Patch Changes
