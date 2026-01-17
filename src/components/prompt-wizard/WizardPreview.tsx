@@ -1,10 +1,20 @@
 import { useState, useCallback, useMemo } from "react";
 
 import { motion } from "motion/react";
-import { Copy, Check, Link2, ExternalLink, FilePen } from "lucide-react";
+import { Copy, Check, ExternalLink, FilePen, Bot } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import type { PromptWizardData } from "@/utils/prompt-wizard/schema";
 import { compressPrompt, decompressPrompt } from "@/utils/prompt-wizard";
 import { Link } from "@tanstack/react-router";
@@ -70,7 +80,7 @@ function WizardPreviewForSharePage(props: WizardPreviewPropsForSharePage) {
   });
 
   const [copiedPrompt, setCopiedPrompt] = useState(false);
-  const [copiedLink, setCopiedLink] = useState(false);
+  const [isChatGPTAlertOpen, setIsChatGPTAlertOpen] = useState(false);
 
   // KEY FIX: Use useMemo instead of useState(() => ...)
   // This ensures promptText re-computes whenever `data` changes
@@ -112,22 +122,23 @@ function WizardPreviewForSharePage(props: WizardPreviewPropsForSharePage) {
     }
   }, [promptText, promptTextCompressed, wizardData]);
 
-  const handleCopyLink = useCallback(async () => {
-    if (!shareUrl) return;
-    try {
-      const fullUrl = `${window.location.origin}${shareUrl}`;
-      await navigator.clipboard.writeText(fullUrl);
-      trackEvent("cta_clicked_copy_link", {
+  const handleTryWithChatGPT = useCallback(() => {
+    const encodedPrompt = encodeURIComponent(promptText);
+    // 2000 is a safe limit for most browsers/servers
+    if (encodedPrompt.length < 2000) {
+      window.open(`https://chatgpt.com/?q=${encodedPrompt}`, "_blank");
+      trackEvent("cta_clicked_try_chatgpt", {
         data: wizardData,
-        d: promptTextCompressed,
+        result: "opened",
       });
-      setCopiedLink(true);
-      toast.success("Share link copied!");
-      setTimeout(() => setCopiedLink(false), 2000);
-    } catch {
-      toast.error("Failed to copy link");
+    } else {
+      setIsChatGPTAlertOpen(true);
+      trackEvent("cta_clicked_try_chatgpt", {
+        data: wizardData,
+        result: "dialog_shown",
+      });
     }
-  }, [shareUrl, promptTextCompressed, wizardData]);
+  }, [promptText, wizardData, trackEvent]);
 
   const handleEdit = useCallback(() => {
     trackEvent("cta_clicked_edit", {
@@ -151,42 +162,27 @@ function WizardPreviewForSharePage(props: WizardPreviewPropsForSharePage) {
         {/* Header */}
         <div className="p-4 border-b-4 border-foreground flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <h3 className="font-black uppercase text-lg">Your Prompt</h3>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex gap-2">
             {shareUrl && (
-              <>
-                <Button
-                  onClick={handleCopyLink}
-                  variant="outline"
-                  size="sm"
-                  className="font-mono text-xs"
-                >
-                  {copiedLink ? (
-                    <>
-                      <Check className="w-4 h-4 mr-1" />
-                      Copied!
-                    </>
-                  ) : (
-                    <>
-                      <Link2 className="w-4 h-4 mr-1" />
-                      Copy Link
-                    </>
-                  )}
-                </Button>
-                <Button
-                  onClick={handleEdit}
-                  asChild
-                  variant="outline"
-                  size="sm"
-                  className="font-mono text-xs"
-                >
-                  <Link to="/wizard" search={{ d: promptTextCompressed, vld: 1, partial: false }}>
-                    <EditOrOpenIcon className="w-4 h-4 mr-1" />
-                    Edit
-                  </Link>
-                </Button>
-              </>
+              <Button
+                onClick={handleEdit}
+                asChild
+                variant="outline"
+                size="sm"
+                className="uppercase font-bold"
+              >
+                <Link to="/wizard" search={{ d: promptTextCompressed, vld: 1, partial: false }}>
+                  <EditOrOpenIcon className="w-4 h-4 mr-1" />
+                  Edit
+                </Link>
+              </Button>
             )}
-            <Button onClick={handleCopyPrompt} size="sm" className="uppercase font-bold">
+            <Button
+              onClick={handleCopyPrompt}
+              size="sm"
+              variant="outline"
+              className="uppercase font-bold"
+            >
               {copiedPrompt ? (
                 <>
                   <Check className="w-4 h-4 mr-1" />
@@ -199,6 +195,14 @@ function WizardPreviewForSharePage(props: WizardPreviewPropsForSharePage) {
                 </>
               )}
             </Button>
+            <Button
+              onClick={handleTryWithChatGPT}
+              size="sm"
+              className="uppercase font-bold bg-green-600 hover:bg-green-700 text-white"
+            >
+              <Bot className="w-4 h-4 mr-1" />
+              Open ChatGPT
+            </Button>
           </div>
         </div>
 
@@ -206,15 +210,32 @@ function WizardPreviewForSharePage(props: WizardPreviewPropsForSharePage) {
         <div className="p-4 max-h-[400px] overflow-y-auto">
           <pre className="whitespace-pre-wrap font-mono text-sm leading-relaxed">{promptText}</pre>
         </div>
-
-        {/* Share URL indicator */}
-        {shareUrl && (
-          <div className="p-4 border-t-2 border-muted bg-muted/30">
-            <p className="text-xs font-mono text-muted-foreground">
-              🔗 Share link ready! Use "Copy Link" to share this prompt with others.
-            </p>
-          </div>
-        )}
+        {/* ChatGPT Alert Dialog */}
+        <AlertDialog open={isChatGPTAlertOpen} onOpenChange={setIsChatGPTAlertOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Prompt is too long for direct link</AlertDialogTitle>
+              <AlertDialogDescription>
+                Your prompt is excellent, but it's a bit too long to pass directly to ChatGPT via
+                the URL.
+                <br />
+                <br />
+                Please <strong>Copy</strong> the prompt first, then open ChatGPT to paste it.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => {
+                  window.open("https://chatgpt.com", "_blank");
+                  setIsChatGPTAlertOpen(false);
+                }}
+              >
+                Open ChatGPT
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </motion.div>
 
       {/* Stored Prompts (only shows if user has saved prompts) */}
@@ -228,7 +249,7 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
   const trackEvent = useTrackMixpanel();
 
   const [copiedPrompt, setCopiedPrompt] = useState(false);
-  const [copiedLink, setCopiedLink] = useState(false);
+  const [isChatGPTAlertOpen, setIsChatGPTAlertOpen] = useState(false);
 
   // KEY FIX: Use useMemo instead of useState(() => ...)
   // This ensures promptText re-computes whenever `data` changes
@@ -258,35 +279,28 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
     }
   }, [promptText, promptTextCompressed, wizardData]);
 
-  const handleCopyLink = useCallback(async () => {
+  const handleTryWithChatGPT = useCallback(() => {
     if (!hasUserInteracted) {
-      toast.error("Please interact with the wizard before copying the link");
+      toast.error("Please interact with the wizard before trying seamlessly");
       return;
     }
-    if (!shareUrl) return;
-    try {
-      const fullUrl = `${window.location.origin}${shareUrl}`;
-      await navigator.clipboard.writeText(fullUrl);
-      trackEvent("cta_clicked_copy_link", {
+
+    const encodedPrompt = encodeURIComponent(promptText);
+    // 2000 is a safe limit for most browsers/servers
+    if (encodedPrompt.length < 2000) {
+      window.open(`https://chatgpt.com/?q=${encodedPrompt}`, "_blank");
+      trackEvent("cta_clicked_try_chatgpt", {
         data: wizardData,
-        d: promptTextCompressed,
+        result: "opened",
       });
-      setCopiedLink(true);
-      toast.success("Share link copied!");
-      setTimeout(() => setCopiedLink(false), 2000);
-    } catch {
-      toast.error("Failed to copy link");
+    } else {
+      setIsChatGPTAlertOpen(true);
+      trackEvent("cta_clicked_try_chatgpt", {
+        data: wizardData,
+        result: "dialog_shown",
+      });
     }
-  }, [shareUrl, promptTextCompressed, wizardData]);
-
-  const handleEdit = useCallback(() => {
-    trackEvent("cta_clicked_edit", {
-      data: wizardData,
-      d: promptTextCompressed,
-    });
-  }, [promptTextCompressed, wizardData]);
-
-  const EditOrOpenIcon = ExternalLink;
+  }, [hasUserInteracted, promptText, wizardData, trackEvent]);
 
   return (
     <motion.div
@@ -297,42 +311,13 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
       {/* Header */}
       <div className="p-4 border-b-4 border-foreground flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <h3 className="font-black uppercase text-lg">Your Prompt</h3>
-        <div className="flex flex-wrap gap-2">
-          {shareUrl && (
-            <>
-              <Button
-                onClick={handleCopyLink}
-                variant="outline"
-                size="sm"
-                className="font-mono text-xs"
-              >
-                {copiedLink ? (
-                  <>
-                    <Check className="w-4 h-4 mr-1" />
-                    Copied!
-                  </>
-                ) : (
-                  <>
-                    <Link2 className="w-4 h-4 mr-1" />
-                    Copy Link
-                  </>
-                )}
-              </Button>
-              <Button
-                onClick={handleEdit}
-                asChild
-                variant="outline"
-                size="sm"
-                className="font-mono text-xs"
-              >
-                <Link to="/share" search={{ d: promptTextCompressed, vld: 1, partial: false }}>
-                  <EditOrOpenIcon className="w-4 h-4 mr-1" />
-                  Open
-                </Link>
-              </Button>
-            </>
-          )}
-          <Button onClick={handleCopyPrompt} size="sm" className="uppercase font-bold">
+        <div className="flex gap-2">
+          <Button
+            onClick={handleCopyPrompt}
+            size="sm"
+            variant="outline"
+            className="uppercase font-bold"
+          >
             {copiedPrompt ? (
               <>
                 <Check className="w-4 h-4 mr-1" />
@@ -345,6 +330,14 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
               </>
             )}
           </Button>
+          <Button
+            onClick={handleTryWithChatGPT}
+            size="sm"
+            className="uppercase font-bold bg-green-600 hover:bg-green-700 text-white"
+          >
+            <Bot className="w-4 h-4 mr-1" />
+            Open ChatGPT
+          </Button>
         </div>
       </div>
 
@@ -352,15 +345,32 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
       <div className="p-4 max-h-[400px] overflow-y-auto">
         <pre className="whitespace-pre-wrap font-mono text-sm leading-relaxed">{promptText}</pre>
       </div>
-
-      {/* Share URL indicator */}
-      {shareUrl && (
-        <div className="p-4 border-t-2 border-muted bg-muted/30">
-          <p className="text-xs font-mono text-muted-foreground">
-            🔗 Share link ready! Use "Copy Link" to share this prompt with others.
-          </p>
-        </div>
-      )}
+      {/* ChatGPT Alert Dialog */}
+      <AlertDialog open={isChatGPTAlertOpen} onOpenChange={setIsChatGPTAlertOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Prompt is too long for direct link</AlertDialogTitle>
+            <AlertDialogDescription>
+              Your prompt is excellent, but it's a bit too long to pass directly to ChatGPT via the
+              URL.
+              <br />
+              <br />
+              Please <strong>Copy</strong> the prompt first, then open ChatGPT to paste it.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                window.open("https://chatgpt.com", "_blank");
+                setIsChatGPTAlertOpen(false);
+              }}
+            >
+              Open ChatGPT
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </motion.div>
   );
 }
@@ -370,7 +380,7 @@ function WizardPreviewForLandingPageV2(props: WizardPreviewPropsForLandingPageV2
   const trackEvent = useTrackMixpanel();
 
   const [copiedPrompt, setCopiedPrompt] = useState(false);
-  const [copiedLink, setCopiedLink] = useState(false);
+  const [isChatGPTAlertOpen, setIsChatGPTAlertOpen] = useState(false);
 
   // KEY FIX: Use useMemo instead of useState(() => ...)
   // This ensures promptText re-computes whenever `data` changes
@@ -399,26 +409,28 @@ function WizardPreviewForLandingPageV2(props: WizardPreviewPropsForLandingPageV2
     }
   }, []);
 
-  const handleCopyLink = useCallback(async () => {
+  const handleTryWithChatGPT = useCallback(() => {
     if (!hasUserInteracted) {
-      toast.error("Please interact with the wizard before copying the link");
+      toast.error("Please interact with the wizard before trying seamlessly");
       return;
     }
-    if (!shareUrl) return;
-    try {
-      const fullUrl = `${window.location.origin}${shareUrl}`;
-      await navigator.clipboard.writeText(fullUrl);
-      trackEvent("cta_clicked_copy_link_v2", {
+
+    const encodedPrompt = encodeURIComponent(promptText);
+    // 2000 is a safe limit
+    if (encodedPrompt.length < 2000) {
+      window.open(`https://chatgpt.com/?q=${encodedPrompt}`, "_blank");
+      trackEvent("cta_clicked_try_chatgpt_v2", {
         data: wizardData,
-        d: promptTextCompressed,
+        result: "opened",
       });
-      setCopiedLink(true);
-      toast.success("Share link copied!");
-      setTimeout(() => setCopiedLink(false), 2000);
-    } catch {
-      toast.error("Failed to copy link");
+    } else {
+      setIsChatGPTAlertOpen(true);
+      trackEvent("cta_clicked_try_chatgpt_v2", {
+        data: wizardData,
+        result: "dialog_shown",
+      });
     }
-  }, []);
+  }, [hasUserInteracted, promptText, wizardData, trackEvent]);
 
   const handleEdit = useCallback(() => {
     onClickCallback?.();
@@ -439,39 +451,24 @@ function WizardPreviewForLandingPageV2(props: WizardPreviewPropsForLandingPageV2
       {/* Header */}
       <div className="p-4 border-b-4 border-foreground flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <h3 className="font-black uppercase text-lg">Your Prompt</h3>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex gap-2">
           {shareUrl && (
-            <>
-              <Button
-                onClick={handleCopyLink}
-                variant="outline"
-                size="sm"
-                className="font-mono text-xs"
-              >
-                {copiedLink ? (
-                  <>
-                    <Check className="w-4 h-4 mr-1" />
-                    Copied!
-                  </>
-                ) : (
-                  <>
-                    <Link2 className="w-4 h-4 mr-1" />
-                    Copy Link
-                  </>
-                )}
-              </Button>
-              <Button
-                onClick={handleEdit}
-                variant="outline"
-                size="sm"
-                className="font-mono text-xs"
-              >
-                <EditOrOpenIcon className="w-4 h-4 mr-1" />
-                Edit
-              </Button>
-            </>
+            <Button
+              onClick={handleEdit}
+              variant="outline"
+              size="sm"
+              className="uppercase font-bold"
+            >
+              <EditOrOpenIcon className="w-4 h-4 mr-1" />
+              Edit
+            </Button>
           )}
-          <Button onClick={handleCopyPrompt} size="sm" className="uppercase font-bold">
+          <Button
+            onClick={handleCopyPrompt}
+            size="sm"
+            variant="outline"
+            className="uppercase font-bold"
+          >
             {copiedPrompt ? (
               <>
                 <Check className="w-4 h-4 mr-1" />
@@ -484,6 +481,14 @@ function WizardPreviewForLandingPageV2(props: WizardPreviewPropsForLandingPageV2
               </>
             )}
           </Button>
+          <Button
+            onClick={handleTryWithChatGPT}
+            size="sm"
+            className="uppercase font-bold bg-green-600 hover:bg-green-700 text-white"
+          >
+            <Bot className="w-4 h-4 mr-1" />
+            Open ChatGPT
+          </Button>
         </div>
       </div>
 
@@ -491,15 +496,32 @@ function WizardPreviewForLandingPageV2(props: WizardPreviewPropsForLandingPageV2
       <div className="p-4 max-h-[400px] overflow-y-auto">
         <pre className="whitespace-pre-wrap font-mono text-sm leading-relaxed">{promptText}</pre>
       </div>
-
-      {/* Share URL indicator */}
-      {shareUrl && (
-        <div className="p-4 border-t-2 border-muted bg-muted/30">
-          <p className="text-xs font-mono text-muted-foreground">
-            🔗 Share link ready! Use "Copy Link" to share this prompt with others.
-          </p>
-        </div>
-      )}
+      {/* ChatGPT Alert Dialog */}
+      <AlertDialog open={isChatGPTAlertOpen} onOpenChange={setIsChatGPTAlertOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Prompt is too long for direct link</AlertDialogTitle>
+            <AlertDialogDescription>
+              Your prompt is excellent, but it's a bit too long to pass directly to ChatGPT via the
+              URL.
+              <br />
+              <br />
+              Please <strong>Copy</strong> the prompt first, then open ChatGPT to paste it.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                window.open("https://chatgpt.com", "_blank");
+                setIsChatGPTAlertOpen(false);
+              }}
+            >
+              Open ChatGPT
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </motion.div>
   );
 }

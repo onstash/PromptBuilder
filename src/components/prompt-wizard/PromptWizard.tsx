@@ -48,6 +48,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "../ui/alert-dialog";
+// Dialog Imports
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // STATIC CONFIGURATION (Expert 6-Step Structure)
@@ -97,6 +106,9 @@ export const PromptWizard = memo(function PromptWizard() {
   const [isResetCalled, setIsResetCalled] = useState(false);
   const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
   const [showValidationAlert, setShowValidationAlert] = useState(false);
+
+  // Onboarding Dialog State
+  const [showOnboardingDialog, setShowOnboardingDialog] = useState(false);
 
   // ─────────────────────────────────────────────────────────────────────────
   // Mode State (Basic vs Advanced)
@@ -155,6 +167,14 @@ export const PromptWizard = memo(function PromptWizard() {
     // Set initial mode from URL if present
     if (wizardType === "advanced") {
       setMode("advanced");
+    } else if (wizardType === "basic") {
+      setMode("basic");
+    } else {
+      // Check for saved preference
+      const savedMode = localStorage.getItem("wizard_mode_preference");
+      if (savedMode === "advanced" || savedMode === "basic") {
+        setMode(savedMode);
+      }
     }
 
     if (d && vld) {
@@ -310,21 +330,38 @@ export const PromptWizard = memo(function PromptWizard() {
       setShowValidationAlert(true);
       return;
     }
+
+    // Save Preference based on current mode
+    localStorage.setItem("wizard_mode_preference", mode);
+
+    // First Time User Logic
+    const hasCompletedFirstPrompt = localStorage.getItem("has_completed_first_prompt");
+    if (!hasCompletedFirstPrompt) {
+      setShowOnboardingDialog(true);
+      localStorage.setItem("has_completed_first_prompt", "true");
+      trackEvent("onboarding_dialog_shown", {
+        page: "wizard",
+        timestamp: new Date().toISOString(),
+      });
+    }
+
     trackEvent("form_submitted", {
       page: "wizard",
       timestamp: new Date().toISOString(),
       data: wizardData,
+      mode: mode,
     });
     const dataCompressed = compressPrompt(wizardData);
     navigate({ to: "/wizard", search: { d: dataCompressed, vld: 1, partial: false } });
     finish();
 
     // On mobile, open the preview sheet after generating
-    if (isMobile) {
+    // Only if NOT showing the onboarding dialog (to avoid stacking)
+    if (isMobile && hasCompletedFirstPrompt) {
       setIsPreviewOpen(true);
     }
     storeWizardDataInLocalStorage();
-  }, [wizardData, validateAllSteps, finish, trackEvent, isMobile, navigate]);
+  }, [wizardData, validateAllSteps, finish, trackEvent, isMobile, navigate, mode]);
 
   const handleReset = () => {
     setIsResetCalled(true);
@@ -577,6 +614,65 @@ export const PromptWizard = memo(function PromptWizard() {
           currentPrompt={wizardData}
           key={wizardData.finishedAt}
         />
+
+        {/* Onboarding Dialog */}
+        <Dialog open={showOnboardingDialog} onOpenChange={setShowOnboardingDialog}>
+          <DialogContent className="sm:max-w-[600px]">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-black uppercase">
+                🎉 Prompt Created Successfully!
+              </DialogTitle>
+              <DialogDescription>You've taken the first step!</DialogDescription>
+            </DialogHeader>
+            <div className="aspect-video w-full mt-2 rounded-lg overflow-hidden border-2 border-foreground">
+              <iframe
+                width="100%"
+                height="100%"
+                src="https://www.youtube.com/embed/7lsdJDiJ0QE"
+                title="Prompt Engineering Tips"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+            <DialogFooter className="flex flex-col sm:flex-row gap-2 mt-4 items-center justify-between w-full">
+              {mode === "basic" ? (
+                <>
+                  <p className="text-sm text-muted-foreground text-center sm:text-left flex-1">
+                    Want to unlock full control?
+                  </p>
+                  <div className="flex gap-2">
+                    <Button variant="outline" onClick={() => setShowOnboardingDialog(false)}>
+                      Keep Basic
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        setMode("advanced");
+                        localStorage.setItem("wizard_mode_preference", "advanced");
+                        setShowOnboardingDialog(false);
+                        trackEvent("onboarding_switched_to_advanced", {
+                          page: "wizard",
+                          timestamp: new Date().toISOString(),
+                        });
+                        toast.success("Switched to Advanced Mode as default!");
+                      }}
+                      className="bg-primary text-primary-foreground"
+                    >
+                      Switch to Advanced
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-2">
+                  <p className="text-sm text-green-600 font-medium flex items-center gap-2">
+                    ✨ Advanced Mode saved as default
+                  </p>
+                  <Button onClick={() => setShowOnboardingDialog(false)}>Get Started</Button>
+                </div>
+              )}
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

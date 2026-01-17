@@ -67,6 +67,7 @@ const MixpanelDataSchema = z.object({
     "cta_clicked_copy_prompt_v2",
     "cta_clicked_copy_link_v2",
     "cta_clicked_edit_v2",
+    "cta_clicked_try_chatgpt",
   ]),
   properties: z.looseObject({
     distinct_id: z.string(),
