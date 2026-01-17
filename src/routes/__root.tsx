@@ -11,7 +11,7 @@ import { Toaster } from "sonner";
 // import Header from "../components/Header";
 
 import appCss from "../styles.css?url";
-import { Footer } from "@/components/landing";
+// import { Footer } from "@/components/landing";
 import { MixpanelProvider } from "@/utils/analytics/MixpanelProvider";
 
 export const Route = createRootRoute({
@@ -39,7 +39,7 @@ export const Route = createRootRoute({
       },
       {
         name: "author",
-        content: "Santosh Venkatraman | onstash on github",
+        content: "hastons on Twitter/X",
       },
       {
         name: "robots",
@@ -90,12 +90,12 @@ export const Route = createRootRoute({
       {
         property: "og:image",
         content:
-          "https://raw.githubusercontent.com/onstash/PromptBuilder/98f90fe446313768707cc4a7359801d6357ffa8e/public/og_image_prompt_builder_1765481623702.png",
+          "https://raw.githubusercontent.com/hastons/PromptBuilder/98f90fe446313768707cc4a7359801d6357ffa8e/public/og_image_prompt_builder_1765481623702.png",
       },
       {
         name: "twitter:image",
         content:
-          "https://raw.githubusercontent.com/onstash/PromptBuilder/98f90fe446313768707cc4a7359801d6357ffa8e/public/og_image_prompt_builder_1765481623702.png",
+          "https://raw.githubusercontent.com/hastons/PromptBuilder/98f90fe446313768707cc4a7359801d6357ffa8e/public/og_image_prompt_builder_1765481623702.png",
       },
 
       // GenAI Engine Optimization
@@ -151,7 +151,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
           ]}
         />
         <Scripts />
-        <Footer />
+        {/* <Footer /> */}
       </body>
     </html>
   );

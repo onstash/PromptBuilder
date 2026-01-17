@@ -7,12 +7,12 @@ export function Footer() {
         <p className="text-sm font-mono flex items-center justify-center gap-2">
           Made with <Heart className="w-4 h-4 text-primary fill-primary" /> by{" "}
           <a
-            href="https://github.com/onstash"
+            href="https://x.com/shtosan?utm=https://prompt-builder-ten-xi.vercel.app/"
             target="_blank"
             rel="noopener noreferrer"
             className="underline underline-offset-4 hover:text-primary transition-colors"
           >
-            onstash
+            hastons
           </a>
         </p>
       </div>

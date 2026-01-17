@@ -33,7 +33,7 @@ export interface RoleLandingExample {
 // ROLE ICON MAPPING
 // ═══════════════════════════════════════════════════════════════════════════
 
-const ROLE_ICONS: Record<RoleKey, LucideIcon> = {
+export const ROLE_ICONS: Record<RoleKey, LucideIcon> = {
   entrepreneur: Briefcase,
   frontend_engineer: Code,
   backend_engineer: Database,
@@ -45,7 +45,7 @@ const ROLE_ICONS: Record<RoleKey, LucideIcon> = {
   audit_manager: FileCheck,
 };
 
-const ROLE_COLORS: Record<RoleKey, string> = {
+export const ROLE_COLORS: Record<RoleKey, string> = {
   entrepreneur: "bg-primary",
   frontend_engineer: "bg-accent",
   backend_engineer: "bg-secondary",
@@ -326,10 +326,3 @@ export const ROLE_LANDING_EXAMPLES: RoleLandingExample[] = ROLE_LANDING_EXAMPLES
     d: compressPrompt(example.data),
   })
 );
-
-/**
- * Get display name for a role
- */
-export function getRoleLandingDisplayName(role: RoleKey): string {
-  return ROLE_STEP_EXAMPLES[role].displayName;
-}

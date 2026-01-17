@@ -196,7 +196,10 @@ export const trackMixpanelInServer = createServerFn({ method: "POST" })
       }
     }
     const acceptLanguage = request.headers.get("accept-language");
-    const ip = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip");
+    const xForwardedFor = request.headers.get("x-forwarded-for");
+    const ip = xForwardedFor
+      ? xForwardedFor.split(",")[0].trim()
+      : request.headers.get("x-real-ip") || request.headers.get("cf-connecting-ip");
     const origin = request.headers.get("origin");
 
     const device = parseDevice(userAgent);
