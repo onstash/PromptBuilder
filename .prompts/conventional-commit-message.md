@@ -9,6 +9,7 @@ https://www.conventionalcommits.org/en/v1.0.0/
 ## Constraints
 
 Keep it concise
-Commit messge should be under 80 characters
-Commit description should be easily readable & understandable
+Commit message should be under 80 characters
+Commit description should be present, easily readable & understandable
+Commit description should not repeat what's present in the commit message
 Do not use emojis

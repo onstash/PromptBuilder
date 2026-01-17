@@ -75,7 +75,7 @@ function WizardPreviewForSharePage(props: WizardPreviewPropsForSharePage) {
   // KEY FIX: Use useMemo instead of useState(() => ...)
   // This ensures promptText re-computes whenever `data` changes
   const [[promptText, wizardData, promptTextCompressed]] = useState<
-    [string, PromptWizardData, string]
+    [string, PromptWizardData | null, string]
   >(() => {
     const compressedData = data as string;
     const { data: wizardData, valid } = withLatencyLoggingSync(
@@ -218,7 +218,7 @@ function WizardPreviewForSharePage(props: WizardPreviewPropsForSharePage) {
       </motion.div>
 
       {/* Stored Prompts (only shows if user has saved prompts) */}
-      <StoredPromptsSection page="share" columns={2} currentPrompt={wizardData} />
+      <StoredPromptsSection page="share" columns={2} currentPrompt={wizardData ?? undefined} />
     </>
   );
 }

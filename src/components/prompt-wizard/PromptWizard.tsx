@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 
-import { TOTAL_STEPS, type PromptWizardData } from "@/utils/prompt-wizard/schema";
+import { type PromptWizardData } from "@/utils/prompt-wizard/schema";
 
 import { WizardProgress } from "./WizardProgress";
 import { WizardNavigation } from "./WizardNavigation";
@@ -19,9 +19,10 @@ import { NavigationActions } from "./NavigationActions";
 
 // Step components (Expert 6-Step Structure)
 import { RoleStep } from "./steps/RoleStep";
-import { TaskFormatStep } from "./steps/TaskFormatStep";
+import { TaskStep } from "./steps/TaskStep";
 import { ContextStep } from "./steps/ContextStep";
 import { GuardrailsStep } from "./steps/GuardrailsStep";
+import { OutputFormatStep } from "./steps/OutputFormatStep";
 import { ReasoningStep } from "./steps/ReasoningStep";
 import { SelfCheckStep } from "./steps/SelfCheckStep";
 
@@ -59,20 +60,22 @@ type StepComponent = React.ComponentType<StepProps>;
 
 const STEP_COMPONENTS: Record<number, StepComponent> = {
   1: RoleStep, // Act as...
-  2: TaskFormatStep, // What do you want? + Output Format
+  2: TaskStep, // What do you want?
   3: ContextStep, // Give context + Examples
   4: GuardrailsStep, // Set guardrails (Constraints + Avoid)
-  5: ReasoningStep, // Reasoning mode (optional)
-  6: SelfCheckStep, // Verification (optional)
+  5: OutputFormatStep, // Output Format
+  6: ReasoningStep, // Reasoning mode (optional)
+  7: SelfCheckStep, // Verification (optional)
 };
 
 const STEP_HINTS: Record<number, string> = {
   1: "Define the AI's role and expertise level - this sets the foundation",
-  2: "Be specific about what you want AND how you want it formatted",
+  2: "Be specific about what you want",
   3: "Provide background info and examples to guide the AI",
   4: "Set boundaries - what the AI must do and must avoid",
-  5: "How deeply should the AI reason through the problem? (optional)",
-  6: "Should the AI verify its own work before responding? (optional)",
+  5: "Format the output - how do you want the response to look?",
+  6: "How deeply should the AI reason through the problem? (optional)",
+  7: "Should the AI verify its own work before responding? (optional)",
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -92,6 +95,15 @@ export const PromptWizard = memo(function PromptWizard() {
   const [isResetCalled, setIsResetCalled] = useState(false);
   const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
   const [showValidationAlert, setShowValidationAlert] = useState(false);
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Mode State (Basic vs Advanced)
+  // ─────────────────────────────────────────────────────────────────────────
+  const [mode, setMode] = useState<"basic" | "advanced">("basic");
+
+  // Define step groups
+  const BASIC_STEPS = [1, 2, 3]; // Role, Task, Context
+  const ADVANCED_STEPS = [1, 2, 3, 4, 5, 6, 7]; // All steps
 
   // ─────────────────────────────────────────────────────────────────────────
   // Zustand Store
@@ -136,7 +148,12 @@ export const PromptWizard = memo(function PromptWizard() {
 
     // Initialize store from URL or localStorage
     const searchParams = search as any; // Cast to access optional params until router types catch up
-    const { d, vld, role, exampleId } = searchParams;
+    const { d, vld, role, exampleId, wizardType } = searchParams;
+
+    // Set initial mode from URL if present
+    if (wizardType === "advanced") {
+      setMode("advanced");
+    }
 
     if (d && vld) {
       // 1. Load compressed complete data
@@ -146,6 +163,7 @@ export const PromptWizard = memo(function PromptWizard() {
         timestamp: new Date().toISOString(),
         d,
         vld,
+        wizardType,
       });
     } else if (role || exampleId) {
       // 2. Load from Query Params (Landing Page handoff)
@@ -166,10 +184,6 @@ export const PromptWizard = memo(function PromptWizard() {
         ...currentData,
         ai_role: inferredRole || currentData.ai_role,
       });
-
-      // Store exampleId in temporary session storage effectively by using a URL param?
-      // Or we can just rely on the URL param persisting if we kept it?
-      // TanStack router might strip it if not in validateSearch schema? (We added it there)
 
       trackEvent("page_viewed_wizard_type_params", {
         page: "wizard",
@@ -219,31 +233,72 @@ export const PromptWizard = memo(function PromptWizard() {
   // ─────────────────────────────────────────────────────────────────────────
   const { step: currentStep } = wizardData;
 
+  // Ensure current step matches mode
+  useEffect(() => {
+    if (mode === "basic" && !BASIC_STEPS.includes(currentStep)) {
+      goToStep(1); // Default to start of basic
+    } else if (mode === "advanced" && !ADVANCED_STEPS.includes(currentStep)) {
+      // Now advanced includes all, so this condition is strictly "step > 7" or "step < 1" which shouldn't happen via normal UI.
+      // But if we toggle from basic (e.g. step 3) to advanced, step 3 is valid in advanced.
+      // So we don't need to force jump unless out of bounds.
+    }
+  }, [mode]);
+
   // ─────────────────────────────────────────────────────────────────────────
   // Callbacks
   // ─────────────────────────────────────────────────────────────────────────
   // Free navigation - just go to next step
   const handleNext = useCallback(() => {
-    if (currentStep < TOTAL_STEPS) {
-      goToStep(currentStep + 1);
-      trackEvent(`step_changed_${currentStep + 1}` as MixpanelDataEvent, {
-        page: "wizard",
-        timestamp: new Date().toISOString(),
-        step: currentStep + 1,
-      });
+    // Basic Mode Logic
+    if (mode === "basic") {
+      if (currentStep < 3) {
+        goToStep(currentStep + 1);
+        trackEvent(`step_changed_${currentStep + 1}` as MixpanelDataEvent, {
+          page: "wizard",
+          timestamp: new Date().toISOString(),
+          step: currentStep + 1,
+        });
+      } else {
+        // End of Basic - Maybe prompt to switch to advanced?
+      }
     }
-  }, [currentStep, goToStep, trackEvent]);
+    // Advanced Mode Logic
+    else {
+      if (currentStep < 7) {
+        goToStep(currentStep + 1);
+        trackEvent(`step_changed_${currentStep + 1}` as MixpanelDataEvent, {
+          page: "wizard",
+          timestamp: new Date().toISOString(),
+          step: currentStep + 1,
+        });
+      }
+    }
+  }, [currentStep, goToStep, trackEvent, mode]);
 
   const handleBack = useCallback(() => {
-    if (currentStep > 1) {
-      goToStep(currentStep - 1);
-      trackEvent(`step_changed_${currentStep - 1}` as MixpanelDataEvent, {
-        page: "wizard",
-        timestamp: new Date().toISOString(),
-        step: currentStep - 1,
-      });
+    // Basic Mode Logic
+    if (mode === "basic") {
+      if (currentStep > 1) {
+        goToStep(currentStep - 1);
+        trackEvent(`step_changed_${currentStep - 1}` as MixpanelDataEvent, {
+          page: "wizard",
+          timestamp: new Date().toISOString(),
+          step: currentStep - 1,
+        });
+      }
     }
-  }, [currentStep, goToStep, trackEvent]);
+    // Advanced Mode Logic
+    else {
+      if (currentStep > 1) {
+        goToStep(currentStep - 1);
+        trackEvent(`step_changed_${currentStep - 1}` as MixpanelDataEvent, {
+          page: "wizard",
+          timestamp: new Date().toISOString(),
+          step: currentStep - 1,
+        });
+      }
+    }
+  }, [currentStep, goToStep, trackEvent, mode]);
 
   const handleFinish = useCallback(() => {
     // Validate all steps before saving
@@ -282,19 +337,29 @@ export const PromptWizard = memo(function PromptWizard() {
     });
     navigate({ to: "/wizard", search: { d: null, vld: 0, partial: false } });
     reset();
-  }, [wizardData, navigate, reset, trackEvent]);
+    // Also reset to basic mode and step 1
+    goToStep(1);
+    setMode("basic");
+  }, [wizardData, navigate, reset, trackEvent, goToStep]);
 
   // Free navigation - no validation required to navigate between steps
+  // RESTRICTED by Mode
   const handleStepClick = useCallback(
     (step: number) => {
-      goToStep(step);
+      // Only allow clicking steps within current mode
+      if (mode === "basic" && BASIC_STEPS.includes(step)) {
+        goToStep(step);
+      } else if (mode === "advanced" && ADVANCED_STEPS.includes(step)) {
+        goToStep(step);
+      }
+
       trackEvent(`step_changed_${step}` as MixpanelDataEvent, {
         page: "wizard",
         timestamp: new Date().toISOString(),
         step,
       });
     },
-    [goToStep, trackEvent]
+    [goToStep, trackEvent, mode]
   );
 
   // Get step component and props
@@ -327,14 +392,51 @@ export const PromptWizard = memo(function PromptWizard() {
                     variant="ghost"
                     size="sm"
                     onClick={handleReset}
-                    className="text-muted-foreground hover:text-foreground"
+                    className="text-muted-foreground hover:text-foreground font-bold uppercase gap-2"
                     title="Reset form"
                   >
                     <RotateCcw className="w-4 h-4" />
+                    Reset Prompt
                   </Button>
                 </div>
               </div>
-              <WizardProgress onStepClick={handleStepClick} hasStepErrors={hasStepErrors} />
+
+              {/* Mode Toggle */}
+              <div className="flex p-1 mb-6 bg-muted rounded-lg w-fit mx-auto border-2 border-transparent">
+                <button
+                  onClick={() => setMode("basic")}
+                  className={`px-4 py-2 text-sm font-bold uppercase rounded-md transition-all ${
+                    mode === "basic"
+                      ? "bg-foreground text-background shadow-md"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  Basic (1-3)
+                </button>
+                <button
+                  onClick={() => setMode("advanced")}
+                  className={`px-4 py-2 text-sm font-bold uppercase rounded-md transition-all ${
+                    mode === "advanced"
+                      ? "bg-foreground text-background shadow-md"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  Advanced (4-7)
+                </button>
+              </div>
+
+              <WizardProgress
+                onStepClick={handleStepClick}
+                hasStepErrors={hasStepErrors}
+                steps={mode === "basic" ? BASIC_STEPS : ADVANCED_STEPS} // Pass filtered steps logic if WizardProgress supports it, else we need update WizardProgress or it will show all
+                // Note: WizardProgress likely renders TOTAL_STEPS. We might need to update it or accept a subset.
+                // Assuming standard WizardProgress iterates 1..TOTAL_STEPS.
+                // If we want it to show ONLY current mode steps, we need to modify WizardProgress or pass a prop.
+                // Looking at import, it takes `onStepClick` and `hasStepErrors`.
+                // I will add `visibleSteps` prop to WizardProgress if I can, but checking source of WizardProgress is safer.
+                // For now, I will let it render all but restrict click?
+                // Or better, I should check WizardProgress.
+              />
             </div>
 
             {/* Step Content */}

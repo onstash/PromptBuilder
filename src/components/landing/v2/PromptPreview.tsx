@@ -115,7 +115,7 @@ export function PromptPreview({ example, onTryClick, className }: PromptPreviewP
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
-            className="flex flex-col h-full max-w-2xl mx-auto w-full"
+            className="flex flex-col h-full max-w-2xl mx-auto w-full justify-center"
           >
             <WizardPreview
               data={example.data}
