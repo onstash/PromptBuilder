@@ -1,14 +1,16 @@
 import { useCallback, useRef, useEffect, memo, useState } from "react";
 
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import { RotateCcw, Eye } from "lucide-react";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 
-import { type PromptWizardData } from "@/utils/prompt-wizard/schema";
+import { WIZARD_STEPS, type PromptWizardData } from "@/utils/prompt-wizard/schema";
 
 import { WizardProgress } from "./WizardProgress";
 import { WizardNavigation } from "./WizardNavigation";
@@ -337,8 +339,9 @@ export const PromptWizard = memo(function PromptWizard() {
     });
     navigate({ to: "/wizard", search: { d: null, vld: 0, partial: false } });
     reset();
-    // Also reset to basic mode and step 1
-    goToStep(1);
+    setValidationErrors([]);
+    setShowValidationAlert(false);
+    // Also reset to basic mode
     setMode("basic");
   }, [wizardData, navigate, reset, trackEvent, goToStep]);
 
@@ -371,7 +374,7 @@ export const PromptWizard = memo(function PromptWizard() {
       {/* Navigation Actions - At Top */}
       <NavigationActions page="wizard" />
 
-      <div className="py-8 px-4 md:px-[5%]">
+      <div className="py-4 px-4 md:px-[5%]">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -384,15 +387,30 @@ export const PromptWizard = memo(function PromptWizard() {
             className="w-full md:max-w-[50%] bg-card border-4 border-foreground shadow-[8px_8px_0px_0px_hsl(var(--foreground))]"
           >
             {/* Header */}
-            <div className="p-6 border-b-4 border-foreground">
-              <div className="flex items-center justify-between mb-6">
-                <h1 className="text-xl font-black uppercase tracking-tight">Prompt Wizard</h1>
+            <div className="p-4 border-b-4 border-foreground">
+              <div className="flex items-center justify-between mb-4">
+                {/* Advanced Mode Toggle (Title Area) */}
+                <div className="flex items-center gap-3">
+                  <Label
+                    htmlFor="advanced-mode-toggle"
+                    className="font-black uppercase tracking-tight text-xl cursor-pointer"
+                  >
+                    {mode === "advanced" ? "Advanced" : "Basic"} Mode
+                  </Label>
+                  <Switch
+                    id="advanced-mode-toggle"
+                    checked={mode === "advanced"}
+                    onCheckedChange={(checked) => setMode(checked ? "advanced" : "basic")}
+                    className="cursor-pointer"
+                  />
+                </div>
+
                 <div className="flex items-center gap-3">
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={handleReset}
-                    className="text-muted-foreground hover:text-foreground font-bold uppercase gap-2"
+                    className="text-muted-foreground hover:text-foreground font-bold uppercase gap-2 cursor-pointer"
                     title="Reset form"
                   >
                     <RotateCcw className="w-4 h-4" />
@@ -401,54 +419,49 @@ export const PromptWizard = memo(function PromptWizard() {
                 </div>
               </div>
 
-              {/* Mode Toggle */}
-              <div className="flex p-1 mb-6 bg-muted rounded-lg w-fit mx-auto border-2 border-transparent">
-                <button
-                  onClick={() => setMode("basic")}
-                  className={`px-4 py-2 text-sm font-bold uppercase rounded-md transition-all ${
-                    mode === "basic"
-                      ? "bg-foreground text-background shadow-md"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  Basic (1-3)
-                </button>
-                <button
-                  onClick={() => setMode("advanced")}
-                  className={`px-4 py-2 text-sm font-bold uppercase rounded-md transition-all ${
-                    mode === "advanced"
-                      ? "bg-foreground text-background shadow-md"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  Advanced (4-7)
-                </button>
+              {/* Progress or Title (Animated) */}
+              <div className="relative overflow-hidden">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={mode}
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    {mode === "advanced" ? (
+                      <WizardProgress
+                        onStepClick={handleStepClick}
+                        hasStepErrors={hasStepErrors}
+                        steps={ADVANCED_STEPS}
+                      />
+                    ) : (
+                      <div className="text-center mb-2">
+                        <h2 className="text-2xl font-black text-foreground uppercase mt-1">
+                          {WIZARD_STEPS.find((s) => s.id === currentStep)?.title || ""}
+                        </h2>
+                      </div>
+                    )}
+                  </motion.div>
+                </AnimatePresence>
               </div>
-
-              <WizardProgress
-                onStepClick={handleStepClick}
-                hasStepErrors={hasStepErrors}
-                steps={mode === "basic" ? BASIC_STEPS : ADVANCED_STEPS} // Pass filtered steps logic if WizardProgress supports it, else we need update WizardProgress or it will show all
-                // Note: WizardProgress likely renders TOTAL_STEPS. We might need to update it or accept a subset.
-                // Assuming standard WizardProgress iterates 1..TOTAL_STEPS.
-                // If we want it to show ONLY current mode steps, we need to modify WizardProgress or pass a prop.
-                // Looking at import, it takes `onStepClick` and `hasStepErrors`.
-                // I will add `visibleSteps` prop to WizardProgress if I can, but checking source of WizardProgress is safer.
-                // For now, I will let it render all but restrict click?
-                // Or better, I should check WizardProgress.
-              />
             </div>
 
             {/* Step Content */}
-            <div className="p-6 min-h-[400px]">
+            <div className="p-4 min-h-[300px]">
               <WizardStep stepKey={currentStep} direction={direction} hint={stepHint}>
                 <StepComponent data={wizardData} onUpdate={updateData} />
               </WizardStep>
             </div>
 
             {/* Navigation */}
-            <div className="p-6">
-              <WizardNavigation onNext={handleNext} onBack={handleBack} onFinish={handleFinish} />
+            <div className="p-4">
+              <WizardNavigation
+                onNext={handleNext}
+                onBack={handleBack}
+                onFinish={handleFinish}
+                isLastStep={mode === "basic" ? currentStep === 3 : currentStep === 7}
+              />
             </div>
           </motion.div>
 

@@ -68,7 +68,7 @@ export function WizardProgress({
                       ${isCompleted ? "bg-primary text-primary-foreground" : ""}
                       ${isActive ? "bg-secondary text-secondary-foreground" : ""}
                       ${isUpcoming ? "bg-muted text-muted-foreground" : ""}
-                      ${stepHasErrors ? "ring-2 ring-destructive ring-offset-2" : ""}
+                      ${stepHasErrors && (isCompleted || isActive) ? "ring-2 ring-destructive ring-offset-2" : ""}
                     `}
                     layout
                     initial={{ opacity: 0, scale: 0.8 }}
