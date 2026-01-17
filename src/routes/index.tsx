@@ -1,9 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { LandingPage } from "@/components/landing/LandingPage"; // v1
 import { ChatLandingPage } from "@/components/landing/v2/ChatLandingPage"; // v2
 import { ErrorComponentWithSentry } from "@/components/ErrorComponentWithSentry";
-import { getLandingVersion } from "@/utils/ab-testing";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // ROUTE COMPONENT
@@ -20,8 +18,7 @@ import { getLandingVersion } from "@/utils/ab-testing";
  * 5. Default - v1
  */
 function LandingRouter() {
-  const version = getLandingVersion();
-  return version === "v2" ? <ChatLandingPage /> : <LandingPage />;
+  return <ChatLandingPage />;
 }
 
 import { z } from "zod";

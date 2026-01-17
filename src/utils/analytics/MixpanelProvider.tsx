@@ -17,6 +17,7 @@ const MixpanelDataSchema = z.object({
     "page_viewed_wizard",
     "page_viewed_wizard_type_default",
     "page_viewed_wizard_type_url",
+    "page_viewed_wizard_type_params",
     "page_viewed_wizard_type_localstorage",
     "page_viewed_share",
     "cta_clicked_get_started_for_free",

@@ -126,6 +126,13 @@ export const promptWizardSchema = z.object({
   updatedAt: z.number().default(-1),
   finishedAt: z.number().default(-1),
   id: z.string().optional(),
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // URL Params (Optional)
+  // ─────────────────────────────────────────────────────────────────────────
+  role: z.string().optional(),
+  exampleId: z.string().optional(),
+  wizardType: z.enum(["basic", "advanced"]).optional(),
 });
 
 export type PromptWizardData = z.infer<typeof promptWizardSchema>;

@@ -135,15 +135,50 @@ export const PromptWizard = memo(function PromptWizard() {
     });
 
     // Initialize store from URL or localStorage
-    if (search.d && search.vld) {
-      initialize({ d: search.d, vld: search.vld });
+    const searchParams = search as any; // Cast to access optional params until router types catch up
+    const { d, vld, role, exampleId } = searchParams;
+
+    if (d && vld) {
+      // 1. Load compressed complete data
+      initialize({ d, vld });
       trackEvent("page_viewed_wizard_type_url", {
         page: "wizard",
         timestamp: new Date().toISOString(),
-        d: search.d,
-        vld: search.vld,
+        d,
+        vld,
+      });
+    } else if (role || exampleId) {
+      // 2. Load from Query Params (Landing Page handoff)
+      // If we have params, we start fresh but pre-fill
+      initialize();
+      const currentData = useWizardStore.getState().wizardData;
+
+      // Detect role from exampleId if role is missing but exampleId exists
+      // (exampleId format is usually "role-something")
+      let inferredRole = role;
+      if (!inferredRole && exampleId) {
+        const parts = exampleId.split("-");
+        if (parts.length > 0) inferredRole = parts[0];
+      }
+
+      // Update store with params
+      useWizardStore.getState().updateData({
+        ...currentData,
+        ai_role: inferredRole || currentData.ai_role,
+      });
+
+      // Store exampleId in temporary session storage effectively by using a URL param?
+      // Or we can just rely on the URL param persisting if we kept it?
+      // TanStack router might strip it if not in validateSearch schema? (We added it there)
+
+      trackEvent("page_viewed_wizard_type_params", {
+        page: "wizard",
+        timestamp: new Date().toISOString(),
+        role,
+        exampleId,
       });
     } else {
+      // 3. Load default / localStorage
       initialize();
       // Track localStorage load if it was the source
       const dataSource = useWizardStore.getState().dataSource;

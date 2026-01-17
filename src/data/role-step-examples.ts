@@ -1201,10 +1201,53 @@ export function detectRole(userRole: string): RoleKey | null {
  */
 export function getRoleStepExamples(
   role: RoleKey | null,
-  field: keyof RoleStepExamples["steps"]
+  field: keyof RoleStepExamples["steps"],
+  exampleId?: string
 ): StepExamplesConfig | null {
   if (!role) return null;
 
+  // Try to get V2 scenarios first
+  const v2Scenarios = ROLE_STEP_EXAMPLES_v2[role];
+
+  // If specific example ID is requested, look for that exact match
+  if (exampleId && v2Scenarios) {
+    const specificScenario = v2Scenarios.find((s) => s.id === exampleId);
+    if (specificScenario && specificScenario.steps[field]) {
+      return specificScenario.steps[field]!;
+    }
+  }
+
+  if (v2Scenarios && v2Scenarios.length > 0) {
+    // Collect all items from all scenarios for this field
+    const allItems = new Set<string>();
+    let label = "";
+
+    // 1. Add V1 items first (generic base)
+    const v1Config = ROLE_STEP_EXAMPLES[role]?.steps[field];
+    if (v1Config) {
+      label = v1Config.label;
+      v1Config.items.forEach((item) => allItems.add(item));
+    }
+
+    // 2. Add V2 scenario items
+    v2Scenarios.forEach((scenario) => {
+      const stepConfig = scenario.steps[field];
+      if (stepConfig) {
+        if (!label) label = stepConfig.label;
+        stepConfig.items.forEach((item) => allItems.add(item));
+      }
+    });
+
+    if (allItems.size > 0) {
+      return {
+        label: label || "Suggestions",
+        items: Array.from(allItems),
+        type: v1Config?.type,
+      };
+    }
+  }
+
+  // Fallback to V1 only
   const roleConfig = ROLE_STEP_EXAMPLES[role];
   if (!roleConfig) return null;
 
