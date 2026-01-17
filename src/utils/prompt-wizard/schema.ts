@@ -155,11 +155,17 @@ export type PromptWizardSearchParamsCompressed =
       d: string;
       vld: 1;
       partial: boolean; // true = incomplete draft, false = complete prompt
+      role?: string;
+      exampleId?: string;
+      wizardType?: "basic" | "advanced";
     }
   | {
       d: null;
       vld: 0;
       partial: false;
+      role?: string;
+      exampleId?: string;
+      wizardType?: "basic" | "advanced";
     };
 
 // ═══════════════════════════════════════════════════════════════════════════

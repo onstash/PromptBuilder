@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
-import { Link, useSearch, useNavigate } from "@tanstack/react-router";
+import { useSearch, useNavigate } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "motion/react";
-import { Menu, X, User, Plus, Heart } from "lucide-react";
+import { Menu, X, User, Heart } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -9,6 +9,7 @@ import { useTrackMixpanel } from "@/utils/analytics/MixpanelProvider";
 import { ROLE_STEP_EXAMPLES_v2, RoleKey, RoleStepExamples } from "@/data/role-step-examples";
 import { ROLE_ICONS, ROLE_COLORS } from "@/data/role-landing-examples";
 import { PromptPreview } from "./PromptPreview";
+import { SuggestRoleDialog } from "./SuggestRoleDialog";
 import { compressPrompt } from "@/utils/prompt-wizard/url-compression";
 import { PromptWizardData } from "@/utils/prompt-wizard/schema";
 
@@ -223,10 +224,6 @@ export function ChatLandingPage() {
     });
   };
 
-  const handleCustomRoleClick = () => {
-    // trackEvent("custom_role_clicked"); // Invalid event
-  };
-
   const handleMobileMenuToggle = () => setIsMobileMenuOpen(!isMobileMenuOpen);
 
   return (
@@ -257,18 +254,7 @@ export function ChatLandingPage() {
             onSelect={handleRoleSelect}
             footer={
               <div className="flex flex-col gap-2">
-                <Link
-                  to="/wizard"
-                  search={{ d: null, vld: 0, partial: false }}
-                  className={cn(
-                    "flex items-center gap-3 w-full px-3 py-2.5 rounded-lg",
-                    "text-sm font-medium text-muted-foreground hover:bg-muted/80 hover:text-foreground transition-colors"
-                  )}
-                  onClick={handleCustomRoleClick}
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>Custom Role</span>
-                </Link>
+                <SuggestRoleDialog />
                 <div className="pt-2 mt-2 border-t border-border text-[10px] text-muted-foreground text-center flex items-center justify-center gap-1">
                   <span>Made with</span>
                   <Heart className="w-3 h-3 text-red-500 fill-red-500 inline" />
@@ -320,7 +306,16 @@ export function ChatLandingPage() {
           <PromptPreview
             example={selectedExampleData}
             onTryClick={(ex) => {
-              navigate({ to: "/wizard", search: { d: ex.d, vld: 1, partial: false } });
+              navigate({
+                to: "/wizard",
+                search: {
+                  d: null,
+                  vld: 0,
+                  partial: false,
+                  role: ex.role,
+                  exampleId: ex.id,
+                },
+              });
               trackEvent("cta_clicked_try_prompt_v2", {
                 role: ex.role,
                 exampleId: ex.id,

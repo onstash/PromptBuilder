@@ -4,7 +4,7 @@ import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import type { RoleLandingExample } from "@/data/role-landing-examples";
 import { generateShareUrl } from "@/stores/wizard-store";
-import { WizardPreview as PromptPreviewV1 } from "../../prompt-wizard/WizardPreview";
+import { WizardPreview } from "../../prompt-wizard/WizardPreview";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // TYPES
@@ -117,7 +117,7 @@ export function PromptPreview({ example, onTryClick, className }: PromptPreviewP
             exit={{ opacity: 0, x: -20 }}
             className="flex flex-col h-full max-w-2xl mx-auto w-full"
           >
-            <PromptPreviewV1
+            <WizardPreview
               data={example.data}
               d={example.d}
               shareUrl={generateShareUrl(example.data)}

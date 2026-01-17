@@ -32,6 +32,7 @@ const MixpanelDataSchema = z.object({
     "cta_clicked_job-application",
     "cta_clicked_social-caption",
     "cta_clicked_learn-coding",
+    "role_suggestion_submitted",
     "step_changed_1",
     "step_changed_2",
     "step_changed_3",

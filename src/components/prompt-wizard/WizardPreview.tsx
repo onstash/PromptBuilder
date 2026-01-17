@@ -366,7 +366,7 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
 }
 
 function WizardPreviewForLandingPageV2(props: WizardPreviewPropsForLandingPageV2) {
-  const { data: wizardData, shareUrl } = props;
+  const { data: wizardData, shareUrl, onClickCallback } = props;
   const trackEvent = useTrackMixpanel();
 
   const [copiedPrompt, setCopiedPrompt] = useState(false);
@@ -421,6 +421,7 @@ function WizardPreviewForLandingPageV2(props: WizardPreviewPropsForLandingPageV2
   }, []);
 
   const handleEdit = useCallback(() => {
+    onClickCallback?.();
     trackEvent("cta_clicked_edit_v2", {
       data: wizardData,
       d: promptTextCompressed,
@@ -466,10 +467,8 @@ function WizardPreviewForLandingPageV2(props: WizardPreviewPropsForLandingPageV2
                 size="sm"
                 className="font-mono text-xs"
               >
-                <Link to="/wizard" search={{ d: promptTextCompressed, vld: 1, partial: false }}>
-                  <EditOrOpenIcon className="w-4 h-4 mr-1" />
-                  Edit
-                </Link>
+                <EditOrOpenIcon className="w-4 h-4 mr-1" />
+                Edit
               </Button>
             </>
           )}
