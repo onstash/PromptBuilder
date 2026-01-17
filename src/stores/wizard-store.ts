@@ -431,6 +431,7 @@ export const useWizardStore = create<WizardStore>()(
         shareUrl: null,
         showError: false,
         dataSource: "default",
+        completedSteps: {},
       });
     },
   }))

@@ -3,6 +3,7 @@ import { Sparkles } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import type { RoleLandingExample } from "@/data/role-landing-examples";
+import type { RoleKey } from "@/data/role-step-examples";
 import { generateShareUrl } from "@/stores/wizard-store";
 import { WizardPreview } from "../../prompt-wizard/WizardPreview";
 
@@ -10,9 +11,14 @@ import { WizardPreview } from "../../prompt-wizard/WizardPreview";
 // TYPES
 // ═══════════════════════════════════════════════════════════════════════════
 
+// Local type to allow "stored" as a role for display purposes
+export type PromptPreviewExample = Omit<RoleLandingExample, "role"> & {
+  role: RoleKey | string;
+};
+
 interface PromptPreviewProps {
-  example: RoleLandingExample | null;
-  onTryClick?: (example: RoleLandingExample) => void;
+  example: PromptPreviewExample | null;
+  onTryClick?: (example: PromptPreviewExample) => void;
   className?: string;
 }
 

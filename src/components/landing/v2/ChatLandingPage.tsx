@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useSearch, useNavigate } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "motion/react";
-import { Menu, X, User, Heart } from "lucide-react";
+import { Menu, X, User, Heart, FileText } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -10,8 +10,13 @@ import { ROLE_STEP_EXAMPLES_v2, RoleKey, RoleStepExamples } from "@/data/role-st
 import { ROLE_ICONS, ROLE_COLORS } from "@/data/role-landing-examples";
 import { PromptPreview } from "./PromptPreview";
 import { SuggestRoleDialog } from "./SuggestRoleDialog";
-import { compressPrompt } from "@/utils/prompt-wizard/url-compression";
+import { compressPrompt, decompressPrompt } from "@/utils/prompt-wizard/url-compression";
 import { PromptWizardData } from "@/utils/prompt-wizard/schema";
+import {
+  usePromptsWithFallback,
+  type StoredPromptCardItem,
+  type PromptCardItem,
+} from "@/hooks/usePromptsWithFallback";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // TYPES & HELPERS
@@ -55,6 +60,17 @@ function mapExampleToSidebarItem(example: RoleStepExamples, role: RoleKey): Side
   };
 }
 
+function mapStoredPromptToSidebarItem(item: PromptCardItem): SidebarItem {
+  return {
+    id: item.id,
+    title: item.title,
+    description: item.description,
+    icon: FileText,
+    color: "bg-primary",
+    data: item,
+  };
+}
+
 function constructPromptData(example: RoleStepExamples): PromptWizardData {
   return {
     ai_role: example.displayName,
@@ -94,7 +110,7 @@ function SidebarList({
   return (
     <aside
       className={cn(
-        "h-full flex flex-col bg-zinc-50/50 dark:bg-zinc-900/50 border-r border-border backdrop-blur-sm",
+        "flex flex-col bg-zinc-50/50 dark:bg-zinc-900/50 border-r border-border backdrop-blur-sm",
         className
       )}
     >
@@ -169,6 +185,13 @@ export function ChatLandingPage() {
   const selectedRole = search.role as RoleKey | undefined;
   const selectedExampleId = search.exampleId;
 
+  // Stored Prompts
+  const { items: storedPrompts } = usePromptsWithFallback({ includeExamples: false });
+
+  const storedPromptItems = useMemo(() => {
+    return storedPrompts.map(mapStoredPromptToSidebarItem);
+  }, [storedPrompts]);
+
   // Roles List
   const roleItems = useMemo(() => {
     return (Object.keys(ROLE_STEP_EXAMPLES_v2) as RoleKey[]).map(mapRoleToSidebarItem);
@@ -184,6 +207,24 @@ export function ChatLandingPage() {
 
   // Selected Example Data (for preview)
   const selectedExampleData = useMemo(() => {
+    if (selectedExampleId?.startsWith("stored-")) {
+      const item = storedPrompts.find((p) => p.id === selectedExampleId) as StoredPromptCardItem;
+      if (!item) return null;
+
+      const { data } = decompressPrompt(item.compressedData);
+
+      return {
+        id: item.id,
+        title: item.title,
+        description: item.description,
+        role: "stored" as RoleKey, // Placeholder role for icon/color
+        icon: FileText,
+        color: "bg-primary",
+        data: data,
+        d: item.compressedData,
+      };
+    }
+
     if (!selectedRole || !selectedExampleId) return null;
     const example = ROLE_STEP_EXAMPLES_v2[selectedRole]?.find((e) => e.id === selectedExampleId);
     if (!example) return null;
@@ -202,9 +243,16 @@ export function ChatLandingPage() {
       data: promptData,
       d: compressPrompt(promptData),
     };
-  }, [selectedRole, selectedExampleId]);
+  }, [selectedRole, selectedExampleId, storedPrompts]);
 
   // Handlers
+  const handleStoredPromptSelect = (item: SidebarItem) => {
+    navigate({
+      to: "/",
+      search: { ...search, role: undefined, exampleId: item.id },
+    });
+  };
+
   const handleRoleSelect = (item: SidebarItem) => {
     navigate({
       to: "/",
@@ -242,38 +290,53 @@ export function ChatLandingPage() {
 
         <div
           className={cn(
-            "fixed inset-y-0 left-0 z-20 w-64 transform transition-transform duration-300 md:relative md:translate-x-0 bg-background",
+            "fixed inset-y-0 left-0 z-20 w-64 transform transition-transform duration-300 md:relative md:translate-x-0 bg-background flex flex-col border-r border-border",
             isMobileMenuOpen ? "translate-x-0 pt-16" : "-translate-x-full"
           )}
         >
-          {/* Using absolute positioning for mobile menu within the fixed container if needed, but simple relative flow is fine for desktop */}
-          <SidebarList
-            title="Role Examples"
-            items={roleItems}
-            selectedId={selectedRole || null}
-            onSelect={handleRoleSelect}
-            footer={
-              <div className="flex flex-col gap-2">
-                <SuggestRoleDialog />
-                <div className="pt-2 mt-2 border-t border-border text-[10px] text-muted-foreground text-center flex items-center justify-center gap-1">
-                  <span>Made with</span>
-                  <Heart className="w-3 h-3 text-red-500 fill-red-500 inline" />
-                  <span>by</span>
-                  <a
-                    href="https://x.com/shtosan?utm=https://prompt-builder-ten-xi.vercel.app/"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="hover:text-foreground transition-colors"
-                  >
-                    hastons
-                  </a>
+          {/* Stored Prompts Sidebar (if any) */}
+          {storedPromptItems.length > 0 && (
+            <div className="flex-shrink-0 max-h-[40%] border-b border-border overflow-hidden flex flex-col">
+              <SidebarList
+                title="Your Prompts"
+                items={storedPromptItems}
+                selectedId={selectedExampleId || null}
+                onSelect={handleStoredPromptSelect}
+                className="h-full border-none"
+              />
+            </div>
+          )}
+
+          {/* Role Examples Sidebar */}
+          <div className="flex-1 overflow-hidden flex flex-col h-full bg-zinc-50/50 dark:bg-zinc-900/50">
+            <SidebarList
+              title="Role Examples"
+              items={roleItems}
+              selectedId={selectedRole || null}
+              onSelect={handleRoleSelect}
+              className="h-full border-none"
+              footer={
+                <div className="flex flex-col gap-2">
+                  <SuggestRoleDialog />
+                  <div className="pt-2 mt-2 border-t border-border text-[10px] text-muted-foreground text-center flex items-center justify-center gap-1">
+                    <span>Made with</span>
+                    <Heart className="w-3 h-3 text-red-500 fill-red-500 inline" />
+                    <span>by</span>
+                    <a
+                      href="https://x.com/shtosan?utm=https://prompt-builder-ten-xi.vercel.app/"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="hover:text-foreground transition-colors"
+                    >
+                      hastons
+                    </a>
+                  </div>
                 </div>
-              </div>
-            }
-          />
+              }
+            />
+          </div>
         </div>
 
-        {/* Sidebar 2: Examples (Visible only if role selected) */}
         {/* Sidebar 2: Examples (Visible only if role selected) */}
         <AnimatePresence mode="wait">
           {selectedRole && (
@@ -290,7 +353,7 @@ export function ChatLandingPage() {
                   items={exampleItems}
                   selectedId={selectedExampleId || null}
                   onSelect={handleExampleSelect}
-                  className="border-l-0 border-r-0"
+                  className="border-l-0 border-r-0 h-full"
                 />
               </div>
             </motion.div>
@@ -309,10 +372,10 @@ export function ChatLandingPage() {
               navigate({
                 to: "/wizard",
                 search: {
-                  d: compressPrompt(ex.data),
+                  d: ex.d,
                   vld: 1,
                   partial: false,
-                  role: ex.role,
+                  role: ex.role === "stored" ? undefined : (ex.role as string),
                   exampleId: ex.id,
                 },
               });

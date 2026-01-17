@@ -337,7 +337,7 @@ export const PromptWizard = memo(function PromptWizard() {
       timestamp: new Date().toISOString(),
       data: wizardData,
     });
-    navigate({ to: "/wizard", search: { d: null, vld: 0, partial: false } });
+    navigate({ to: "/wizard", search: { d: null, vld: 0, partial: false }, reloadDocument: true });
     reset();
     setValidationErrors([]);
     setShowValidationAlert(false);
