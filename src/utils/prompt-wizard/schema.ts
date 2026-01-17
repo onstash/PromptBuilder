@@ -122,10 +122,17 @@ export const promptWizardSchema = z.object({
   // ─────────────────────────────────────────────────────────────────────────
   // Wizard State
   // ─────────────────────────────────────────────────────────────────────────
-  step: z.number().min(1).max(6).default(1),
+  step: z.number().min(1).max(7).default(1),
   updatedAt: z.number().default(-1),
   finishedAt: z.number().default(-1),
   id: z.string().optional(),
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // URL Params (Optional)
+  // ─────────────────────────────────────────────────────────────────────────
+  role: z.string().optional(),
+  exampleId: z.string().optional(),
+  wizardType: z.enum(["basic", "advanced"]).optional(),
 });
 
 export type PromptWizardData = z.infer<typeof promptWizardSchema>;
@@ -148,15 +155,21 @@ export type PromptWizardSearchParamsCompressed =
       d: string;
       vld: 1;
       partial: boolean; // true = incomplete draft, false = complete prompt
+      role?: string;
+      exampleId?: string;
+      wizardType?: "basic" | "advanced";
     }
   | {
       d: null;
       vld: 0;
       partial: false;
+      role?: string;
+      exampleId?: string;
+      wizardType?: "basic" | "advanced";
     };
 
 // ═══════════════════════════════════════════════════════════════════════════
-// STEP DEFINITIONS (Expert 6-Step Structure)
+// STEP DEFINITIONS (Expert 7-Step Structure)
 // ═══════════════════════════════════════════════════════════════════════════
 
 export const WIZARD_STEPS_REQUIRED = [
@@ -167,11 +180,12 @@ export const WIZARD_STEPS_REQUIRED = [
 ];
 
 export const WIZARD_STEPS = [
-  // Required steps (1-4)
+  // Required steps (1-4) (Basically Basic Mode)
   ...WIZARD_STEPS_REQUIRED,
-  // Optional steps (5-6)
-  { id: 5, key: "reasoning_depth", title: "Reasoning mode", required: false },
-  { id: 6, key: "self_check", title: "Verification", required: false },
+  // Advanced / Optional steps (5-7)
+  { id: 5, key: "output_format", title: "Output Format", required: true },
+  { id: 6, key: "reasoning_depth", title: "Reasoning mode", required: false },
+  { id: 7, key: "self_check", title: "Verification", required: false },
 ] as const;
 
 export const REQUIRED_STEPS = WIZARD_STEPS.filter((s) => s!.required);
@@ -180,7 +194,7 @@ export const TOTAL_REQUIRED_STEPS = REQUIRED_STEPS.length;
 export const TOTAL_STEPS = WIZARD_STEPS.length;
 
 // ═══════════════════════════════════════════════════════════════════════════
-// PER-STEP VALIDATION SCHEMAS (Expert 6-Step Structure)
+// PER-STEP VALIDATION SCHEMAS (Expert 7-Step Structure)
 // ═══════════════════════════════════════════════════════════════════════════
 
 /**
@@ -192,9 +206,22 @@ export const stepValidationSchemas = {
   1: z.object({
     ai_role: z.string().min(3, "Please describe the AI's role (at least 3 characters)"),
   }),
-  // Step 2: What do you want? (Task + Format)
+  // Step 2: What do you want? (Task)
   2: z.object({
     task_intent: z.string().min(10, "Please describe what you want (at least 10 characters)"),
+  }),
+  // Step 3: Give context (Context + Examples)
+  3: z.object({
+    context: z.string().optional(),
+    examples: z.string().optional(),
+  }),
+  // Step 4: Set guardrails (Constraints + Avoid)
+  4: z.object({
+    constraints: z.string().optional(),
+    disallowed_content: z.string().optional(),
+  }),
+  // Step 5: Output Format
+  5: z.object({
     output_format: z.enum(
       [
         "bullet-list",
@@ -208,29 +235,21 @@ export const stepValidationSchemas = {
       { message: "Please select an output format" }
     ),
   }),
-  // Step 3: Give context (Context + Examples)
-  3: z.object({
-    context: z.string().optional(),
-    examples: z.string().optional(),
-  }),
-  // Step 4: Set guardrails (Constraints + Avoid)
-  4: z.object({
-    constraints: z.string().optional(),
-    disallowed_content: z.string().optional(),
-  }),
-  // Optional steps (5-6) - no validation requirements
-  5: z.object({ reasoning_depth: z.enum(["brief", "moderate", "thorough"]).optional() }),
-  6: z.object({ self_check: z.boolean().optional() }),
+  // Step 6: Reasoning mode
+  6: z.object({ reasoning_depth: z.enum(["brief", "moderate", "thorough"]).optional() }),
+  // Step 7: Verification
+  7: z.object({ self_check: z.boolean().optional() }),
 } as const;
 
 /** Maps step number to its field name(s) */
 export const STEP_FIELDS: Record<number, (keyof PromptWizardData)[]> = {
   1: ["ai_role"],
-  2: ["task_intent", "output_format"],
+  2: ["task_intent"],
   3: ["context", "examples"],
   4: ["constraints", "disallowed_content"],
-  5: ["reasoning_depth"],
-  6: ["self_check"],
+  5: ["output_format"],
+  6: ["reasoning_depth"],
+  7: ["self_check"],
 };
 
 // ═══════════════════════════════════════════════════════════════════════════

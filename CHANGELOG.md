@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.0.0
+
+### Major Changes
+
+- 9d6a331: Major changes to landing, wizard, & preview
+
 ## 3.4.0
 
 ### Minor Changes

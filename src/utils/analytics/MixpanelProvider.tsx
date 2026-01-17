@@ -17,6 +17,7 @@ const MixpanelDataSchema = z.object({
     "page_viewed_wizard",
     "page_viewed_wizard_type_default",
     "page_viewed_wizard_type_url",
+    "page_viewed_wizard_type_params",
     "page_viewed_wizard_type_localstorage",
     "page_viewed_share",
     "cta_clicked_get_started_for_free",
@@ -31,6 +32,7 @@ const MixpanelDataSchema = z.object({
     "cta_clicked_job-application",
     "cta_clicked_social-caption",
     "cta_clicked_learn-coding",
+    "role_suggestion_submitted",
     "step_changed_1",
     "step_changed_2",
     "step_changed_3",
@@ -65,6 +67,7 @@ const MixpanelDataSchema = z.object({
     "cta_clicked_copy_prompt_v2",
     "cta_clicked_copy_link_v2",
     "cta_clicked_edit_v2",
+    "cta_clicked_try_chatgpt",
   ]),
   properties: z.looseObject({
     distinct_id: z.string(),
@@ -196,7 +199,10 @@ export const trackMixpanelInServer = createServerFn({ method: "POST" })
       }
     }
     const acceptLanguage = request.headers.get("accept-language");
-    const ip = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip");
+    const xForwardedFor = request.headers.get("x-forwarded-for");
+    const ip = xForwardedFor
+      ? xForwardedFor.split(",")[0].trim()
+      : request.headers.get("x-real-ip") || request.headers.get("cf-connecting-ip");
     const origin = request.headers.get("origin");
 
     const device = parseDevice(userAgent);

@@ -1,17 +1,24 @@
 import { motion, AnimatePresence } from "motion/react";
 import { Sparkles } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import type { RoleLandingExample } from "@/data/role-landing-examples";
+import type { RoleKey } from "@/data/role-step-examples";
 import { generateShareUrl } from "@/stores/wizard-store";
-import { WizardPreview as PromptPreviewV1 } from "../../prompt-wizard/WizardPreview";
+import { WizardPreview } from "../../prompt-wizard/WizardPreview";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // TYPES
 // ═══════════════════════════════════════════════════════════════════════════
 
+// Local type to allow "stored" as a role for display purposes
+export type PromptPreviewExample = Omit<RoleLandingExample, "role"> & {
+  role: RoleKey | string;
+};
+
 interface PromptPreviewProps {
-  example: RoleLandingExample | null;
-  onTryClick?: (example: RoleLandingExample) => void;
+  example: PromptPreviewExample | null;
+  onTryClick?: (example: PromptPreviewExample) => void;
   className?: string;
 }
 
@@ -71,14 +78,29 @@ function EmptyState() {
 
       {/* Heading */}
       <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tight text-foreground mb-4">
-        What would you
-        <span className="block text-primary">like to build?</span>
+        Prompt
+        <span className="block text-primary">Builder</span>
       </h1>
 
       {/* Subtitle */}
-      <p className="text-lg text-muted-foreground max-w-md">
-        Select an example from the sidebar to preview it here, then customize it for your needs.
+      <p className="text-lg text-muted-foreground max-w-md mb-8">
+        Craft expert-level prompts for any role or task. Select an example to start or build from
+        scratch.
       </p>
+
+      {/* CTA */}
+      <Link to="/wizard" search={{ d: null, vld: 0, partial: false }} className="inline-block">
+        <div
+          className={cn(
+            "flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground",
+            "border-4 border-foreground shadow-[4px_4px_0px_0px_hsl(var(--foreground))]",
+            "hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_hsl(var(--foreground))]",
+            "transition-all duration-200 font-bold uppercase tracking-wide text-lg"
+          )}
+        >
+          Create New Prompt
+        </div>
+      </Link>
     </motion.div>
   );
 }
@@ -99,9 +121,9 @@ export function PromptPreview({ example, onTryClick, className }: PromptPreviewP
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
-            className="flex flex-col h-full max-w-2xl mx-auto w-full"
+            className="flex flex-col h-full max-w-2xl mx-auto w-full justify-center"
           >
-            <PromptPreviewV1
+            <WizardPreview
               data={example.data}
               d={example.d}
               shareUrl={generateShareUrl(example.data)}

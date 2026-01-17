@@ -64,6 +64,16 @@ export function validateWizardSearch(
 ): PromptWizardSearchParamsCompressed {
   // Check for compressed format
   try {
+    const role = typeof search.role === "string" ? search.role : undefined;
+    const exampleId = typeof search.exampleId === "string" ? search.exampleId : undefined;
+    const wizardType =
+      typeof search.wizardType === "string" &&
+      (search.wizardType === "basic" || search.wizardType === "advanced")
+        ? (search.wizardType as "basic" | "advanced")
+        : undefined;
+
+    const extras = { role, exampleId, wizardType };
+
     if (typeof search.d === "string" && search.d) {
       const { data: parsedData, valid } = decompressPrompt(search.d, {
         _source_: "search-params validateWizardSearch",
@@ -73,19 +83,19 @@ export function validateWizardSearch(
           tags: { feature: "share_link_validation" },
           extra: { compressedData: search.d ?? null },
         });
-        return { d: null, vld: 0, partial: false };
+        return { d: null, vld: 0, partial: false, ...extras };
       }
 
       // Try full validation first
       const fullResult = promptWizardSchema.safeParse(parsedData);
       if (fullResult.success) {
-        return { d: search.d, vld: 1, partial: false };
+        return { d: search.d, vld: 1, partial: false, ...extras };
       }
 
       // Fall back to partial validation for drafts
       const partialResult = partialPromptWizardSchema.safeParse(parsedData);
       if (partialResult.success) {
-        return { d: search.d, vld: 1, partial: true };
+        return { d: search.d, vld: 1, partial: true, ...extras };
       }
       Sentry.captureException(new Error("Invalid share link - schema validation failed [3]"), {
         tags: { feature: "share_link_validation" },
@@ -93,11 +103,9 @@ export function validateWizardSearch(
       });
       throw new Error("Invalid share link - schema validation failed");
     }
-    Sentry.captureException(new Error("Invalid share link - missing or invalid data [2]"), {
-      tags: { feature: "share_link_validation" },
-      extra: { compressedData: search.d ?? null },
-    });
-    throw new Error("Invalid share link - missing or invalid data [2]");
+
+    // Return empty state with extras if no compressed data
+    return { d: null, vld: 0, partial: false, ...extras };
   } catch (error) {
     return { d: null, vld: 0, partial: false };
   }

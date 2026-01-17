@@ -7,12 +7,22 @@ interface WizardProgressProps {
   onStepClick: (step: number) => void;
   /** Check if a step has validation errors */
   hasStepErrors?: (step: number) => boolean;
+  /** Optional: Subset of steps to show (by ID) */
+  steps?: number[];
 }
 
-export function WizardProgress({ onStepClick, hasStepErrors }: WizardProgressProps) {
+export function WizardProgress({
+  onStepClick,
+  hasStepErrors,
+  steps: visibleStepIds,
+}: WizardProgressProps) {
   const currentStep = useWizardStore((state) => state.wizardData.step);
   const completedSteps = useWizardStore((state) => state.completedSteps);
-  const steps = WIZARD_STEPS; // Always show all 6 steps
+
+  // Filter steps if visibleStepIds is provided, otherwise show all
+  const steps = visibleStepIds
+    ? WIZARD_STEPS.filter((s) => visibleStepIds.includes(s.id))
+    : WIZARD_STEPS;
 
   // Free navigation - users can click any step
   const handleStepClick = (stepNumber: number) => {
@@ -58,7 +68,7 @@ export function WizardProgress({ onStepClick, hasStepErrors }: WizardProgressPro
                       ${isCompleted ? "bg-primary text-primary-foreground" : ""}
                       ${isActive ? "bg-secondary text-secondary-foreground" : ""}
                       ${isUpcoming ? "bg-muted text-muted-foreground" : ""}
-                      ${stepHasErrors ? "ring-2 ring-destructive ring-offset-2" : ""}
+                      ${stepHasErrors && (isCompleted || isActive) ? "ring-2 ring-destructive ring-offset-2" : ""}
                     `}
                     layout
                     initial={{ opacity: 0, scale: 0.8 }}
