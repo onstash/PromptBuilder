@@ -462,7 +462,6 @@ function WizardPreviewForLandingPageV2(props: WizardPreviewPropsForLandingPageV2
               </Button>
               <Button
                 onClick={handleEdit}
-                asChild
                 variant="outline"
                 size="sm"
                 className="font-mono text-xs"

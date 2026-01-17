@@ -309,8 +309,8 @@ export function ChatLandingPage() {
               navigate({
                 to: "/wizard",
                 search: {
-                  d: null,
-                  vld: 0,
+                  d: compressPrompt(ex.data),
+                  vld: 1,
                   partial: false,
                   role: ex.role,
                   exampleId: ex.id,
