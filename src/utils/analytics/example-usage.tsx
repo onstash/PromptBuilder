@@ -46,10 +46,9 @@ export function ExampleComponent() {
  * Session ID Management Examples
  */
 
-import { getOrCreateSessionId, clearSessionId } from "@/utils/session";
+import { clearSessionId } from "@/utils/session";
 
 // Get or create session ID (automatically syncs between cookie and localStorage)
-const sessionId = getOrCreateSessionId();
 
 // Clear session ID (useful for logout)
 export function handleLogout() {

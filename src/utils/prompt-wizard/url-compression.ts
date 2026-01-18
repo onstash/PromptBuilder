@@ -35,10 +35,7 @@ export function compressPrompt(data: PromptWizardData) {
 }
 
 export function decompressPrompt(
-  compressed: string,
-  opts?: {
-    _source_: string;
-  }
+  compressed: string
 ):
   | { version: number; data: PromptWizardData; valid: true }
   | { version: number; data: null; valid: false } {

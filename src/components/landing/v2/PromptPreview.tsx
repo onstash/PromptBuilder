@@ -22,33 +22,9 @@ interface PromptPreviewProps {
   className?: string;
 }
 
-interface FieldDisplayProps {
-  label: string;
-  value: string;
-  delay?: number;
-}
-
 // ═══════════════════════════════════════════════════════════════════════════
 // SUB-COMPONENTS
 // ═══════════════════════════════════════════════════════════════════════════
-
-function FieldDisplay({ label, value, delay = 0 }: FieldDisplayProps) {
-  if (!value) return null;
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay }}
-      className="border-2 border-border bg-muted p-3"
-    >
-      <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground mb-1">
-        {label}
-      </p>
-      <p className="text-sm text-foreground">{value}</p>
-    </motion.div>
-  );
-}
 
 function EmptyState() {
   return (
@@ -112,7 +88,7 @@ function EmptyState() {
 export function PromptPreview({ example, onTryClick, className }: PromptPreviewProps) {
   return (
     <div className={cn("h-full flex flex-col overflow-y-auto p-6 md:p-10", className)}>
-      <AnimatePresence mode="wait">
+      <AnimatePresence mode="wait" initial={false}>
         {!example ? (
           <EmptyState key="empty" />
         ) : (

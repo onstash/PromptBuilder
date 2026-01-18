@@ -458,7 +458,7 @@ export const PromptWizard = memo(function PromptWizard() {
 
               {/* Progress or Title (Animated) */}
               <div className="relative overflow-hidden">
-                <AnimatePresence mode="wait">
+                <AnimatePresence mode="wait" initial={false}>
                   <motion.div
                     key={mode}
                     initial={{ opacity: 0, height: 0 }}

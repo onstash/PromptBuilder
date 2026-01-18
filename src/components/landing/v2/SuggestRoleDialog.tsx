@@ -3,6 +3,9 @@ import { useForm } from "@tanstack/react-form";
 import { z } from "zod";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
+import { useMutation } from "convex/react";
+import { api } from "../../../../convex/_generated/api";
+import { getOrCreateSessionId } from "@/utils/session";
 
 import { useTrackMixpanel } from "@/utils/analytics/MixpanelProvider";
 import {
@@ -43,6 +46,7 @@ type RoleSuggestionValues = z.infer<typeof roleSuggestionSchema>;
 export function SuggestRoleDialog() {
   const [open, setOpen] = useState(false);
   const trackEvent = useTrackMixpanel();
+  const submitRoleSuggestion = useMutation(api.feature_requests.submitRoleSuggestion);
 
   const form = useForm({
     defaultValues: {
@@ -72,8 +76,12 @@ export function SuggestRoleDialog() {
         return;
       }
 
-      // Simulate network delay
-      await new Promise((resolve) => setTimeout(resolve, 600));
+      // Submit to Convex
+      await submitRoleSuggestion({
+        sessionId: getOrCreateSessionId(),
+        roleTitle: value.roleTitle,
+        description: value.description,
+      });
 
       // Track event
       trackEvent("role_suggestion_submitted", {

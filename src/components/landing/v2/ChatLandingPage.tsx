@@ -213,6 +213,9 @@ export function ChatLandingPage() {
 
       const { data } = decompressPrompt(item.compressedData);
 
+      // If decompression failed, return null
+      if (!data) return null;
+
       return {
         id: item.id,
         title: item.title,
@@ -338,7 +341,7 @@ export function ChatLandingPage() {
         </div>
 
         {/* Sidebar 2: Examples (Visible only if role selected) */}
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode="wait" initial={false}>
           {selectedRole && (
             <motion.div
               initial={{ width: 0, opacity: 0, x: -20 }}

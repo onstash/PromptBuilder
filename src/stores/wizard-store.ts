@@ -359,9 +359,7 @@ export const useWizardStore = create<WizardStore>()(
     // ─────────────────────────────────────────────────────────────────────────
     initialize: (fromUrl) => {
       if (fromUrl?.d && fromUrl.vld) {
-        const { data: decompressed, valid } = decompressPrompt(fromUrl.d, {
-          _source_: "wizard-store initialize",
-        });
+        const { data: decompressed, valid } = decompressPrompt(fromUrl.d);
         if (valid && Object.keys(decompressed).length > 1) {
           const completedSteps = Object.fromEntries(
             Array.from({ length: decompressed.step }, (_, i) => [i + 1, true])

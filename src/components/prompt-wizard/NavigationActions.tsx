@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Plus, Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+
 import { useTrackMixpanel } from "@/utils/analytics/MixpanelProvider";
 import { useWizardStore } from "@/stores/wizard-store";
 
@@ -18,7 +19,7 @@ export function NavigationActions({ page }: NavigationActionsProps) {
   const reset = useWizardStore((state) => state.reset);
 
   return (
-    <div className="py-4 px-4 md:px-[5%] flex items-center justify-between gap-4 flex-wrap border-b border-border bg-background/50 backdrop-blur-sm sticky top-0 z-10">
+    <div className="py-4 px-4 md:px-[5%] flex items-center justify-between gap-4 flex-wrap border-b border-border bg-background/50 backdrop-blur-sm sticky top-0 z-10 w-full">
       {/* Branding - Links to Home */}
       <Link
         to="/"
