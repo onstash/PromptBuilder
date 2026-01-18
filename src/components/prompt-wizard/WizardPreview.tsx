@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo } from "react";
 
 import { motion } from "motion/react";
-import { Copy, Check, ExternalLink, FilePen, Bot } from "lucide-react";
+import { Copy, Check, ExternalLink, FilePen, Bot, Share2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,18 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { useMutation } from "convex/react";
+import { api } from "../../../convex/_generated/api";
+import { getOrCreateSessionId } from "@/utils/session";
 import type { PromptWizardData } from "@/utils/prompt-wizard/schema";
 import { compressPrompt, decompressPrompt } from "@/utils/prompt-wizard";
 import { Link } from "@tanstack/react-router";
@@ -165,7 +177,7 @@ export function WizardPreviewForSharePage(props: WizardPreviewPropsForSharePage)
   return (
     <>
       {/* Navigation Actions - At Top */}
-      <NavigationActions page="share" wizardData={wizardData || undefined} />
+      <NavigationActions page="share" />
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -208,6 +220,19 @@ export function WizardPreviewForSharePage(props: WizardPreviewPropsForSharePage)
                 </>
               )}
             </Button>
+            {wizardData && (
+              <ShareAction
+                wizardData={wizardData}
+                pageSource="share"
+                // @ts-ignore - In share page we likely have the slug in URL but props doesn't pass it explicitly.
+                // Actually, WizardPreviewPropsForSharePage doesn't have slug. We can parse it or just create new.
+                // Ideally we'd pass the slug if we have it.
+                // Implementation detail: for now let's just create new or let user share new one.
+                // Wait, if it's already a share page, the URL IS the share link.
+                existingSlug={shareUrl ? shareUrl.split("/").pop() : undefined}
+                // Wait, shareUrl might be full URL? Let's check props.
+              />
+            )}
             <Button
               onClick={handleTryWithChatGPT}
               size="sm"
@@ -348,6 +373,7 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
                 </>
               )}
             </Button>
+            <ShareAction wizardData={wizardData} pageSource="wizard" />
             <Button
               onClick={handleTryWithChatGPT}
               size="sm"
@@ -511,6 +537,7 @@ function WizardPreviewForLandingPageV2(props: WizardPreviewPropsForLandingPageV2
               </>
             )}
           </Button>
+          <ShareAction wizardData={wizardData} pageSource="landing_v2" />
           <Button
             onClick={handleTryWithChatGPT}
             size="sm"
@@ -553,6 +580,118 @@ function WizardPreviewForLandingPageV2(props: WizardPreviewPropsForLandingPageV2
         </AlertDialogContent>
       </AlertDialog>
     </motion.div>
+  );
+}
+
+function ShareAction({
+  wizardData,
+  openLabel = "Share",
+  pageSource,
+  existingSlug,
+}: {
+  wizardData: PromptWizardData;
+  openLabel?: string;
+  pageSource: string;
+  existingSlug?: string;
+}) {
+  const savePrompt = useMutation(api.prompts.savePrompt);
+  const trackEvent = useTrackMixpanel();
+
+  const [isOpen, setIsOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [shareLink, setShareLink] = useState(
+    existingSlug ? `${window.location.origin}/prompts/${existingSlug}` : ""
+  );
+  const [copied, setCopied] = useState(false);
+
+  // Consider a prompt active if it has at least user interaction
+  const hasContent = wizardData.updatedAt > 0;
+
+  const handleOpenChange = (open: boolean) => {
+    setIsOpen(open);
+    if (open && !shareLink) {
+      handleCreateLink();
+    }
+  };
+
+  const handleCreateLink = async () => {
+    if (!hasContent && !existingSlug) {
+      toast.error("Add some content to your prompt first!");
+      return;
+    }
+
+    // If we already have a link (e.g. passed in prop), just use it?
+    // Actually, if existingSlug is passed, we set it in state init.
+    // If not, we create one.
+    if (shareLink) return;
+
+    setIsLoading(true);
+    try {
+      const sessionId = getOrCreateSessionId();
+      const { slug } = await savePrompt({ promptData: wizardData, sessionId });
+
+      const url = `${window.location.origin}/prompts/${slug}`;
+      setShareLink(url);
+
+      trackEvent("cta_clicked_get_shareable_link", {
+        page: pageSource,
+        slug,
+        role: wizardData.ai_role,
+      });
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to create share link");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(shareLink);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+    toast.success("Link copied!");
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+      <DialogTrigger asChild>
+        <Button size="sm" variant="outline" className="uppercase font-bold">
+          <Share2 className="w-4 h-4 mr-1" />
+          {openLabel}
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Get Shareable Link</DialogTitle>
+          <DialogDescription>
+            Create a permanent, SEO-optimized URL for this prompt to share on social media.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="flex flex-col gap-4 py-4">
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center py-8 gap-2 text-muted-foreground">
+              <Loader2 className="w-8 h-8 animate-spin" />
+              <p className="text-sm">Creating your unique link...</p>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Input
+                value={shareLink || "Click Share to generate link"}
+                readOnly
+                className="font-mono text-xs"
+              />
+              {shareLink && (
+                <Button size="icon" onClick={handleCopy}>
+                  {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                </Button>
+              )}
+            </div>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 

@@ -409,7 +409,7 @@ export const PromptWizard = memo(function PromptWizard() {
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation Actions - At Top */}
-      <NavigationActions page="wizard" wizardData={wizardData} />
+      <NavigationActions page="wizard" />
 
       <div className="py-4 px-4 md:px-[5%]">
         <motion.div
