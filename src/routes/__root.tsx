@@ -12,6 +12,7 @@ import appCss from "../styles.css?url";
 import { NotFound } from "@/components/NotFound";
 import { getOrCreateSessionId } from "@/utils/session";
 import { syncUserServerFn } from "../functions/sync-user";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface RouterContext {
   queryClient: QueryClient;
@@ -151,6 +152,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
   const queryClient = Route.useRouteContext({
     select: (context) => context.queryClient,
   });
+  const isMobile = useIsMobile();
 
   return (
     <html lang="en">
@@ -162,17 +164,19 @@ function RootDocument({ children }: { children: React.ReactNode }) {
           <MixpanelProvider>{children}</MixpanelProvider>
         </QueryClientProvider>
         <Toaster />
-        <TanStackDevtools
-          config={{
-            position: "bottom-right",
-          }}
-          plugins={[
-            {
-              name: "Prompt Builder",
-              render: <TanStackRouterDevtoolsPanel />,
-            },
-          ]}
-        />
+        {!isMobile && (
+          <TanStackDevtools
+            config={{
+              position: "bottom-right",
+            }}
+            plugins={[
+              {
+                name: "Prompt Builder",
+                render: <TanStackRouterDevtoolsPanel />,
+              },
+            ]}
+          />
+        )}
         <Scripts />
       </body>
     </html>

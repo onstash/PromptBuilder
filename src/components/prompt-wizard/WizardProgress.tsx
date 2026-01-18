@@ -2,6 +2,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { Check } from "lucide-react";
 import { WIZARD_STEPS } from "@/utils/prompt-wizard/schema";
 import { useWizardStore } from "@/stores/wizard-store";
+import { Logger } from "@/utils/logger";
 
 interface WizardProgressProps {
   onStepClick: (step: number) => void;
@@ -55,10 +56,9 @@ export function WizardProgress({
               const stepHasErrors = hasStepErrors?.(stepNumber) ?? false;
 
               return (
-                <>
+                <div key={`step-${step!.id}`}>
                   {/* Step dot */}
                   <motion.button
-                    key={`step-${step!.id}`}
                     onClick={() => handleStepClick(stepNumber)}
                     disabled={!isClickable}
                     className={`
@@ -86,27 +86,25 @@ export function WizardProgress({
                   </motion.button>
 
                   {/* Connecting line */}
-                  {index < steps.length - 1 && (
+                  <motion.div
+                    key={`line-${step!.id}`}
+                    className="h-1 bg-muted border-y-2 border-foreground relative overflow-hidden"
+                    layout
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
                     <motion.div
-                      key={`line-${step!.id}`}
-                      className="h-1 bg-muted border-y-2 border-foreground relative overflow-hidden"
-                      layout
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
+                      className="absolute inset-y-0 left-0 bg-primary"
+                      initial={{ width: "0%" }}
+                      animate={{
+                        width: isCompleted ? "100%" : "0%",
+                      }}
                       transition={{ duration: 0.3 }}
-                    >
-                      <motion.div
-                        className="absolute inset-y-0 left-0 bg-primary"
-                        initial={{ width: "0%" }}
-                        animate={{
-                          width: isCompleted ? "100%" : "0%",
-                        }}
-                        transition={{ duration: 0.3 }}
-                      />
-                    </motion.div>
-                  )}
-                </>
+                    />
+                  </motion.div>
+                </div>
               );
             })}
           </AnimatePresence>
@@ -114,7 +112,7 @@ export function WizardProgress({
       </div>
       {/* Step title */}
       <div className="text-center">
-        <span className="text-sm font-mono text-muted-foreground uppercase tracking-wider">
+        <span className="text-sm font-mono text-muted-foreground uppercase tracking-wider hidden md:block">
           Step {currentStep} of {steps.length}
         </span>
         <h2 className="text-2xl font-black text-foreground uppercase mt-1">

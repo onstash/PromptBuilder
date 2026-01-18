@@ -183,8 +183,8 @@ export function WizardPreviewForSharePage(props: WizardPreviewPropsForSharePage)
         className="bg-card border-4 border-foreground shadow-[8px_8px_0px_0px_hsl(var(--foreground))] md:shadow-[8px_8px_0px_0px_hsl(var(--foreground))] max-md:shadow-[4px_4px_0px_0px_hsl(var(--foreground))]"
       >
         {/* Header */}
-        <div className="p-4 border-b-4 border-foreground flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <h3 className="font-black uppercase text-lg">Your Prompt</h3>
+        <div className="p-4 border-b-4 border-foreground flex flex-row gap-3 items-center justify-between">
+          <h3 className="font-black uppercase text-lg hidden md:block">Your Prompt</h3>
           <div className="flex flex-col gap-2 md:flex-row md:items-center w-full md:w-auto">
             <div className="flex gap-2 w-full md:w-auto">
               {shareUrl && (
@@ -290,7 +290,7 @@ export function WizardPreviewForSharePage(props: WizardPreviewPropsForSharePage)
   );
 }
 
-import { AnalysisPanel } from "./AnalysisPanel";
+// import { AnalysisPanel } from "./AnalysisPanel";
 
 // ... existing code ...
 
@@ -383,15 +383,15 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
         className="bg-card border-4 border-foreground shadow-[8px_8px_0px_0px_hsl(var(--foreground))] md:shadow-[8px_8px_0px_0px_hsl(var(--foreground))] max-md:shadow-[4px_4px_0px_0px_hsl(var(--foreground))]"
       >
         {/* Header */}
-        <div className="p-4 border-b-4 border-foreground flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <h3 className="font-black uppercase text-lg">Your Prompt</h3>
-          <div className="flex flex-col gap-2 md:flex-row md:items-center w-full md:w-auto">
-            <div className="flex gap-2 w-full md:w-auto">
+        <div className="p-4 border-b-4 border-foreground flex flex-row gap-3 items-center justify-between">
+          <h3 className="font-black uppercase text-lg hidden md:block">Your Prompt</h3>
+          <div className="flex flex-row gap-2 overflow-x-auto pb-2 -mb-2 w-full md:w-auto md:pb-0 md:mb-0 no-scrollbar items-center">
+            <div className="flex gap-2 shrink-0">
               <Button
                 onClick={handleCopyPrompt}
                 size="sm"
                 variant="outline"
-                className="uppercase font-bold flex-1 md:flex-none"
+                className="uppercase font-bold whitespace-nowrap"
                 disabled={promptText.trim().length === 0}
               >
                 {copiedPrompt ? (
@@ -406,33 +406,34 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
                   </>
                 )}
               </Button>
-              <div className="flex-1 md:flex-none flex">
+              <div className="shrink-0">
                 <ShareAction
                   wizardData={wizardData}
                   pageSource="wizard"
-                  buttonClassName="w-full md:w-9 md:px-0"
-                  openLabel={<span className="md:hidden">Share</span>}
+                  buttonClassName="w-auto px-4"
+                  openLabel="Share"
                   disabled={promptText.trim().length === 0}
                 />
               </div>
             </div>
 
-            <div className="flex flex-col gap-2 md:flex-row md:items-center w-full md:w-auto">
+            <div className="flex gap-2 shrink-0">
               <Button
                 onClick={handleAnalyzeRequest}
                 size="sm"
                 variant="outline"
-                className="uppercase font-bold w-full md:w-auto md:w-9 md:px-0"
+                className="uppercase font-bold whitespace-nowrap"
                 title="Analyze with AI"
                 disabled={promptText.trim().length === 0}
               >
                 <Sparkles className="w-4 h-4 mr-1 md:mr-0" />
-                <span className="md:hidden">Analyze with AI</span>
+                <span className="md:hidden">Analyze</span>
+                <span className="hidden md:inline">Analyze with AI</span>
               </Button>
               <Button
                 onClick={handleTryWithChatGPT}
                 size="sm"
-                className="uppercase font-bold bg-green-600 hover:bg-green-700 text-white w-full md:w-auto"
+                className="uppercase font-bold bg-green-600 hover:bg-green-700 text-white whitespace-nowrap"
                 disabled={promptText.trim().length === 0}
               >
                 <Bot className="w-4 h-4 mr-1" />
@@ -587,13 +588,20 @@ function WizardPreviewForLandingPageV2(props: WizardPreviewPropsForLandingPageV2
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-card border-4 border-foreground shadow-[8px_8px_0px_0px_hsl(var(--foreground))] md:shadow-[8px_8px_0px_0px_hsl(var(--foreground))] max-md:shadow-[4px_4px_0px_0px_hsl(var(--foreground))]"
+      className={cn(
+        "bg-card",
+        "border-4 border-foreground shadow-[8px_8px_0px_0px_hsl(var(--foreground))] md:shadow-[8px_8px_0px_0px_hsl(var(--foreground))] max-md:shadow-[4px_4px_0px_0px_hsl(var(--foreground))]"
+      )}
     >
       {/* Header */}
-      <div className="p-4 border-b-4 border-foreground flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <h3 className="font-black uppercase text-lg">Your Prompt</h3>
+      <div
+        className={cn(
+          "p-4 border-b-4 border-foreground flex flex-row items-center justify-between border-0 pb-0"
+        )}
+      >
+        <h3 className="font-black uppercase text-lg hidden md:block">Your Prompt</h3>
         <div className="flex flex-col gap-2 md:flex-row md:items-center w-full md:w-auto">
-          <div className="flex gap-2 w-full md:w-auto">
+          <div className="flex gap-2 md:w-auto">
             {shareUrl && (
               <Button
                 onClick={handleEdit}
