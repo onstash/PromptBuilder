@@ -7,6 +7,7 @@ import {
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import { Toaster } from "sonner";
+import { Analytics } from "@vercel/analytics/react";
 
 // import Header from "../components/Header";
 
@@ -139,6 +140,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         {/* {!isLandingPage && <Header />} */}
         <MixpanelProvider>{children}</MixpanelProvider>
         <Toaster />
+        <Analytics />
         <TanStackDevtools
           config={{
             position: "bottom-right",
