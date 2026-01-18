@@ -48,4 +48,8 @@ export default defineSchema({
     .index("by_slug", ["slug"])
     .index("by_session", ["sessionId"])
     .index("by_session_hash", ["sessionId", "contentHash"]), // For user-scoped deduplication
+  feature_request_ai_analysis: defineTable({
+    sessionId: v.string(),
+    createdAt: v.number(),
+  }),
 });

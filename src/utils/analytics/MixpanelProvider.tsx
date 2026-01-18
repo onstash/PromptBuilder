@@ -82,6 +82,7 @@ const MixpanelDataSchema = z.object({
     "onboarding_switched_to_advanced",
     "prompt_analyzed",
     "prompt_analyzed_error",
+    "cta_clicked_analyze_with_ai",
   ]),
   properties: z.looseObject({
     distinct_id: z.string(),

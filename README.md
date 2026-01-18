@@ -1,15 +1,15 @@
 # Prompt Builder AI 🚀
 
-A wizard-based web app for building structured AI prompts with shareable URLs and real-time preview.
+A wizard-based web app for building, analyzing, and sharing structured AI prompts.
 
 ## 🎯 Why & What Problems it Solves
 
 Building effective AI prompts is challenging—users often forget key context, struggle with structure, or can't easily share their prompts. This tool solves these problems by:
 
-- **Guided Structure**: 10-step wizard ensures comprehensive, well-formed prompts
-- **Shareable URLs**: Compressed URLs (TypeScript Playground-style) for easy collaboration
-- **No Sign-up Required**: Client-side only, privacy-first approach with localStorage
-- **Instant Preview**: Real-time formatted output shows exactly what the AI will receive
+- **Guided Structure**: 7-step wizard ensures comprehensive, well-formed prompts based on expert patterns.
+- **AI Analysis**: Real-time feedback on your prompt's quality using detailed heuristics (powered by Gemini).
+- **Persistent Sharing**: Create permanent, SEO-friendly URLs (`/prompts/act-as-expert...`) backed by a database.
+- **Instant Preview**: Real-time formatted output shows exactly what the AI will receive.
 
 ## 🏗️ Architecture
 
@@ -17,61 +17,82 @@ Building effective AI prompts is challenging—users often forget key context, s
 graph TB
     A[Landing Page] --> B[Prompt Wizard]
     B --> C[Local State + Form]
-    C --> D[Debounced localStorage]
-    B --> E[Generate Prompt]
-    E --> F[LZ-String Compression]
-    F --> G[Share URL /share?d=...]
-    G --> H[Decompression]
-    H --> I[Prompt Preview]
+    B --> D[AI Analysis (Server Fn)]
+    D --> E[Gemini Flash 2.5]
+    B --> F[Finish & Save]
+    F --> G[Convex DB]
+    G --> H[Persistent URL /prompts/$slug]
+    I[Legacy Share Link /share?d=...] --> J[Smart Migration Loader]
+    J --> G
+    J --> H
 
     style B fill:#a78bfa
-    style G fill:#34d399
-    style I fill:#fbbf24
+    style G fill:#34d399,color:white
+    style D fill:#fbbf24
 ```
 
 **Flow**:
 
-1. User fills wizard form (React state + TanStack Form)
-2. Changes auto-save to localStorage (debounced)
-3. On "Finish", data compresses to URL-safe string (LZ-String)
-4. Share URL renders read-only preview from compressed data
+1.  **Create**: User fills the wizard; changes auto-saved to localStorage.
+2.  **Analyze**: AI evaluates prompt quality and suggests improvements.
+3.  **Share**: Clicking "Share" saves the prompt to Convex and generates a unique, permanent slug.
+4.  **Migrate**: Old client-side links (`/share`) automatically upgrading to persistent records on visit.
 
 **Key Design Decisions**:
 
-- **Client-side only**: No backend, all data in URLs/localStorage
-- **Compression**: Only non-default values stored to minimize URL length
-- **File-based routing**: TanStack Router for type-safe navigation
+- **Full Stack**: TanStack Start + Convex for seamless server/client integration.
+- **Server Functions**: Heavy lifting (AI analysis, migration) runs on the server.
+- **Type Safety**: End-to-end type safety with TypeScript, TanStack Router, and Convex.
 
 ## 🛠️ Tech Stack
 
-| Layer           | Technology                 | Purpose                             |
-| --------------- | -------------------------- | ----------------------------------- |
-| **Framework**   | React 19 + TypeScript 5    | Type-safe UI components             |
-| **Routing**     | TanStack Router v1         | File-based, type-safe routing       |
-| **Forms**       | TanStack Form + Zod        | Form state + validation             |
-| **Styling**     | Tailwind CSS 4 + Radix UI  | Neobrutalist design system          |
-| **Compression** | LZ-String                  | URL-safe prompt sharing             |
-| **Build**       | Vite 7                     | Fast dev server + bundling          |
-| **Quality**     | TypeScript + Knip + Vitest | Type safety + unused code detection |
+| Layer         | Technology                    | Purpose                             |
+| ------------- | ----------------------------- | ----------------------------------- |
+| **Framework** | React 19 + TanStack Start     | Full-stack React framework          |
+| **Database**  | Convex                        | Real-time database & backend        |
+| **AI**        | Vercel AI SDK + Google Gemini | Prompt analysis & feedback          |
+| **Routing**   | TanStack Router               | File-based, type-safe routing       |
+| **Styling**   | Tailwind CSS 4 + Radix UI     | Neobrutalist design system          |
+| **Ref**       | LZ-String                     | Legacy client-side data compression |
 
 ## 🚀 Quick Start
 
-```bash
-pnpm install  # Install dependencies
-pnpm dev      # Start dev server (port 3000)
-pnpm lint     # Type check + unused code detection
-```
+1.  **Install dependencies**:
+
+    ```bash
+    pnpm install
+    ```
+
+2.  **Environment Setup**:
+    Create a `.env` file:
+
+    ```env
+    # Convex
+    VITE_CONVEX_URL="your_convex_url"
+
+    # AI Analysis (Optional)
+    GOOGLE_GENERATIVE_AI_API_KEY="your_gemini_key"
+    ENABLE_PROMPT_ANALYSIS="true"
+    ```
+
+3.  **Start Development**:
+    ```bash
+    pnpm convex dev  # Start backend
+    pnpm dev         # Start frontend
+    ```
 
 ## 📁 Project Structure
 
 ```
 src/
-├── routes/
-│   ├── wizard.tsx              # Main wizard (/wizard)
-│   └── share.tsx               # Shared prompts (/share?d=...)
-├── components/prompt-wizard/   # Wizard steps + preview
-├── utils/prompt-wizard/        # Compression + schema + validation
-└── components/ui/              # Shadcn/ui components
+├── routes/              # TanStack Router file-routes
+│   ├── wizard.tsx       # Main editor
+│   ├── prompts/         # Persistent prompt pages
+│   └── share.tsx        # Migration route
+├── functions/           # Server functions (AI, migration)
+├── components/          # Reusable UI components
+├── utils/               # Helpers (compression, schema, env)
+└── convex/              # Backend schema & mutations
 ```
 
 ## 📄 License

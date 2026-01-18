@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo } from "react";
 
 import { motion } from "motion/react";
-import { Copy, Check, ExternalLink, FilePen, Bot, Share2, Loader2 } from "lucide-react";
+import { Copy, Check, ExternalLink, FilePen, Bot, Share2, Loader2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -292,9 +292,11 @@ import { AnalysisPanel } from "./AnalysisPanel";
 function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
   const { data } = props;
   const trackEvent = useTrackMixpanel();
+  const submitFeatureRequest = useMutation(api.feature_requests.submitAIAnalysisRequest);
 
   const [copiedPrompt, setCopiedPrompt] = useState(false);
   const [isChatGPTAlertOpen, setIsChatGPTAlertOpen] = useState(false);
+  const [isFeatureRequestAlertOpen, setIsFeatureRequestAlertOpen] = useState(false);
 
   // KEY FIX: Use useMemo instead of useState(() => ...)
   // This ensures promptText re-computes whenever `data` changes
@@ -347,6 +349,27 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
     }
   }, [hasUserInteracted, promptText, wizardData, trackEvent]);
 
+  const handleAnalyzeRequest = useCallback(() => {
+    setIsFeatureRequestAlertOpen(true);
+    trackEvent("cta_clicked_analyze_with_ai", {
+      data: wizardData,
+    });
+  }, [wizardData, trackEvent]);
+
+  const confirmFeatureRequest = async () => {
+    try {
+      const sessionId = getOrCreateSessionId();
+      // @ts-ignore - API type might not be updated yet
+      await submitFeatureRequest({ sessionId });
+      toast.success("Thanks for your interest! We've recorded your vote.");
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to record request");
+    } finally {
+      setIsFeatureRequestAlertOpen(false);
+    }
+  };
+
   return (
     <div className="space-y-8">
       <motion.div
@@ -377,6 +400,15 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
               )}
             </Button>
             <ShareAction wizardData={wizardData} pageSource="wizard" />
+            <Button
+              onClick={handleAnalyzeRequest}
+              size="sm"
+              variant="outline"
+              className="uppercase font-bold"
+            >
+              <Sparkles className="w-4 h-4 mr-1" />
+              Analyze with AI
+            </Button>
             <Button
               onClick={handleTryWithChatGPT}
               size="sm"
@@ -420,6 +452,28 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
                 }}
               >
                 Copy & Open ChatGPT
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        {/* Feature Request Alert Dialog */}
+        <AlertDialog open={isFeatureRequestAlertOpen} onOpenChange={setIsFeatureRequestAlertOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Deep AI Analysis (Coming Soon!)</AlertDialogTitle>
+              <AlertDialogDescription>
+                We're currently testing demand for a deep, 10-point heuristic analysis of your
+                prompt using Gemini Pro.
+                <br />
+                <br />
+                If enough users are interested, we'll enable this feature. Would you use it?
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>No thanks</AlertDialogCancel>
+              <AlertDialogAction onClick={confirmFeatureRequest}>
+                Yes, I want this!
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

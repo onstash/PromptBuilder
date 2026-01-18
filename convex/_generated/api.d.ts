@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as feature_requests from "../feature_requests.js";
 import type * as prompts from "../prompts.js";
 import type * as users from "../users.js";
 import type * as validators from "../validators.js";
@@ -15,6 +16,7 @@ import type * as validators from "../validators.js";
 import type { ApiFromModules, FilterApi, FunctionReference } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  feature_requests: typeof feature_requests;
   prompts: typeof prompts;
   users: typeof users;
   validators: typeof validators;
