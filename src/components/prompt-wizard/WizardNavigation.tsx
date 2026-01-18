@@ -1,7 +1,8 @@
 import { motion } from "motion/react";
 import { ArrowLeft, ArrowRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useWizardStore } from "@/stores/wizard-store";
+
+import { useWizardStore, generatePromptText } from "@/stores/wizard-store";
 
 interface WizardNavigationProps {
   onNext: () => void;
@@ -12,7 +13,9 @@ interface WizardNavigationProps {
 
 export function WizardNavigation({ onNext, onBack, onFinish, isLastStep }: WizardNavigationProps) {
   const currentStep = useWizardStore((state) => state.wizardData.step);
+  const wizardData = useWizardStore((state) => state.wizardData);
   const isFirstStep = currentStep === 1;
+  const isPromptAvailable = generatePromptText(wizardData).trim().length > 0;
 
   return (
     <div className="flex flex-col md:flex-row items-center justify-between gap-4 pt-6 border-t-4 border-foreground">
@@ -48,7 +51,11 @@ export function WizardNavigation({ onNext, onBack, onFinish, isLastStep }: Wizar
           whileTap={{ scale: 0.98 }}
           className="w-full md:w-auto"
         >
-          <Button onClick={onFinish} className="uppercase font-bold w-full md:w-auto">
+          <Button
+            onClick={onFinish}
+            className="uppercase font-bold w-full md:w-auto"
+            disabled={!isPromptAvailable}
+          >
             <Sparkles className="w-4 h-4 mr-2" />
             Save Prompt
           </Button>

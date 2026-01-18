@@ -207,6 +207,7 @@ export function WizardPreviewForSharePage(props: WizardPreviewPropsForSharePage)
                 size="sm"
                 variant="outline"
                 className="uppercase font-bold flex-1 md:flex-none"
+                disabled={promptText.trim().length === 0}
               >
                 {copiedPrompt ? (
                   <>
@@ -228,6 +229,7 @@ export function WizardPreviewForSharePage(props: WizardPreviewPropsForSharePage)
                     existingSlug={shareUrl ? shareUrl.split("/").pop() : undefined}
                     buttonClassName="w-full md:w-9 md:px-0"
                     openLabel={<span className="md:hidden">Share</span>}
+                    disabled={promptText.trim().length === 0}
                   />
                 </div>
               )}
@@ -236,6 +238,7 @@ export function WizardPreviewForSharePage(props: WizardPreviewPropsForSharePage)
               onClick={handleTryWithChatGPT}
               size="sm"
               className="uppercase font-bold bg-green-600 hover:bg-green-700 text-white w-full md:w-auto"
+              disabled={promptText.trim().length === 0}
             >
               <Bot className="w-4 h-4 mr-1" />
               Open ChatGPT
@@ -389,6 +392,7 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
                 size="sm"
                 variant="outline"
                 className="uppercase font-bold flex-1 md:flex-none"
+                disabled={promptText.trim().length === 0}
               >
                 {copiedPrompt ? (
                   <>
@@ -408,6 +412,7 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
                   pageSource="wizard"
                   buttonClassName="w-full md:w-9 md:px-0"
                   openLabel={<span className="md:hidden">Share</span>}
+                  disabled={promptText.trim().length === 0}
                 />
               </div>
             </div>
@@ -419,6 +424,7 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
                 variant="outline"
                 className="uppercase font-bold w-full md:w-auto md:w-9 md:px-0"
                 title="Analyze with AI"
+                disabled={promptText.trim().length === 0}
               >
                 <Sparkles className="w-4 h-4 mr-1 md:mr-0" />
                 <span className="md:hidden">Analyze with AI</span>
@@ -427,6 +433,7 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
                 onClick={handleTryWithChatGPT}
                 size="sm"
                 className="uppercase font-bold bg-green-600 hover:bg-green-700 text-white w-full md:w-auto"
+                disabled={promptText.trim().length === 0}
               >
                 <Bot className="w-4 h-4 mr-1" />
                 Open ChatGPT
@@ -604,6 +611,7 @@ function WizardPreviewForLandingPageV2(props: WizardPreviewPropsForLandingPageV2
               size="sm"
               variant="outline"
               className="uppercase font-bold flex-1 md:flex-none"
+              disabled={promptText.trim().length === 0}
             >
               {copiedPrompt ? (
                 <>
@@ -623,6 +631,7 @@ function WizardPreviewForLandingPageV2(props: WizardPreviewPropsForLandingPageV2
                 pageSource="landing_v2"
                 buttonClassName="w-full md:w-9 md:px-0"
                 openLabel={<span className="md:hidden">Share</span>}
+                disabled={promptText.trim().length === 0}
               />
             </div>
           </div>
@@ -630,6 +639,7 @@ function WizardPreviewForLandingPageV2(props: WizardPreviewPropsForLandingPageV2
             onClick={handleTryWithChatGPT}
             size="sm"
             className="uppercase font-bold bg-green-600 hover:bg-green-700 text-white w-full md:w-auto"
+            disabled={promptText.trim().length === 0}
           >
             <Bot className="w-4 h-4 mr-1" />
             Open ChatGPT
@@ -683,12 +693,14 @@ function ShareAction({
   pageSource,
   existingSlug,
   buttonClassName,
+  disabled,
 }: {
   wizardData: PromptWizardData;
   openLabel?: string | React.ReactNode;
   pageSource: string;
   existingSlug?: string;
   buttonClassName?: string;
+  disabled?: boolean;
 }) {
   const savePrompt = useMutation(api.prompts.savePrompt);
   const trackEvent = useTrackMixpanel();
@@ -752,7 +764,12 @@ function ShareAction({
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button size="sm" variant="outline" className={cn("uppercase font-bold", buttonClassName)}>
+        <Button
+          size="sm"
+          variant="outline"
+          className={cn("uppercase font-bold", buttonClassName)}
+          disabled={disabled}
+        >
           <Share2 className="w-4 h-4 mr-1" />
           {openLabel}
         </Button>
