@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useSearch, useNavigate } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "motion/react";
-import { Menu, X, User, Heart, FileText, ChevronLeft } from "lucide-react";
+import { Menu, X, User, Heart, FileText, ChevronLeft, Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -186,7 +186,9 @@ export function ChatLandingPage() {
   const selectedExampleId = search.exampleId;
 
   // Stored Prompts
-  const { items: storedPrompts } = usePromptsWithFallback({ includeExamples: false });
+  const { items: storedPrompts, isLoading: isPromptsLoading } = usePromptsWithFallback({
+    includeExamples: false,
+  });
 
   const storedPromptItems = useMemo(() => {
     return storedPrompts.map(mapStoredPromptToSidebarItem);
@@ -415,26 +417,32 @@ export function ChatLandingPage() {
 
         {/* Main Content: Preview */}
         <main className="flex-1 bg-background overflow-hidden relative">
-          <PromptPreview
-            example={selectedExampleData}
-            onSelectExampleClick={() => setIsMobileMenuOpen(true)}
-            onTryClick={(ex) => {
-              navigate({
-                to: "/wizard",
-                search: {
-                  d: ex.d,
-                  vld: 1,
-                  partial: false,
-                  role: ex.role === "stored" ? undefined : (ex.role as string),
+          {selectedExampleId?.startsWith("stored-") && isPromptsLoading && !selectedExampleData ? (
+            <div className="flex h-full items-center justify-center">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+          ) : (
+            <PromptPreview
+              example={selectedExampleData}
+              onSelectExampleClick={() => setIsMobileMenuOpen(true)}
+              onTryClick={(ex) => {
+                navigate({
+                  to: "/wizard",
+                  search: {
+                    d: ex.d,
+                    vld: 1,
+                    partial: false,
+                    role: ex.role === "stored" ? undefined : (ex.role as string),
+                    exampleId: ex.id,
+                  },
+                });
+                trackEvent("cta_clicked_try_prompt_v2", {
+                  role: ex.role,
                   exampleId: ex.id,
-                },
-              });
-              trackEvent("cta_clicked_try_prompt_v2", {
-                role: ex.role,
-                exampleId: ex.id,
-              });
-            }}
-          />
+                });
+              }}
+            />
+          )}
         </main>
       </div>
     </div>

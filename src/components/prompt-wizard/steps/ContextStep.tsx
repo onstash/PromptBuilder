@@ -31,7 +31,7 @@ export function ContextStep({ data, onUpdate }: StepProps) {
           placeholder="What background information does the AI need to know?"
           value={data.context}
           onChange={(e) => onUpdate({ context: e.target.value })}
-          className="min-h-[100px] resize-none text-lg"
+          className="min-h-[100px] resize-none text-base md:text-lg"
           autoFocus
         />
         <StepExamples

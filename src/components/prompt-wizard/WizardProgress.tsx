@@ -32,12 +32,12 @@ export function WizardProgress({
   return (
     <div className="w-full">
       {/* Progress bar - scrollable on mobile */}
-      <div className="overflow-x-auto pb-2 -mx-2 px-2">
+      <div className="overflow-x-auto pb-4 -mx-4 px-4 scrollbar-hide">
         <motion.div
-          className="grid items-center gap-2 mb-4 min-w-max"
+          className="grid items-center gap-2 mb-4 mx-auto w-fit"
           style={{
             gridTemplateColumns: steps
-              .map((_, i) => (i < steps.length - 1 ? "auto 1fr" : "auto"))
+              .map((_, i) => (i < steps.length - 1 ? "auto 40px" : "auto"))
               .join(" "),
           }}
           layout

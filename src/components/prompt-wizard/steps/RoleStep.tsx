@@ -24,7 +24,7 @@ export function RoleStep({ data, onUpdate }: StepProps) {
           placeholder="e.g., Senior Product Manager with 10 years experience in SaaS..."
           value={data.ai_role || ""}
           onChange={(e) => onUpdate({ ai_role: e.target.value })}
-          className="text-lg"
+          className="text-base md:text-lg focus-visible:ring-primary"
           autoFocus
         />
       </div>

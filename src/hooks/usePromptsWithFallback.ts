@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { FileText } from "lucide-react";
 
 import type { CardItem } from "@/components/ui/CardGrid";
@@ -28,10 +28,11 @@ export type PromptCardItem = StoredPromptCardItem | ExamplePromptCardItem;
 
 export interface UsePromptsWithFallbackResult {
   items: PromptCardItem[];
-  source: "stored" | "examples";
+  source: "stored" | "examples" | null;
   title: string;
   subtitle: string;
   handleDelete: (item: PromptCardItem) => void;
+  isLoading: boolean;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -90,23 +91,37 @@ export function usePromptsWithFallback(
     currentPrompt: undefined,
   }
 ): UsePromptsWithFallbackResult {
-  const [allItems, setAllItems] = useState<PromptCardItem[]>(() => {
+  const [isLoading, setIsLoading] = useState(true);
+  const [allItems, setAllItems] = useState<PromptCardItem[]>([]);
+  const [source, setSource] = useState<"stored" | "examples" | null>(null);
+
+  // Load prompts on mount (client-side only to avoid hydration mismatch)
+  useEffect(() => {
     const { items: storedItems } = loadStoredPrompts();
-    if (storedItems.length > 0) return storedItems;
 
-    if (!opts.includeExamples) return [];
+    if (storedItems.length > 0) {
+      setAllItems(storedItems);
+      setSource("stored");
+    } else if (opts.includeExamples) {
+      // Fallback to examples
+      const examples = EXAMPLE_PROMPTS.map((example, index) => ({
+        id: example.id,
+        title: example.title,
+        description: example.description,
+        icon: example.icon,
+        color: example.color,
+        compressedData: example.d,
+        originalIndex: index,
+      }));
+      setAllItems(examples);
+      setSource("examples");
+    } else {
+      setAllItems([]);
+      setSource(null);
+    }
 
-    // Fallback to examples
-    return EXAMPLE_PROMPTS.map((example, index) => ({
-      id: example.id,
-      title: example.title,
-      description: example.description,
-      icon: example.icon,
-      color: example.color,
-      compressedData: example.d,
-      originalIndex: index,
-    }));
-  });
+    setIsLoading(false);
+  }, []);
 
   // Filter out current prompt being edited (reactive to currentPrompt changes)
   const currentTaskIntent = opts.currentPrompt?.task_intent?.trim().toLowerCase();
@@ -117,11 +132,6 @@ export function usePromptsWithFallback(
       return itemTaskIntent !== currentTaskIntent;
     });
   }, [allItems, currentTaskIntent]);
-
-  const [source] = useState<"stored" | "examples">(() => {
-    const { source } = loadStoredPrompts();
-    return source || "examples";
-  });
 
   const handleDelete = useCallback((item: PromptCardItem) => {
     // Delete from storage using the original index stored in the item
@@ -144,6 +154,7 @@ export function usePromptsWithFallback(
     title,
     subtitle,
     handleDelete,
+    isLoading,
   };
 }
 

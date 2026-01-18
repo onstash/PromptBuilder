@@ -1,7 +1,7 @@
 import { useCallback, useRef, useEffect, memo, useState } from "react";
 
 import { motion, AnimatePresence } from "motion/react";
-import { RotateCcw, Eye } from "lucide-react";
+import { RotateCcw } from "lucide-react";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 
 import { Button } from "@/components/ui/button";
@@ -427,19 +427,19 @@ export const PromptWizard = memo(function PromptWizard() {
             <div className="p-4 border-b-4 border-foreground">
               <div className="flex items-center justify-between mb-4">
                 {/* Advanced Mode Toggle (Title Area) */}
-                <div className="flex items-center gap-3">
-                  <Label
-                    htmlFor="advanced-mode-toggle"
-                    className="font-black uppercase tracking-tight text-xl cursor-pointer"
-                  >
-                    {mode === "advanced" ? "Advanced" : "Basic"} Mode
-                  </Label>
+                <div className="flex items-center gap-2">
                   <Switch
                     id="advanced-mode-toggle"
                     checked={mode === "advanced"}
                     onCheckedChange={(checked) => setMode(checked ? "advanced" : "basic")}
                     className="cursor-pointer"
                   />
+                  <Label
+                    htmlFor="advanced-mode-toggle"
+                    className="font-bold uppercase text-sm cursor-pointer"
+                  >
+                    {mode === "advanced" ? "Advanced" : "Basic"} Mode
+                  </Label>
                 </div>
 
                 <div className="flex items-center gap-3">
@@ -518,22 +518,7 @@ export const PromptWizard = memo(function PromptWizard() {
         </motion.div>
 
         {/* Mobile Preview Button - Fixed at bottom */}
-        {isMobile && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="fixed bottom-6 right-4 z-40"
-          >
-            <Button
-              onClick={() => setIsPreviewOpen(true)}
-              size="lg"
-              className="shadow-lg uppercase font-bold"
-            >
-              <Eye className="w-4 h-4 mr-2" />
-              View Prompt
-            </Button>
-          </motion.div>
-        )}
+        {/* Removed to declutter mobile UI */}
 
         {/* Mobile Bottom Sheet */}
         <Drawer open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
