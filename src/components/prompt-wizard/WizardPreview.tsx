@@ -258,18 +258,24 @@ export function WizardPreviewForSharePage(props: WizardPreviewPropsForSharePage)
                 the URL.
                 <br />
                 <br />
-                Please <strong>Copy</strong> the prompt first, then open ChatGPT to paste it.
+                Click "Copy & Open" to copy the prompt and open ChatGPT.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
               <AlertDialogAction
-                onClick={() => {
-                  window.open("https://chatgpt.com", "_blank");
+                onClick={async () => {
+                  try {
+                    await navigator.clipboard.writeText(promptText);
+                    toast.success("Prompt copied to clipboard!");
+                    window.open("https://chatgpt.com", "_blank");
+                  } catch {
+                    toast.error("Failed to copy prompt");
+                  }
                   setIsChatGPTAlertOpen(false);
                 }}
               >
-                Open ChatGPT
+                Copy & Open ChatGPT
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
@@ -399,18 +405,24 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
                 the URL.
                 <br />
                 <br />
-                Please <strong>Copy</strong> the prompt first, then open ChatGPT to paste it.
+                Click "Copy & Open" to copy the prompt and open ChatGPT.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
               <AlertDialogAction
-                onClick={() => {
-                  window.open("https://chatgpt.com", "_blank");
+                onClick={async () => {
+                  try {
+                    await navigator.clipboard.writeText(promptText);
+                    toast.success("Prompt copied to clipboard!");
+                    window.open("https://chatgpt.com", "_blank");
+                  } catch {
+                    toast.error("Failed to copy prompt");
+                  }
                   setIsChatGPTAlertOpen(false);
                 }}
               >
-                Open ChatGPT
+                Copy & Open ChatGPT
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
@@ -563,18 +575,24 @@ function WizardPreviewForLandingPageV2(props: WizardPreviewPropsForLandingPageV2
               URL.
               <br />
               <br />
-              Please <strong>Copy</strong> the prompt first, then open ChatGPT to paste it.
+              Click "Copy & Open" to copy the prompt and open ChatGPT.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => {
-                window.open("https://chatgpt.com", "_blank");
+              onClick={async () => {
+                try {
+                  await navigator.clipboard.writeText(promptText);
+                  toast.success("Prompt copied to clipboard!");
+                  window.open("https://chatgpt.com", "_blank");
+                } catch {
+                  toast.error("Failed to copy prompt");
+                }
                 setIsChatGPTAlertOpen(false);
               }}
             >
-              Open ChatGPT
+              Copy & Open ChatGPT
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
