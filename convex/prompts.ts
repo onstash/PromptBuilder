@@ -26,8 +26,8 @@ const stableKeys = [
   "disallowed_content",
   "output_format",
 ];
-async function generateContentHash(data: any): Promise<string> {
-  const payload = stableKeys.map((k) => data[k] || "").join("||");
+async function generateContentHash(data: Record<string, unknown>): Promise<string> {
+  const payload = stableKeys.map((k) => String(data[k] ?? "")).join("||");
 
   const msgBuffer = new TextEncoder().encode(payload);
   const hashBuffer = await crypto.subtle.digest("SHA-256", msgBuffer);

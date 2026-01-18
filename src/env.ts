@@ -6,6 +6,7 @@ export const env = createEnv({
     SERVER_URL: z.url().optional(),
     SENTRY_AUTH_TOKEN: z.string(),
     GOOGLE_GENERATIVE_AI_API_KEY: z.string(),
+    ENABLE_PROMPT_ANALYSIS: z.enum(["true", "false"]).optional(),
   },
 
   /**
@@ -17,6 +18,7 @@ export const env = createEnv({
   client: {
     VITE_APP_TITLE: z.string().min(1).optional(),
     VITE_PUBLIC_MIXPANEL_PROJECT_TOKEN: z.string(),
+    VITE_CONVEX_URL: z.string().url(),
   },
 
   /**

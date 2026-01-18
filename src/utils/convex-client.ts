@@ -1,3 +1,4 @@
+import { env } from "@/env";
 import { ConvexHttpClient } from "convex/browser";
 
 /**
@@ -9,11 +10,7 @@ let convexClient: ConvexHttpClient | null = null;
 
 export function getConvexClient(): ConvexHttpClient {
   if (!convexClient) {
-    const convexUrl = import.meta.env.VITE_CONVEX_URL || process.env.VITE_CONVEX_URL;
-    if (!convexUrl) {
-      throw new Error("Missing VITE_CONVEX_URL environment variable");
-    }
-    convexClient = new ConvexHttpClient(convexUrl);
+    convexClient = new ConvexHttpClient(env.VITE_CONVEX_URL);
   }
   return convexClient;
 }

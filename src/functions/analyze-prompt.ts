@@ -5,6 +5,7 @@ import { z } from "zod";
 import { promptWizardSchema } from "@/utils/prompt-wizard/schema";
 import { trackMixpanelInServer } from "@/utils/analytics/MixpanelProvider";
 import { Logger } from "@/utils/logger";
+import { env } from "@/env";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Output Schema (Analysis Result)
@@ -78,8 +79,25 @@ export const analyzePrompt = createServerFn({ method: "POST" })
   .inputValidator(InputSchema)
   .handler(async ({ data }) => {
     analyzePromptLogger.debug("Analyzing prompt", data);
+
+    // Feature Flag: Check if analysis is enabled
+    // Default to false if not explicitly set to "true"
+    const isEnabled = env.ENABLE_PROMPT_ANALYSIS === "true";
+
+    if (!isEnabled) {
+      analyzePromptLogger.debug("Prompt analysis disabled via config");
+      return {
+        score: 0,
+        strengths: [],
+        weaknesses: [],
+        suggestions: [],
+        improved_version: undefined,
+      };
+    }
+
     const startTime = performance.now();
     try {
+      // TODO: Add caching for prompt analysis
       const { output } = await generateText({
         model: google("gemini-2.5-flash"),
         output: Output.object({ schema: AnalysisResultSchema }),
