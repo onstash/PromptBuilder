@@ -213,6 +213,9 @@ export function ChatLandingPage() {
 
       const { data } = decompressPrompt(item.compressedData);
 
+      // If decompression failed, return null
+      if (!data) return null;
+
       return {
         id: item.id,
         title: item.title,

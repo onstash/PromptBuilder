@@ -1,11 +1,11 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeader } from "@tanstack/react-start/server";
-import { ConvexHttpClient } from "convex/browser";
 import { z } from "zod";
 
 import { api } from "../../convex/_generated/api";
 import { decompressPrompt } from "@/utils/prompt-wizard/url-compression";
 import { PromptWizardData } from "@/utils/prompt-wizard/schema";
+import { getConvexClient } from "@/utils/convex-client";
 
 const InputSchema = z.object({
   d: z.string(),
@@ -27,19 +27,14 @@ export const migrateShareLink = createServerFn({ method: "POST" })
     }
 
     // 2. Decompress Prompt Data
-    const { data: promptData, valid } = decompressPrompt(d, {
-      _source_: "server-function:migrateShareLink",
-    });
+    const { data: promptData, valid } = decompressPrompt(d);
 
     if (!valid || !promptData) {
       throw new Error("Invalid prompt data");
     }
 
     // 3. Save to Convex
-    const convexUrl = process.env.VITE_CONVEX_URL;
-    if (!convexUrl) throw new Error("Missing VITE_CONVEX_URL");
-
-    const client = new ConvexHttpClient(convexUrl);
+    const client = getConvexClient();
 
     try {
       // @ts-ignore - Convex types

@@ -1,7 +1,3 @@
-export { Hero } from "./Hero";
-export { SocialProof } from "./SocialProof";
-export { CTASection } from "./CTASection";
-export { Footer } from "./Footer";
-export { LandingPage } from "./LandingPage";
-export { HowItWorks } from "./HowItWorks";
-export { ExamplesShowcase } from "./ExamplesShowcase";
+// Legacy v1 components have been removed
+// All landing page components are now in ./v2
+export * from "./v2";

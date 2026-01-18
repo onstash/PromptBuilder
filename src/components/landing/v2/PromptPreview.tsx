@@ -22,33 +22,9 @@ interface PromptPreviewProps {
   className?: string;
 }
 
-interface FieldDisplayProps {
-  label: string;
-  value: string;
-  delay?: number;
-}
-
 // ═══════════════════════════════════════════════════════════════════════════
 // SUB-COMPONENTS
 // ═══════════════════════════════════════════════════════════════════════════
-
-function FieldDisplay({ label, value, delay = 0 }: FieldDisplayProps) {
-  if (!value) return null;
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay }}
-      className="border-2 border-border bg-muted p-3"
-    >
-      <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground mb-1">
-        {label}
-      </p>
-      <p className="text-sm text-foreground">{value}</p>
-    </motion.div>
-  );
-}
 
 function EmptyState() {
   return (

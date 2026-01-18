@@ -32,7 +32,6 @@ interface StepExamplesProps {
 export function StepExamples({ field, currentValue = "", onExampleClick }: StepExamplesProps) {
   // 1. Get Context
   const search = useSearch({ from: "/wizard" });
-  // @ts-expect-error - search params might not be typed fully yet in this context
   const exampleId = search.exampleId as string | undefined;
 
   const ai_role = useWizardStore((state) => state.wizardData.ai_role);

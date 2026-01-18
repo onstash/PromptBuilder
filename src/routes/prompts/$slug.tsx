@@ -1,15 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ConvexHttpClient } from "convex/browser";
 import { api } from "../../../convex/_generated/api";
 import { WizardPreviewForSharePage } from "@/components/prompt-wizard/WizardPreview";
 import { NotFound } from "@/components/NotFound";
 import { PromptWizardData } from "@/utils/prompt-wizard/schema";
+import { getConvexClient } from "@/utils/convex-client";
 
 export const Route = createFileRoute("/prompts/$slug")({
   loader: async ({ params }) => {
-    const convexUrl = import.meta.env.VITE_CONVEX_URL;
-    if (!convexUrl) throw new Error("Missing VITE_CONVEX_URL");
-    const client = new ConvexHttpClient(convexUrl);
+    const client = getConvexClient();
     const prompt = await client.query(api.prompts.getPromptBySlug, {
       slug: params.slug,
     });

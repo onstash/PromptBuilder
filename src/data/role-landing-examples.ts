@@ -12,7 +12,7 @@ import {
   FileCheck,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { ROLE_STEP_EXAMPLES, type RoleKey } from "./role-step-examples";
+import type { RoleKey } from "./role-step-examples";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // TYPES

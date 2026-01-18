@@ -1,16 +1,13 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getRequest } from "@tanstack/react-start/server";
-import { ConvexHttpClient } from "convex/browser";
 import { z } from "zod";
 import { api } from "../../convex/_generated/api";
 import { getMetadataFromRequest } from "@/utils/serverFn-util";
+import { getConvexClient } from "@/utils/convex-client";
 
 const SyncUserSchema = z.object({
   sessionId: z.string(),
 });
-
-const convexUrl = import.meta.env.VITE_CONVEX_URL;
-const client = new ConvexHttpClient(convexUrl);
 
 export const syncUserServerFn = createServerFn({ method: "POST" })
   .inputValidator(SyncUserSchema)
@@ -21,6 +18,7 @@ export const syncUserServerFn = createServerFn({ method: "POST" })
       getMetadataFromRequest(request);
 
     // Call Mutation
+    const client = getConvexClient();
     await client.mutation(api.users.syncUser, {
       sessionId: data.sessionId,
       metadata: {

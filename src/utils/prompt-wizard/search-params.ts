@@ -75,9 +75,7 @@ export function validateWizardSearch(
     const extras = { role, exampleId, wizardType };
 
     if (typeof search.d === "string" && search.d) {
-      const { data: parsedData, valid } = decompressPrompt(search.d, {
-        _source_: "search-params validateWizardSearch",
-      });
+      const { data: parsedData, valid } = decompressPrompt(search.d);
       if (!valid) {
         Sentry.captureException(new Error("Invalid share link - missing or invalid data [1]"), {
           tags: { feature: "share_link_validation" },

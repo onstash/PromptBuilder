@@ -114,10 +114,7 @@ export function WizardPreviewForSharePage(props: WizardPreviewPropsForSharePage)
     // Compressed path (from URL param)
     const compressedData = data as string;
     const { data: decompressedData, valid } = withLatencyLoggingSync(
-      () =>
-        decompressPrompt(compressedData, {
-          _source_: "WizardPreviewForSharePage",
-        }),
+      () => decompressPrompt(compressedData),
       (latency) => {
         trackEvent("time_taken_decompress", {
           latency,
@@ -293,7 +290,7 @@ import { AnalysisPanel } from "./AnalysisPanel";
 // ... existing code ...
 
 function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
-  const { data, shareUrl } = props;
+  const { data } = props;
   const trackEvent = useTrackMixpanel();
 
   const [copiedPrompt, setCopiedPrompt] = useState(false);
