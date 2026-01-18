@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.2.0
+
+### Minor Changes
+
+- dda7975: fix(ui): improve mobile responsiveness and fix hydration issues
+
 ## 4.1.0
 
 ### Minor Changes
