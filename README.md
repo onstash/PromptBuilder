@@ -10,6 +10,7 @@ Building effective AI prompts is challenging—users often forget key context, s
 - **AI Analysis**: Real-time feedback on your prompt's quality using detailed heuristics (powered by Gemini).
 - **Persistent Sharing**: Create permanent, SEO-friendly URLs (`/prompts/act-as-expert...`) backed by a database.
 - **Instant Preview**: Real-time formatted output shows exactly what the AI will receive.
+- **Community Feedback**: Users can suggest new roles directly, driving the platform's evolution.
 
 ## 🏗️ Architecture
 

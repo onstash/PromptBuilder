@@ -12,3 +12,19 @@ export const submitAIAnalysisRequest = mutation({
     });
   },
 });
+
+export const submitRoleSuggestion = mutation({
+  args: {
+    sessionId: v.string(),
+    roleTitle: v.string(),
+    description: v.string(),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.insert("feature_request_suggest_role", {
+      sessionId: args.sessionId,
+      roleTitle: args.roleTitle,
+      description: args.description,
+      createdAt: Date.now(),
+    });
+  },
+});

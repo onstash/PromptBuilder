@@ -52,4 +52,10 @@ export default defineSchema({
     sessionId: v.string(),
     createdAt: v.number(),
   }),
+  feature_request_suggest_role: defineTable({
+    sessionId: v.string(),
+    roleTitle: v.string(),
+    description: v.string(),
+    createdAt: v.number(),
+  }),
 });
