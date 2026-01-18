@@ -70,6 +70,9 @@ graph TB
     # Convex
     VITE_CONVEX_URL="your_convex_url"
 
+    # Analytics
+    VITE_PUBLIC_MIXPANEL_PROJECT_TOKEN="your_mixpanel_token"
+
     # AI Analysis (Optional)
     GOOGLE_GENERATIVE_AI_API_KEY="your_gemini_key"
     ENABLE_PROMPT_ANALYSIS="true"

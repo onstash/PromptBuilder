@@ -88,7 +88,7 @@ function EmptyState() {
 export function PromptPreview({ example, onTryClick, className }: PromptPreviewProps) {
   return (
     <div className={cn("h-full flex flex-col overflow-y-auto p-6 md:p-10", className)}>
-      <AnimatePresence mode="wait">
+      <AnimatePresence mode="wait" initial={false}>
         {!example ? (
           <EmptyState key="empty" />
         ) : (
