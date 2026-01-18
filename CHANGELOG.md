@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.3.0
+
+### Minor Changes
+
+- 6745c0e: fix(ui): improve mobile responsiveness and fix hydration issues
+
 ## 4.2.0
 
 ### Minor Changes
