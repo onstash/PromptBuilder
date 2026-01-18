@@ -4,6 +4,7 @@ import { generateText, Output } from "ai";
 import { z } from "zod";
 import { promptWizardSchema } from "@/utils/prompt-wizard/schema";
 import { trackMixpanelInServer } from "@/utils/analytics/MixpanelProvider";
+import { Logger } from "@/utils/logger";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Output Schema (Analysis Result)
@@ -64,12 +65,19 @@ const SYSTEM_PROMPT = `
   - Keep suggestions concise.
 `;
 
+const analyzePromptLogger = Logger.createLogger({
+  namespace: "analyze-prompt",
+  level: "DEBUG",
+  enableConsoleLog: true,
+});
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Server Function
 // ─────────────────────────────────────────────────────────────────────────────
 export const analyzePrompt = createServerFn({ method: "POST" })
   .inputValidator(InputSchema)
   .handler(async ({ data }) => {
+    analyzePromptLogger.debug("Analyzing prompt", data);
     const startTime = performance.now();
     try {
       const { output } = await generateText({
@@ -78,6 +86,7 @@ export const analyzePrompt = createServerFn({ method: "POST" })
         system: SYSTEM_PROMPT,
         prompt: JSON.stringify(data.promptData, null, 2),
       });
+      analyzePromptLogger.debug("Analysis output", output);
 
       // Fire-and-forget tracking (don't await to avoid slowing down response)
       trackMixpanelInServer({
@@ -95,7 +104,7 @@ export const analyzePrompt = createServerFn({ method: "POST" })
       return output;
     } catch (err) {
       const error = err instanceof Error ? err : new Error("Unknown error");
-      console.error("Gemini Analysis Error:", error);
+      analyzePromptLogger.error("Analysis Error:", error);
       trackMixpanelInServer({
         data: {
           event: "prompt_analyzed_error",

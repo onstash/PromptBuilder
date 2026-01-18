@@ -1,17 +1,25 @@
-import { HeadContent, Scripts, createRootRouteWithContext } from "@tanstack/react-router";
+import { HeadContent, Scripts, createRootRouteWithContext, Outlet } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import { Toaster } from "sonner";
 import { MixpanelProvider } from "@/utils/analytics/MixpanelProvider";
-import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
+import { QueryClientProvider, QueryClient, useMutation } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { useEffect } from "react";
 
 import appCss from "../styles.css?url";
+
+import { NotFound } from "@/components/NotFound";
+import { getOrCreateSessionId } from "@/utils/session";
+import { syncUserServerFn } from "../functions/sync-user";
 
 interface RouterContext {
   queryClient: QueryClient;
 }
 
 export const Route = createRootRouteWithContext<RouterContext>()({
+  notFoundComponent: NotFound,
+  component: RootComponent,
   head: () => ({
     meta: [
       {
@@ -122,6 +130,22 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 
   shellComponent: RootDocument,
 });
+
+function RootComponent() {
+  const syncFn = useServerFn(syncUserServerFn);
+  const syncMutation = useMutation({
+    mutationFn: (sessionId: string) => syncFn({ data: { sessionId } }),
+  });
+
+  useEffect(() => {
+    const sessionId = getOrCreateSessionId();
+    if (sessionId) {
+      syncMutation.mutate(sessionId);
+    }
+  }, []);
+
+  return <Outlet />;
+}
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   const queryClient = Route.useRouteContext({

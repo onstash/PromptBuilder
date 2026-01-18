@@ -2,11 +2,18 @@ import * as Sentry from "@sentry/tanstackstart-react";
 import { createRouter as createTanStackRouter } from "@tanstack/react-router";
 import { QueryClient } from "@tanstack/react-query";
 import { routerWithQueryClient } from "@tanstack/react-router-with-query";
+import { ConvexReactClient, ConvexProvider } from "convex/react";
 
 // Import the generated route tree
 import { routeTree } from "./routeTree.gen";
 
+const CONVEX_URL = (import.meta as any).env.VITE_CONVEX_URL!;
+if (!CONVEX_URL) {
+  throw new Error("missing envar VITE_CONVEX_URL");
+}
 export const getRouter = () => {
+  const convex = new ConvexReactClient(CONVEX_URL);
+
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
@@ -23,6 +30,7 @@ export const getRouter = () => {
     defaultPreload: "intent",
     scrollRestoration: true,
     defaultPreloadStaleTime: 0,
+    Wrap: ({ children }) => <ConvexProvider client={convex}>{children}</ConvexProvider>,
   });
 
   if (!router.isServer) {

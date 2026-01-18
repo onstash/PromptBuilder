@@ -24,12 +24,14 @@ import { withLatencyLoggingSync } from "@/utils/function-utils";
 import { StoredPromptsSection } from "./StoredPromptsSection";
 import { NavigationActions } from "./NavigationActions";
 
-type WizardPreviewPropsForSharePage = {
-  shareUrl: string;
-  data: string;
-  compressed: true;
+export type WizardPreviewPropsForSharePage = {
+  shareUrl?: string; // made optional
+  data?: string; // compressed string
+  wizardData?: PromptWizardData; // uncompressed object
+  compressed: boolean;
   source: "share";
   onClickCallback?: () => void;
+  isReadOnly?: boolean; // added based on usage
 };
 
 type WizardPreviewPropsForWizardPage = {
@@ -58,8 +60,8 @@ function generatePromptStringFromCompressed(wizardData: PromptWizardData): strin
   return generatePromptText(wizardData);
 }
 
-function WizardPreviewForSharePage(props: WizardPreviewPropsForSharePage) {
-  const { data, compressed, shareUrl } = props;
+export function WizardPreviewForSharePage(props: WizardPreviewPropsForSharePage) {
+  const { data, compressed, shareUrl, wizardData: propWizardData } = props;
   const trackEvent = useTrackMixpanel();
 
   const [analyticsWrapper] = useState(() => {
@@ -87,8 +89,19 @@ function WizardPreviewForSharePage(props: WizardPreviewPropsForSharePage) {
   const [[promptText, wizardData, promptTextCompressed]] = useState<
     [string, PromptWizardData | null, string]
   >(() => {
+    if (!compressed && propWizardData) {
+      // Uncompressed path (from DB query)
+      analyticsWrapper.trackPageLoadEvent(propWizardData);
+      return [
+        generatePromptStringFromCompressed(propWizardData),
+        propWizardData,
+        compressPrompt(propWizardData),
+      ];
+    }
+
+    // Compressed path (from URL param)
     const compressedData = data as string;
-    const { data: wizardData, valid } = withLatencyLoggingSync(
+    const { data: decompressedData, valid } = withLatencyLoggingSync(
       () =>
         decompressPrompt(compressedData, {
           _source_: "WizardPreviewForSharePage",
@@ -103,8 +116,8 @@ function WizardPreviewForSharePage(props: WizardPreviewPropsForSharePage) {
     if (!valid) {
       return ["", null, ""];
     }
-    analyticsWrapper.trackPageLoadEvent(wizardData);
-    return [generatePromptStringFromCompressed(wizardData), wizardData, compressedData];
+    analyticsWrapper.trackPageLoadEvent(decompressedData);
+    return [generatePromptStringFromCompressed(decompressedData), decompressedData, compressedData];
   });
 
   const handleCopyPrompt = useCallback(async () => {
@@ -152,7 +165,7 @@ function WizardPreviewForSharePage(props: WizardPreviewPropsForSharePage) {
   return (
     <>
       {/* Navigation Actions - At Top */}
-      <NavigationActions page="share" />
+      <NavigationActions page="share" wizardData={wizardData || undefined} />
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}

@@ -12,6 +12,8 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as WizardRouteImport } from './routes/wizard'
 import { Route as ShareRouteImport } from './routes/share'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PromptsSlugRouteImport } from './routes/prompts/$slug'
+import { Route as LlmsTxtRouteImport } from './routes/llms.txt'
 import { Route as ApiSentryExampleRouteImport } from './routes/api/sentry-example'
 import { Route as ApiSentryTunnelRouteImport } from './routes/api/sentry.tunnel'
 import { Route as ApiAiGenerateRouteImport } from './routes/api/ai/generate'
@@ -29,6 +31,16 @@ const ShareRoute = ShareRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PromptsSlugRoute = PromptsSlugRouteImport.update({
+  id: '/prompts/$slug',
+  path: '/prompts/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LlmsTxtRoute = LlmsTxtRouteImport.update({
+  id: '/llms/txt',
+  path: '/llms/txt',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiSentryExampleRoute = ApiSentryExampleRouteImport.update({
@@ -52,6 +64,8 @@ export interface FileRoutesByFullPath {
   '/share': typeof ShareRoute
   '/wizard': typeof WizardRoute
   '/api/sentry-example': typeof ApiSentryExampleRoute
+  '/llms/txt': typeof LlmsTxtRoute
+  '/prompts/$slug': typeof PromptsSlugRoute
   '/api/ai/generate': typeof ApiAiGenerateRoute
   '/api/sentry/tunnel': typeof ApiSentryTunnelRoute
 }
@@ -60,6 +74,8 @@ export interface FileRoutesByTo {
   '/share': typeof ShareRoute
   '/wizard': typeof WizardRoute
   '/api/sentry-example': typeof ApiSentryExampleRoute
+  '/llms/txt': typeof LlmsTxtRoute
+  '/prompts/$slug': typeof PromptsSlugRoute
   '/api/ai/generate': typeof ApiAiGenerateRoute
   '/api/sentry/tunnel': typeof ApiSentryTunnelRoute
 }
@@ -69,6 +85,8 @@ export interface FileRoutesById {
   '/share': typeof ShareRoute
   '/wizard': typeof WizardRoute
   '/api/sentry-example': typeof ApiSentryExampleRoute
+  '/llms/txt': typeof LlmsTxtRoute
+  '/prompts/$slug': typeof PromptsSlugRoute
   '/api/ai/generate': typeof ApiAiGenerateRoute
   '/api/sentry/tunnel': typeof ApiSentryTunnelRoute
 }
@@ -79,6 +97,8 @@ export interface FileRouteTypes {
     | '/share'
     | '/wizard'
     | '/api/sentry-example'
+    | '/llms/txt'
+    | '/prompts/$slug'
     | '/api/ai/generate'
     | '/api/sentry/tunnel'
   fileRoutesByTo: FileRoutesByTo
@@ -87,6 +107,8 @@ export interface FileRouteTypes {
     | '/share'
     | '/wizard'
     | '/api/sentry-example'
+    | '/llms/txt'
+    | '/prompts/$slug'
     | '/api/ai/generate'
     | '/api/sentry/tunnel'
   id:
@@ -95,6 +117,8 @@ export interface FileRouteTypes {
     | '/share'
     | '/wizard'
     | '/api/sentry-example'
+    | '/llms/txt'
+    | '/prompts/$slug'
     | '/api/ai/generate'
     | '/api/sentry/tunnel'
   fileRoutesById: FileRoutesById
@@ -104,6 +128,8 @@ export interface RootRouteChildren {
   ShareRoute: typeof ShareRoute
   WizardRoute: typeof WizardRoute
   ApiSentryExampleRoute: typeof ApiSentryExampleRoute
+  LlmsTxtRoute: typeof LlmsTxtRoute
+  PromptsSlugRoute: typeof PromptsSlugRoute
   ApiAiGenerateRoute: typeof ApiAiGenerateRoute
   ApiSentryTunnelRoute: typeof ApiSentryTunnelRoute
 }
@@ -129,6 +155,20 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/prompts/$slug': {
+      id: '/prompts/$slug'
+      path: '/prompts/$slug'
+      fullPath: '/prompts/$slug'
+      preLoaderRoute: typeof PromptsSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/llms/txt': {
+      id: '/llms/txt'
+      path: '/llms/txt'
+      fullPath: '/llms/txt'
+      preLoaderRoute: typeof LlmsTxtRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/sentry-example': {
@@ -160,6 +200,8 @@ const rootRouteChildren: RootRouteChildren = {
   ShareRoute: ShareRoute,
   WizardRoute: WizardRoute,
   ApiSentryExampleRoute: ApiSentryExampleRoute,
+  LlmsTxtRoute: LlmsTxtRoute,
+  PromptsSlugRoute: PromptsSlugRoute,
   ApiAiGenerateRoute: ApiAiGenerateRoute,
   ApiSentryTunnelRoute: ApiSentryTunnelRoute,
 }
