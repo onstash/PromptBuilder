@@ -10,6 +10,7 @@ import { getOrCreateSessionId } from "@/utils/session";
 import packageJSON from "../../../package.json";
 import { Logger } from "../logger";
 import { getMetadataFromRequest } from "../serverFn-util";
+import { env } from "../server/env";
 
 const version = packageJSON.version;
 
@@ -93,7 +94,7 @@ type MixpanelData = z.infer<typeof MixpanelDataSchema>;
 
 export type MixpanelDataEvent = MixpanelData["event"];
 
-const mp = Mixpanel.init(import.meta.env.VITE_PUBLIC_MIXPANEL_PROJECT_TOKEN, {
+const mp = Mixpanel.init(env.PUBLIC_MIXPANEL_PROJECT_TOKEN, {
   verbose: true,
 });
 

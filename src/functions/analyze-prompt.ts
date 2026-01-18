@@ -5,7 +5,7 @@ import { z } from "zod";
 import { promptWizardSchema } from "@/utils/prompt-wizard/schema";
 import { trackMixpanelInServer } from "@/utils/analytics/MixpanelProvider";
 import { Logger } from "@/utils/logger";
-import { env } from "@/env";
+import { env } from "@/utils/server/env";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Output Schema (Analysis Result)

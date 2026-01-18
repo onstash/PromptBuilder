@@ -6,13 +6,11 @@ import { ConvexReactClient, ConvexProvider } from "convex/react";
 
 // Import the generated route tree
 import { routeTree } from "./routeTree.gen";
+import { env } from "./utils/client/env";
 
-const CONVEX_URL = (import.meta as any).env.VITE_CONVEX_URL!;
-if (!CONVEX_URL) {
-  throw new Error("missing envar VITE_CONVEX_URL");
-}
+const { VITE_CONVEX_URL } = env;
 export const getRouter = () => {
-  const convex = new ConvexReactClient(CONVEX_URL);
+  const convex = new ConvexReactClient(VITE_CONVEX_URL);
 
   const queryClient = new QueryClient({
     defaultOptions: {

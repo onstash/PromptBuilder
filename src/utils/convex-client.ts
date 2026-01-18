@@ -1,4 +1,4 @@
-import { env } from "@/env";
+import { env } from "@/utils/client/env";
 import { ConvexHttpClient } from "convex/browser";
 
 /**

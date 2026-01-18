@@ -5,27 +5,16 @@ export const env = createEnv({
   server: {
     SERVER_URL: z.url().optional(),
     SENTRY_AUTH_TOKEN: z.string(),
-    GOOGLE_GENERATIVE_AI_API_KEY: z.string(),
+    GOOGLE_GENERATIVE_AI_API_KEY: z.string().optional(),
     ENABLE_PROMPT_ANALYSIS: z.enum(["true", "false"]).optional(),
-  },
-
-  /**
-   * The prefix that client-side variables must have. This is enforced both at
-   * a type-level and at runtime.
-   */
-  clientPrefix: "VITE_",
-
-  client: {
-    VITE_APP_TITLE: z.string().min(1).optional(),
-    VITE_PUBLIC_MIXPANEL_PROJECT_TOKEN: z.string(),
-    VITE_CONVEX_URL: z.string().url(),
+    PUBLIC_MIXPANEL_PROJECT_TOKEN: z.string(),
   },
 
   /**
    * What object holds the environment variables at runtime. This is usually
    * `process.env` or `import.meta.env`.
    */
-  runtimeEnv: import.meta.env,
+  runtimeEnv: process.env,
 
   /**
    * By default, this library will feed the environment variables directly to
