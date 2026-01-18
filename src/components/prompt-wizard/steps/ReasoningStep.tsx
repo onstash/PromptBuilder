@@ -20,7 +20,7 @@ export function ReasoningStep({ data, onUpdate }: StepProps) {
                 })
               }
               className={`
-                p-4 border-4 border-foreground text-center transition-all
+                p-4 border-4 border-foreground text-center transition-all cursor-pointer
                 ${
                   isSelected
                     ? "bg-primary text-primary-foreground shadow-[4px_4px_0px_0px_hsl(var(--foreground))]"

@@ -146,7 +146,7 @@ export function CardGrid<T extends CardItem>({
                               e.stopPropagation();
                               action.onClick?.(item);
                             }}
-                            className="flex items-center gap-1 text-primary font-mono text-xs font-bold hover:gap-1.5 transition-all px-2 py-1 border-2 border-foreground shadow-[2px_2px_0px_0px_hsl(var(--foreground))] hover:shadow-[3px_3px_0px_0px_hsl(var(--foreground))] bg-background"
+                            className="flex items-center gap-1 text-primary font-mono text-xs font-bold hover:gap-1.5 transition-all px-2 py-1 border-2 border-foreground shadow-[2px_2px_0px_0px_hsl(var(--foreground))] hover:shadow-[3px_3px_0px_0px_hsl(var(--foreground))] bg-background cursor-pointer"
                           >
                             <ActionIcon className="w-3.5 h-3.5" />
                             {action.label}
@@ -162,7 +162,7 @@ export function CardGrid<T extends CardItem>({
                             e.stopPropagation();
                             action.onClick?.(item);
                           }}
-                          className="flex items-center gap-1 text-primary font-mono text-xs font-bold hover:gap-1.5 transition-all px-2 py-1 border-2 border-foreground shadow-[2px_2px_0px_0px_hsl(var(--foreground))] hover:shadow-[3px_3px_0px_0px_hsl(var(--foreground))] bg-background"
+                          className="flex items-center gap-1 text-primary font-mono text-xs font-bold hover:gap-1.5 transition-all px-2 py-1 border-2 border-foreground shadow-[2px_2px_0px_0px_hsl(var(--foreground))] hover:shadow-[3px_3px_0px_0px_hsl(var(--foreground))] bg-background cursor-pointer"
                         >
                           <ActionIcon className="w-3.5 h-3.5" />
                           {action.label}
@@ -188,7 +188,7 @@ export function CardGrid<T extends CardItem>({
                     to={linkProps.to}
                     search={linkProps.search}
                     onClick={() => onItemClick?.(item)}
-                    className="group block h-full bg-card border-4 border-foreground shadow-[4px_4px_0px_0px_hsl(var(--foreground))] p-4 md:p-6 hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[8px_8px_0px_0px_hsl(var(--foreground))] transition-all duration-200 flex flex-col overflow-hidden"
+                    className="group block h-full bg-card border-4 border-foreground shadow-[4px_4px_0px_0px_hsl(var(--foreground))] p-4 md:p-6 hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[8px_8px_0px_0px_hsl(var(--foreground))] transition-all duration-200 flex flex-col overflow-hidden cursor-pointer"
                   >
                     {cardContent}
                   </Link>
