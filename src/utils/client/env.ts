@@ -10,6 +10,7 @@ export const env = createEnv({
 
   client: {
     VITE_APP_TITLE: z.string().min(1).optional(),
+    VITE_PUBLIC_MIXPANEL_PROJECT_TOKEN: z.string(),
     VITE_CONVEX_URL: z.string(),
   },
 

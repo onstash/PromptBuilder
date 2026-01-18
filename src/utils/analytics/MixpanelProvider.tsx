@@ -94,7 +94,7 @@ type MixpanelData = z.infer<typeof MixpanelDataSchema>;
 
 export type MixpanelDataEvent = MixpanelData["event"];
 
-const mp = Mixpanel.init(env.PUBLIC_MIXPANEL_PROJECT_TOKEN, {
+const mp = Mixpanel.init(env.VITE_PUBLIC_MIXPANEL_PROJECT_TOKEN, {
   verbose: true,
 });
 

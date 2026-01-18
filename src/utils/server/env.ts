@@ -7,7 +7,6 @@ export const env = createEnv({
     SENTRY_AUTH_TOKEN: z.string(),
     GOOGLE_GENERATIVE_AI_API_KEY: z.string().optional(),
     ENABLE_PROMPT_ANALYSIS: z.enum(["true", "false"]).optional(),
-    PUBLIC_MIXPANEL_PROJECT_TOKEN: z.string(),
   },
 
   /**
