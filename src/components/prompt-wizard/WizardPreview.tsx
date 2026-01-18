@@ -193,11 +193,12 @@ export function WizardPreviewForSharePage(props: WizardPreviewPropsForSharePage)
                   asChild
                   variant="outline"
                   size="sm"
-                  className="uppercase font-bold flex-1 md:flex-none"
+                  className="uppercase font-bold flex-1 md:flex-none md:w-9 md:px-0"
+                  title="Edit"
                 >
                   <Link to="/wizard" search={{ d: promptTextCompressed, vld: 1, partial: false }}>
-                    <EditOrOpenIcon className="w-4 h-4 mr-1" />
-                    Edit
+                    <EditOrOpenIcon className="w-4 h-4 mr-1 md:mr-0" />
+                    <span className="md:hidden">Edit</span>
                   </Link>
                 </Button>
               )}
@@ -225,7 +226,8 @@ export function WizardPreviewForSharePage(props: WizardPreviewPropsForSharePage)
                     wizardData={wizardData}
                     pageSource="share"
                     existingSlug={shareUrl ? shareUrl.split("/").pop() : undefined}
-                    buttonClassName="w-full"
+                    buttonClassName="w-full md:w-9 md:px-0"
+                    openLabel={<span className="md:hidden">Share</span>}
                   />
                 </div>
               )}
@@ -401,7 +403,12 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
                 )}
               </Button>
               <div className="flex-1 md:flex-none flex">
-                <ShareAction wizardData={wizardData} pageSource="wizard" buttonClassName="w-full" />
+                <ShareAction
+                  wizardData={wizardData}
+                  pageSource="wizard"
+                  buttonClassName="w-full md:w-9 md:px-0"
+                  openLabel={<span className="md:hidden">Share</span>}
+                />
               </div>
             </div>
 
@@ -410,10 +417,11 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
                 onClick={handleAnalyzeRequest}
                 size="sm"
                 variant="outline"
-                className="uppercase font-bold w-full md:w-auto"
+                className="uppercase font-bold w-full md:w-auto md:w-9 md:px-0"
+                title="Analyze with AI"
               >
-                <Sparkles className="w-4 h-4 mr-1" />
-                Analyze with AI
+                <Sparkles className="w-4 h-4 mr-1 md:mr-0" />
+                <span className="md:hidden">Analyze with AI</span>
               </Button>
               <Button
                 onClick={handleTryWithChatGPT}
@@ -488,7 +496,7 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
       </motion.div>
 
       {/* Helper to Analyze Prompt */}
-      {hasUserInteracted && (
+      {/* {hasUserInteracted && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -496,7 +504,7 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
         >
           <AnalysisPanel wizardData={wizardData} />
         </motion.div>
-      )}
+      )} */}
     </div>
   );
 }
@@ -584,10 +592,11 @@ function WizardPreviewForLandingPageV2(props: WizardPreviewPropsForLandingPageV2
                 onClick={handleEdit}
                 variant="outline"
                 size="sm"
-                className="uppercase font-bold flex-1 md:flex-none"
+                className="uppercase font-bold flex-1 md:flex-none md:w-9 md:px-0"
+                title="Edit"
               >
-                <EditOrOpenIcon className="w-4 h-4 mr-1" />
-                Edit
+                <EditOrOpenIcon className="w-4 h-4 mr-1 md:mr-0" />
+                <span className="md:hidden">Edit</span>
               </Button>
             )}
             <Button
@@ -612,7 +621,8 @@ function WizardPreviewForLandingPageV2(props: WizardPreviewPropsForLandingPageV2
               <ShareAction
                 wizardData={wizardData}
                 pageSource="landing_v2"
-                buttonClassName="w-full"
+                buttonClassName="w-full md:w-9 md:px-0"
+                openLabel={<span className="md:hidden">Share</span>}
               />
             </div>
           </div>
@@ -675,7 +685,7 @@ function ShareAction({
   buttonClassName,
 }: {
   wizardData: PromptWizardData;
-  openLabel?: string;
+  openLabel?: string | React.ReactNode;
   pageSource: string;
   existingSlug?: string;
   buttonClassName?: string;
