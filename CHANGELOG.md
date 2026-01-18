@@ -5,6 +5,7 @@
 ### Minor Changes
 
 - dda7975: fix(ui): improve mobile responsiveness and fix hydration issues
+- c834356: fix(seo): update OG image resolution path
 
 ## 4.1.0
 
