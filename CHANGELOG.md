@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.1.0
+
+### Minor Changes
+
+- df6ed79: This PR integrates Google's Gemini AI for prompt analysis, replaces client-side storage with a Convex backend, and refactors the environment configuration for stability.
+
 ## 4.0.0
 
 ### Major Changes
