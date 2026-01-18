@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useSearch, useNavigate } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "motion/react";
-import { Menu, X, User, Heart, FileText } from "lucide-react";
+import { Menu, X, User, Heart, FileText, ChevronLeft } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -254,6 +254,7 @@ export function ChatLandingPage() {
       to: "/",
       search: { ...search, role: undefined, exampleId: item.id },
     });
+    setIsMobileMenuOpen(false);
   };
 
   const handleRoleSelect = (item: SidebarItem) => {
@@ -273,14 +274,62 @@ export function ChatLandingPage() {
       role: selectedRole,
       exampleId: item.id,
     });
+    setIsMobileMenuOpen(false);
   };
 
   const handleMobileMenuToggle = () => setIsMobileMenuOpen(!isMobileMenuOpen);
+  const handleMobileBackToRoles = () => {
+    navigate({
+      to: "/",
+      search: { ...search, role: undefined },
+    });
+  };
+
+  const SidebarContent = () => (
+    <div className="flex-1 overflow-hidden flex flex-col h-full bg-zinc-50/50 dark:bg-zinc-900/50">
+      {storedPromptItems.length > 0 && (
+        <div className="flex-shrink-0 max-h-[40%] border-b border-border overflow-hidden flex flex-col">
+          <SidebarList
+            title="Your Prompts"
+            items={storedPromptItems}
+            selectedId={selectedExampleId || null}
+            onSelect={handleStoredPromptSelect}
+            className="h-full border-none"
+          />
+        </div>
+      )}
+      <SidebarList
+        title="Role Examples"
+        items={roleItems}
+        selectedId={selectedRole || null}
+        onSelect={handleRoleSelect}
+        className="h-full border-none"
+        footer={
+          <div className="flex flex-col gap-2">
+            <SuggestRoleDialog />
+            <div className="pt-2 mt-2 border-t border-border text-[10px] text-muted-foreground text-center flex items-center justify-center gap-1">
+              <span>Made with</span>
+              <Heart className="w-3 h-3 text-red-500 fill-red-500 inline" />
+              <span>by</span>
+              <a
+                href="https://x.com/shtosan?utm=https://prompt-builder-ten-xi.vercel.app/"
+                target="_blank"
+                rel="noreferrer"
+                className="hover:text-foreground transition-colors"
+              >
+                hastons
+              </a>
+            </div>
+          </div>
+        }
+      />
+    </div>
+  );
 
   return (
     <div className="h-screen flex flex-col bg-background overflow-hidden font-sans">
       {/* Header */}
-      <header className="flex-shrink-0 h-16 border-b-4 border-foreground bg-background px-4 flex items-center justify-end md:hidden z-10">
+      <header className="flex-shrink-0 h-16 border-b-4 border-foreground bg-background px-4 flex items-center justify-start md:hidden z-10">
         <Button variant="ghost" size="icon" onClick={handleMobileMenuToggle}>
           {isMobileMenuOpen ? <X /> : <Menu />}
         </Button>
@@ -288,59 +337,60 @@ export function ChatLandingPage() {
 
       {/* Main Layout */}
       <div className="flex-1 flex overflow-hidden relative">
-        {/* Sidebar 1: Roles (Hidden on mobile unless menu open, or maybe handle mobile differently) */}
-        {/* For this task, focusing on Desktop as primary request: "should have 2 sidebars in desktop mode" */}
+        {/* Sidebar 1: Logic split for Mobile Drill-down vs Desktop Static */}
 
         <div
           className={cn(
             "fixed inset-y-0 left-0 z-20 w-64 transform transition-transform duration-300 md:relative md:translate-x-0 bg-background flex flex-col border-r border-border",
-            isMobileMenuOpen ? "translate-x-0 pt-16" : "-translate-x-full"
+            isMobileMenuOpen ? "translate-x-0 pt-0" : "-translate-x-full" // Removed pt-16 to handle full height usage or header inside
           )}
         >
-          {/* Stored Prompts Sidebar (if any) */}
-          {storedPromptItems.length > 0 && (
-            <div className="flex-shrink-0 max-h-[40%] border-b border-border overflow-hidden flex flex-col">
+          {/* MOBILE HEADER - Only visible on mobile */}
+          <div className="md:hidden flex items-center justify-between p-4 border-b h-16 flex-shrink-0">
+            <div className="flex items-center gap-2">
+              {selectedRole ? (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="-ml-2"
+                  onClick={handleMobileBackToRoles}
+                >
+                  <ChevronLeft size={24} />
+                </Button>
+              ) : (
+                <img src="/favicon.svg" alt="Logo" className="w-8 h-8" />
+              )}
+              <span className="font-bold text-lg truncate max-w-[120px]">
+                {selectedRole && roleItems.find((r) => r.id === selectedRole)?.title}
+              </span>
+            </div>
+            <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(false)}>
+              <X size={24} />
+            </Button>
+          </div>
+
+          {/* MOBILE CONTENT - Conditional Drill-down */}
+          <div className="md:hidden flex-1 flex flex-col overflow-hidden">
+            {selectedRole ? (
               <SidebarList
-                title="Your Prompts"
-                items={storedPromptItems}
+                title="Prompt Examples"
+                items={exampleItems}
                 selectedId={selectedExampleId || null}
-                onSelect={handleStoredPromptSelect}
+                onSelect={handleExampleSelect}
                 className="h-full border-none"
               />
-            </div>
-          )}
+            ) : (
+              <SidebarContent />
+            )}
+          </div>
 
-          {/* Role Examples Sidebar */}
-          <div className="flex-1 overflow-hidden flex flex-col h-full bg-zinc-50/50 dark:bg-zinc-900/50">
-            <SidebarList
-              title="Role Examples"
-              items={roleItems}
-              selectedId={selectedRole || null}
-              onSelect={handleRoleSelect}
-              className="h-full border-none"
-              footer={
-                <div className="flex flex-col gap-2">
-                  <SuggestRoleDialog />
-                  <div className="pt-2 mt-2 border-t border-border text-[10px] text-muted-foreground text-center flex items-center justify-center gap-1">
-                    <span>Made with</span>
-                    <Heart className="w-3 h-3 text-red-500 fill-red-500 inline" />
-                    <span>by</span>
-                    <a
-                      href="https://x.com/shtosan?utm=https://prompt-builder-ten-xi.vercel.app/"
-                      target="_blank"
-                      rel="noreferrer"
-                      className="hover:text-foreground transition-colors"
-                    >
-                      hastons
-                    </a>
-                  </div>
-                </div>
-              }
-            />
+          {/* DESKTOP CONTENT - Always Roles */}
+          <div className="hidden md:flex flex-1 flex-col overflow-hidden">
+            <SidebarContent />
           </div>
         </div>
 
-        {/* Sidebar 2: Examples (Visible only if role selected) */}
+        {/* Sidebar 2: Examples (Visible only if role selected), Desktop Only */}
         <AnimatePresence mode="wait" initial={false}>
           {selectedRole && (
             <motion.div
@@ -365,12 +415,9 @@ export function ChatLandingPage() {
 
         {/* Main Content: Preview */}
         <main className="flex-1 bg-background overflow-hidden relative">
-          {/* Mobile View: If role selected, maybe show examples list? Complex responsive logic. 
-                For now, focusing on Desktop as requested. 
-            */}
-
           <PromptPreview
             example={selectedExampleData}
+            onSelectExampleClick={() => setIsMobileMenuOpen(true)}
             onTryClick={(ex) => {
               navigate({
                 to: "/wizard",

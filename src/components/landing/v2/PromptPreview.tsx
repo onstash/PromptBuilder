@@ -19,6 +19,7 @@ export type PromptPreviewExample = Omit<RoleLandingExample, "role"> & {
 interface PromptPreviewProps {
   example: PromptPreviewExample | null;
   onTryClick?: (example: PromptPreviewExample) => void;
+  onSelectExampleClick?: () => void;
   className?: string;
 }
 
@@ -26,7 +27,7 @@ interface PromptPreviewProps {
 // SUB-COMPONENTS
 // ═══════════════════════════════════════════════════════════════════════════
 
-function EmptyState() {
+function EmptyState({ onSelectExampleClick }: { onSelectExampleClick?: () => void }) {
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
@@ -58,14 +59,51 @@ function EmptyState() {
         <span className="block text-primary">Builder</span>
       </h1>
 
-      {/* Subtitle */}
-      <p className="text-lg text-muted-foreground max-w-md mb-8">
+      {/* Subtitle - Mobile */}
+      <p className="text-lg text-muted-foreground max-w-md mb-8 md:hidden">
+        Craft expert-level prompts for any role or task
+      </p>
+
+      {/* Subtitle - Desktop */}
+      <p className="text-lg text-muted-foreground max-w-md mb-8 hidden md:block">
         Craft expert-level prompts for any role or task. Select an example to start or build from
         scratch.
       </p>
 
-      {/* CTA */}
-      <Link to="/wizard" search={{ d: null, vld: 0, partial: false }} className="inline-block">
+      {/* CTA - Mobile */}
+      <div className="flex flex-col gap-4 w-full max-w-xs md:hidden">
+        <button
+          onClick={onSelectExampleClick}
+          className={cn(
+            "flex items-center justify-center gap-2 px-8 py-4 bg-secondary text-foreground",
+            "border-4 border-foreground shadow-[4px_4px_0px_0px_hsl(var(--foreground))]",
+            "active:translate-y-1 active:shadow-none",
+            "transition-all duration-200 font-bold uppercase tracking-wide text-lg w-full"
+          )}
+        >
+          Select Example
+        </button>
+
+        <Link to="/wizard" search={{ d: null, vld: 0, partial: false }} className="block w-full">
+          <div
+            className={cn(
+              "flex items-center justify-center gap-2 px-8 py-4 bg-primary text-primary-foreground",
+              "border-4 border-foreground shadow-[4px_4px_0px_0px_hsl(var(--foreground))]",
+              "active:translate-y-1 active:shadow-none",
+              "transition-all duration-200 font-bold uppercase tracking-wide text-lg w-full"
+            )}
+          >
+            Create New
+          </div>
+        </Link>
+      </div>
+
+      {/* CTA - Desktop */}
+      <Link
+        to="/wizard"
+        search={{ d: null, vld: 0, partial: false }}
+        className="hidden md:inline-block"
+      >
         <div
           className={cn(
             "flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground",
@@ -85,12 +123,17 @@ function EmptyState() {
 // MAIN COMPONENT
 // ═══════════════════════════════════════════════════════════════════════════
 
-export function PromptPreview({ example, onTryClick, className }: PromptPreviewProps) {
+export function PromptPreview({
+  example,
+  onTryClick,
+  onSelectExampleClick,
+  className,
+}: PromptPreviewProps) {
   return (
     <div className={cn("h-full flex flex-col overflow-y-auto p-6 md:p-10", className)}>
       <AnimatePresence mode="wait" initial={false}>
         {!example ? (
-          <EmptyState key="empty" />
+          <EmptyState key="empty" onSelectExampleClick={onSelectExampleClick} />
         ) : (
           <motion.div
             key={example.id}
