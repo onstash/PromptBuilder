@@ -1,20 +1,17 @@
-import {
-  HeadContent,
-  Scripts,
-  createRootRoute,
-  // useRouterState,
-} from "@tanstack/react-router";
+import { HeadContent, Scripts, createRootRouteWithContext } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import { Toaster } from "sonner";
-
-// import Header from "../components/Header";
+import { MixpanelProvider } from "@/utils/analytics/MixpanelProvider";
+import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 
 import appCss from "../styles.css?url";
-// import { Footer } from "@/components/landing";
-import { MixpanelProvider } from "@/utils/analytics/MixpanelProvider";
 
-export const Route = createRootRoute({
+interface RouterContext {
+  queryClient: QueryClient;
+}
+
+export const Route = createRootRouteWithContext<RouterContext>()({
   head: () => ({
     meta: [
       {
@@ -127,8 +124,9 @@ export const Route = createRootRoute({
 });
 
 function RootDocument({ children }: { children: React.ReactNode }) {
-  // const routerState = useRouterState();
-  // const isLandingPage = routerState.location.pathname === "/";
+  const queryClient = Route.useRouteContext({
+    select: (context) => context.queryClient,
+  });
 
   return (
     <html lang="en">
@@ -136,8 +134,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body>
-        {/* {!isLandingPage && <Header />} */}
-        <MixpanelProvider>{children}</MixpanelProvider>
+        <QueryClientProvider client={queryClient}>
+          <MixpanelProvider>{children}</MixpanelProvider>
+        </QueryClientProvider>
         <Toaster />
         <TanStackDevtools
           config={{
@@ -151,7 +150,6 @@ function RootDocument({ children }: { children: React.ReactNode }) {
           ]}
         />
         <Scripts />
-        {/* <Footer /> */}
       </body>
     </html>
   );

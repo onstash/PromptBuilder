@@ -68,6 +68,11 @@ const MixpanelDataSchema = z.object({
     "cta_clicked_copy_link_v2",
     "cta_clicked_edit_v2",
     "cta_clicked_try_chatgpt",
+    "cta_clicked_try_chatgpt_v2",
+    "onboarding_dialog_shown",
+    "onboarding_switched_to_advanced",
+    "prompt_analyzed",
+    "prompt_analyzed_error",
   ]),
   properties: z.looseObject({
     distinct_id: z.string(),
@@ -231,7 +236,7 @@ export const trackMixpanelInServer = createServerFn({ method: "POST" })
     };
 
     if (origin?.includes?.("localhost:3000")) {
-      // console.log("Mixpanel event", data.event, finalData);
+      console.log("Mixpanel event", data.event, finalData);
       return;
     }
 

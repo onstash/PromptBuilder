@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { ChatLandingPage } from "@/components/landing/v2/ChatLandingPage"; // v2
 import { ErrorComponentWithSentry } from "@/components/ErrorComponentWithSentry";
+import { TestGeminiButton } from "@/components/TestGeminiButton";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // ROUTE COMPONENT
@@ -18,6 +19,14 @@ import { ErrorComponentWithSentry } from "@/components/ErrorComponentWithSentry"
  * 5. Default - v1
  */
 function LandingRouter() {
+  // return (
+  //   <div className="relative">
+  //     <div className="fixed bottom-4 right-4 z-50">
+  //       <TestGeminiButton />
+  //     </div>
+  //     <ChatLandingPage />
+  //   </div>
+  // );
   return <ChatLandingPage />;
 }
 

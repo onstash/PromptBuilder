@@ -5,6 +5,7 @@ export const env = createEnv({
   server: {
     SERVER_URL: z.url().optional(),
     SENTRY_AUTH_TOKEN: z.string(),
+    GOOGLE_GENERATIVE_AI_API_KEY: z.string(),
   },
 
   /**

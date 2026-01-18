@@ -244,6 +244,10 @@ function WizardPreviewForSharePage(props: WizardPreviewPropsForSharePage) {
   );
 }
 
+import { AnalysisPanel } from "./AnalysisPanel";
+
+// ... existing code ...
+
 function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
   const { data, shareUrl } = props;
   const trackEvent = useTrackMixpanel();
@@ -303,75 +307,88 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
   }, [hasUserInteracted, promptText, wizardData, trackEvent]);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="bg-card border-4 border-foreground shadow-[8px_8px_0px_0px_hsl(var(--foreground))] md:shadow-[8px_8px_0px_0px_hsl(var(--foreground))] max-md:shadow-[4px_4px_0px_0px_hsl(var(--foreground))]"
-    >
-      {/* Header */}
-      <div className="p-4 border-b-4 border-foreground flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <h3 className="font-black uppercase text-lg">Your Prompt</h3>
-        <div className="flex gap-2">
-          <Button
-            onClick={handleCopyPrompt}
-            size="sm"
-            variant="outline"
-            className="uppercase font-bold"
-          >
-            {copiedPrompt ? (
-              <>
-                <Check className="w-4 h-4 mr-1" />
-                Copied!
-              </>
-            ) : (
-              <>
-                <Copy className="w-4 h-4 mr-1" />
-                Copy
-              </>
-            )}
-          </Button>
-          <Button
-            onClick={handleTryWithChatGPT}
-            size="sm"
-            className="uppercase font-bold bg-green-600 hover:bg-green-700 text-white"
-          >
-            <Bot className="w-4 h-4 mr-1" />
-            Open ChatGPT
-          </Button>
-        </div>
-      </div>
-
-      {/* Prompt content */}
-      <div className="p-4 max-h-[400px] overflow-y-auto">
-        <pre className="whitespace-pre-wrap font-mono text-sm leading-relaxed">{promptText}</pre>
-      </div>
-      {/* ChatGPT Alert Dialog */}
-      <AlertDialog open={isChatGPTAlertOpen} onOpenChange={setIsChatGPTAlertOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Prompt is too long for direct link</AlertDialogTitle>
-            <AlertDialogDescription>
-              Your prompt is excellent, but it's a bit too long to pass directly to ChatGPT via the
-              URL.
-              <br />
-              <br />
-              Please <strong>Copy</strong> the prompt first, then open ChatGPT to paste it.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => {
-                window.open("https://chatgpt.com", "_blank");
-                setIsChatGPTAlertOpen(false);
-              }}
+    <div className="space-y-8">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-card border-4 border-foreground shadow-[8px_8px_0px_0px_hsl(var(--foreground))] md:shadow-[8px_8px_0px_0px_hsl(var(--foreground))] max-md:shadow-[4px_4px_0px_0px_hsl(var(--foreground))]"
+      >
+        {/* Header */}
+        <div className="p-4 border-b-4 border-foreground flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <h3 className="font-black uppercase text-lg">Your Prompt</h3>
+          <div className="flex gap-2">
+            <Button
+              onClick={handleCopyPrompt}
+              size="sm"
+              variant="outline"
+              className="uppercase font-bold"
             >
+              {copiedPrompt ? (
+                <>
+                  <Check className="w-4 h-4 mr-1" />
+                  Copied!
+                </>
+              ) : (
+                <>
+                  <Copy className="w-4 h-4 mr-1" />
+                  Copy
+                </>
+              )}
+            </Button>
+            <Button
+              onClick={handleTryWithChatGPT}
+              size="sm"
+              className="uppercase font-bold bg-green-600 hover:bg-green-700 text-white"
+            >
+              <Bot className="w-4 h-4 mr-1" />
               Open ChatGPT
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </motion.div>
+            </Button>
+          </div>
+        </div>
+
+        {/* Prompt content */}
+        <div className="p-4 max-h-[400px] overflow-y-auto">
+          <pre className="whitespace-pre-wrap font-mono text-sm leading-relaxed">{promptText}</pre>
+        </div>
+        {/* ChatGPT Alert Dialog */}
+        <AlertDialog open={isChatGPTAlertOpen} onOpenChange={setIsChatGPTAlertOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Prompt is too long for direct link</AlertDialogTitle>
+              <AlertDialogDescription>
+                Your prompt is excellent, but it's a bit too long to pass directly to ChatGPT via
+                the URL.
+                <br />
+                <br />
+                Please <strong>Copy</strong> the prompt first, then open ChatGPT to paste it.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => {
+                  window.open("https://chatgpt.com", "_blank");
+                  setIsChatGPTAlertOpen(false);
+                }}
+              >
+                Open ChatGPT
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </motion.div>
+
+      {/* Helper to Analyze Prompt */}
+      {hasUserInteracted && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <AnalysisPanel wizardData={wizardData} />
+        </motion.div>
+      )}
+    </div>
   );
 }
 

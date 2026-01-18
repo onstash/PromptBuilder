@@ -14,6 +14,7 @@ import { Route as ShareRouteImport } from './routes/share'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiSentryExampleRouteImport } from './routes/api/sentry-example'
 import { Route as ApiSentryTunnelRouteImport } from './routes/api/sentry.tunnel'
+import { Route as ApiAiGenerateRouteImport } from './routes/api/ai/generate'
 
 const WizardRoute = WizardRouteImport.update({
   id: '/wizard',
@@ -40,12 +41,18 @@ const ApiSentryTunnelRoute = ApiSentryTunnelRouteImport.update({
   path: '/api/sentry/tunnel',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAiGenerateRoute = ApiAiGenerateRouteImport.update({
+  id: '/api/ai/generate',
+  path: '/api/ai/generate',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/share': typeof ShareRoute
   '/wizard': typeof WizardRoute
   '/api/sentry-example': typeof ApiSentryExampleRoute
+  '/api/ai/generate': typeof ApiAiGenerateRoute
   '/api/sentry/tunnel': typeof ApiSentryTunnelRoute
 }
 export interface FileRoutesByTo {
@@ -53,6 +60,7 @@ export interface FileRoutesByTo {
   '/share': typeof ShareRoute
   '/wizard': typeof WizardRoute
   '/api/sentry-example': typeof ApiSentryExampleRoute
+  '/api/ai/generate': typeof ApiAiGenerateRoute
   '/api/sentry/tunnel': typeof ApiSentryTunnelRoute
 }
 export interface FileRoutesById {
@@ -61,6 +69,7 @@ export interface FileRoutesById {
   '/share': typeof ShareRoute
   '/wizard': typeof WizardRoute
   '/api/sentry-example': typeof ApiSentryExampleRoute
+  '/api/ai/generate': typeof ApiAiGenerateRoute
   '/api/sentry/tunnel': typeof ApiSentryTunnelRoute
 }
 export interface FileRouteTypes {
@@ -70,15 +79,23 @@ export interface FileRouteTypes {
     | '/share'
     | '/wizard'
     | '/api/sentry-example'
+    | '/api/ai/generate'
     | '/api/sentry/tunnel'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/share' | '/wizard' | '/api/sentry-example' | '/api/sentry/tunnel'
+  to:
+    | '/'
+    | '/share'
+    | '/wizard'
+    | '/api/sentry-example'
+    | '/api/ai/generate'
+    | '/api/sentry/tunnel'
   id:
     | '__root__'
     | '/'
     | '/share'
     | '/wizard'
     | '/api/sentry-example'
+    | '/api/ai/generate'
     | '/api/sentry/tunnel'
   fileRoutesById: FileRoutesById
 }
@@ -87,6 +104,7 @@ export interface RootRouteChildren {
   ShareRoute: typeof ShareRoute
   WizardRoute: typeof WizardRoute
   ApiSentryExampleRoute: typeof ApiSentryExampleRoute
+  ApiAiGenerateRoute: typeof ApiAiGenerateRoute
   ApiSentryTunnelRoute: typeof ApiSentryTunnelRoute
 }
 
@@ -127,6 +145,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiSentryTunnelRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/ai/generate': {
+      id: '/api/ai/generate'
+      path: '/api/ai/generate'
+      fullPath: '/api/ai/generate'
+      preLoaderRoute: typeof ApiAiGenerateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -135,6 +160,7 @@ const rootRouteChildren: RootRouteChildren = {
   ShareRoute: ShareRoute,
   WizardRoute: WizardRoute,
   ApiSentryExampleRoute: ApiSentryExampleRoute,
+  ApiAiGenerateRoute: ApiAiGenerateRoute,
   ApiSentryTunnelRoute: ApiSentryTunnelRoute,
 }
 export const routeTree = rootRouteImport
