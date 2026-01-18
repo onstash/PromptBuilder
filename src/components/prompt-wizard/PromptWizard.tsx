@@ -1,7 +1,7 @@
-import { useCallback, useRef, useEffect, memo, useState } from "react";
+import { useCallback, useRef, useEffect, memo, useState, useMemo } from "react";
 
 import { motion, AnimatePresence } from "motion/react";
-import { RotateCcw, Eye } from "lucide-react";
+import { RotateCcw } from "lucide-react";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import { WIZARD_STEPS, type PromptWizardData } from "@/utils/prompt-wizard/schem
 
 import { WizardProgress } from "./WizardProgress";
 import { WizardNavigation } from "./WizardNavigation";
+import { MobileNavigation } from "./MobileNavigation";
 import { WizardStep } from "./WizardStep";
 import { WizardPreview } from "./WizardPreview";
 import { StoredPromptsSection } from "./StoredPromptsSection";
@@ -31,7 +32,7 @@ import { SelfCheckStep } from "./steps/SelfCheckStep";
 // Analytics
 import { type MixpanelDataEvent, useTrackMixpanel } from "@/utils/analytics/MixpanelProvider";
 // Stores
-import { upsertPromptV2, useWizardStore } from "@/stores/wizard-store";
+import { upsertPromptV2, useWizardStore, generatePromptText } from "@/stores/wizard-store";
 // Utils
 import { compressPrompt } from "@/utils/prompt-wizard";
 // Hooks
@@ -250,6 +251,11 @@ export const PromptWizard = memo(function PromptWizard() {
     prevStepRef.current = wizardData.step;
   }, [wizardData.step]);
 
+  const modeRef = useRef(mode);
+  useEffect(() => {
+    modeRef.current = mode;
+  }, [mode]);
+
   // ─────────────────────────────────────────────────────────────────────────
   // Derived Values
   // ─────────────────────────────────────────────────────────────────────────
@@ -271,8 +277,11 @@ export const PromptWizard = memo(function PromptWizard() {
   // ─────────────────────────────────────────────────────────────────────────
   // Free navigation - just go to next step
   const handleNext = useCallback(() => {
+    const currentMode = modeRef.current;
+    const currentStep = useWizardStore.getState().wizardData.step;
+
     // Basic Mode Logic
-    if (mode === "basic") {
+    if (currentMode === "basic") {
       if (currentStep < 3) {
         goToStep(currentStep + 1);
         trackEvent(`step_changed_${currentStep + 1}` as MixpanelDataEvent, {
@@ -295,11 +304,14 @@ export const PromptWizard = memo(function PromptWizard() {
         });
       }
     }
-  }, [currentStep, goToStep, trackEvent, mode]);
+  }, [goToStep, trackEvent]);
 
   const handleBack = useCallback(() => {
+    const currentMode = modeRef.current;
+    const currentStep = useWizardStore.getState().wizardData.step;
+
     // Basic Mode Logic
-    if (mode === "basic") {
+    if (currentMode === "basic") {
       if (currentStep > 1) {
         goToStep(currentStep - 1);
         trackEvent(`step_changed_${currentStep - 1}` as MixpanelDataEvent, {
@@ -320,7 +332,7 @@ export const PromptWizard = memo(function PromptWizard() {
         });
       }
     }
-  }, [currentStep, goToStep, trackEvent, mode]);
+  }, [goToStep, trackEvent]);
 
   const handleFinish = useCallback(() => {
     // Validate all steps before saving
@@ -402,6 +414,14 @@ export const PromptWizard = memo(function PromptWizard() {
     [goToStep, trackEvent, mode]
   );
 
+  const handleViewPrompt = useCallback(() => {
+    setIsPreviewOpen(true);
+  }, []);
+
+  const isPromptAvailable = useMemo(() => {
+    return generatePromptText(wizardData).trim().length > 0;
+  }, [wizardData]);
+
   // Get step component and props
   const StepComponent = STEP_COMPONENTS[currentStep] || RoleStep;
   const stepHint = STEP_HINTS[currentStep] || "";
@@ -427,19 +447,19 @@ export const PromptWizard = memo(function PromptWizard() {
             <div className="p-4 border-b-4 border-foreground">
               <div className="flex items-center justify-between mb-4">
                 {/* Advanced Mode Toggle (Title Area) */}
-                <div className="flex items-center gap-3">
-                  <Label
-                    htmlFor="advanced-mode-toggle"
-                    className="font-black uppercase tracking-tight text-xl cursor-pointer"
-                  >
-                    {mode === "advanced" ? "Advanced" : "Basic"} Mode
-                  </Label>
+                <div className="flex items-center gap-2">
                   <Switch
                     id="advanced-mode-toggle"
                     checked={mode === "advanced"}
                     onCheckedChange={(checked) => setMode(checked ? "advanced" : "basic")}
                     className="cursor-pointer"
                   />
+                  <Label
+                    htmlFor="advanced-mode-toggle"
+                    className="font-bold uppercase text-sm cursor-pointer"
+                  >
+                    {mode === "advanced" ? "Advanced" : "Basic"} Mode
+                  </Label>
                 </div>
 
                 <div className="flex items-center gap-3">
@@ -491,8 +511,8 @@ export const PromptWizard = memo(function PromptWizard() {
               </WizardStep>
             </div>
 
-            {/* Navigation */}
-            <div className="p-4">
+            {/* Navigation - Desktop Only */}
+            <div className="p-4 hidden md:block">
               <WizardNavigation
                 onNext={handleNext}
                 onBack={handleBack}
@@ -517,28 +537,10 @@ export const PromptWizard = memo(function PromptWizard() {
           </motion.div>
         </motion.div>
 
-        {/* Mobile Preview Button - Fixed at bottom */}
-        {isMobile && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="fixed bottom-6 right-4 z-40"
-          >
-            <Button
-              onClick={() => setIsPreviewOpen(true)}
-              size="lg"
-              className="shadow-lg uppercase font-bold"
-            >
-              <Eye className="w-4 h-4 mr-2" />
-              View Prompt
-            </Button>
-          </motion.div>
-        )}
-
         {/* Mobile Bottom Sheet */}
         <Drawer open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
-          <DrawerContent className="max-h-[85vh]">
-            <DrawerHeader className="px-4">
+          <DrawerContent className="max-h-[95vh]">
+            <DrawerHeader>
               <DrawerTitle className="font-black uppercase">Your Prompt</DrawerTitle>
             </DrawerHeader>
             <div className="px-4 pb-6 overflow-y-auto">
@@ -551,7 +553,6 @@ export const PromptWizard = memo(function PromptWizard() {
             </div>
           </DrawerContent>
         </Drawer>
-
         {/* Reset Confirmation Dialog */}
         <AlertDialog open={isResetCalled} onOpenChange={(open) => !open && handleResetCore()}>
           <AlertDialogContent>
@@ -572,7 +573,6 @@ export const PromptWizard = memo(function PromptWizard() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-
         {/* Validation Errors Alert */}
         <AlertDialog open={showValidationAlert} onOpenChange={setShowValidationAlert}>
           <AlertDialogContent>
@@ -606,7 +606,6 @@ export const PromptWizard = memo(function PromptWizard() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-
         {/* Stored Prompts (only shows if user has saved prompts) */}
         <StoredPromptsSection
           page="wizard"
@@ -614,7 +613,6 @@ export const PromptWizard = memo(function PromptWizard() {
           currentPrompt={wizardData}
           key={wizardData.finishedAt}
         />
-
         {/* Onboarding Dialog */}
         <Dialog open={showOnboardingDialog} onOpenChange={setShowOnboardingDialog}>
           <DialogContent className="sm:max-w-[600px]">
@@ -674,6 +672,18 @@ export const PromptWizard = memo(function PromptWizard() {
           </DialogContent>
         </Dialog>
       </div>
+
+      {/* Mobile Navigation - Fixed at bottom */}
+      <MobileNavigation
+        className="md:hidden"
+        onNext={handleNext}
+        onBack={handleBack}
+        onFinish={handleFinish}
+        onViewPrompt={handleViewPrompt}
+        isFirstStep={currentStep === 1}
+        isLastStep={mode === "basic" ? currentStep === 3 : currentStep === 7}
+        isPromptAvailable={isPromptAvailable}
+      />
     </div>
   );
 });

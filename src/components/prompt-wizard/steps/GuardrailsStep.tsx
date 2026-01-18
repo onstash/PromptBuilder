@@ -37,7 +37,7 @@ export function GuardrailsStep({ data, onUpdate }: StepProps) {
           placeholder="Any rules, limits, or requirements the AI must follow..."
           value={data.constraints}
           onChange={(e) => onUpdate({ constraints: e.target.value })}
-          className="min-h-[100px] resize-none text-lg"
+          className="min-h-[100px] resize-none text-base md:text-lg"
           autoFocus
         />
         <StepExamples

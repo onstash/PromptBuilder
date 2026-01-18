@@ -8,7 +8,7 @@ interface StepProps {
 export function ReasoningStep({ data, onUpdate }: StepProps) {
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         {REASONING_DEPTHS.map((depth) => {
           const isSelected = data.reasoning_depth === depth.value;
           return (
@@ -20,7 +20,7 @@ export function ReasoningStep({ data, onUpdate }: StepProps) {
                 })
               }
               className={`
-                p-4 border-4 border-foreground text-center transition-all
+                p-4 border-4 border-foreground text-center transition-all cursor-pointer
                 ${
                   isSelected
                     ? "bg-primary text-primary-foreground shadow-[4px_4px_0px_0px_hsl(var(--foreground))]"

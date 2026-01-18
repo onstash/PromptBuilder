@@ -30,7 +30,7 @@ export function TaskStep({ data, onUpdate }: StepProps) {
           placeholder="Describe the task in detail. Be specific about what you want..."
           value={data.task_intent}
           onChange={(e) => onUpdate({ task_intent: e.target.value })}
-          className="min-h-[120px] resize-none text-lg"
+          className="min-h-[120px] resize-none text-base md:text-lg"
           autoFocus
         />
         <StepExamples
