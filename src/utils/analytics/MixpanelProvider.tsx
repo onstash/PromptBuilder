@@ -10,7 +10,7 @@ import { getOrCreateSessionId } from "@/utils/session";
 import packageJSON from "../../../package.json";
 import { Logger } from "../logger";
 import { getMetadataFromRequest } from "../serverFn-util";
-import { env } from "../server/env";
+import { env } from "../client/env";
 
 const version = packageJSON.version;
 
