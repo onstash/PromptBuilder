@@ -5,6 +5,7 @@ import { Copy, Check, ExternalLink, FilePen, Bot, Share2, Loader2, Sparkles } fr
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -184,56 +185,55 @@ export function WizardPreviewForSharePage(props: WizardPreviewPropsForSharePage)
         {/* Header */}
         <div className="p-4 border-b-4 border-foreground flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <h3 className="font-black uppercase text-lg">Your Prompt</h3>
-          <div className="flex gap-2">
-            {shareUrl && (
-              <Button
-                onClick={handleEdit}
-                asChild
-                variant="outline"
-                size="sm"
-                className="uppercase font-bold"
-              >
-                <Link to="/wizard" search={{ d: promptTextCompressed, vld: 1, partial: false }}>
-                  <EditOrOpenIcon className="w-4 h-4 mr-1" />
-                  Edit
-                </Link>
-              </Button>
-            )}
-            <Button
-              onClick={handleCopyPrompt}
-              size="sm"
-              variant="outline"
-              className="uppercase font-bold"
-            >
-              {copiedPrompt ? (
-                <>
-                  <Check className="w-4 h-4 mr-1" />
-                  Copied!
-                </>
-              ) : (
-                <>
-                  <Copy className="w-4 h-4 mr-1" />
-                  Copy
-                </>
+          <div className="flex flex-col gap-2 md:flex-row md:items-center w-full md:w-auto">
+            <div className="flex gap-2 w-full md:w-auto">
+              {shareUrl && (
+                <Button
+                  onClick={handleEdit}
+                  asChild
+                  variant="outline"
+                  size="sm"
+                  className="uppercase font-bold flex-1 md:flex-none"
+                >
+                  <Link to="/wizard" search={{ d: promptTextCompressed, vld: 1, partial: false }}>
+                    <EditOrOpenIcon className="w-4 h-4 mr-1" />
+                    Edit
+                  </Link>
+                </Button>
               )}
-            </Button>
-            {wizardData && (
-              <ShareAction
-                wizardData={wizardData}
-                pageSource="share"
-                // @ts-ignore - In share page we likely have the slug in URL but props doesn't pass it explicitly.
-                // Actually, WizardPreviewPropsForSharePage doesn't have slug. We can parse it or just create new.
-                // Ideally we'd pass the slug if we have it.
-                // Implementation detail: for now let's just create new or let user share new one.
-                // Wait, if it's already a share page, the URL IS the share link.
-                existingSlug={shareUrl ? shareUrl.split("/").pop() : undefined}
-                // Wait, shareUrl might be full URL? Let's check props.
-              />
-            )}
+              <Button
+                onClick={handleCopyPrompt}
+                size="sm"
+                variant="outline"
+                className="uppercase font-bold flex-1 md:flex-none"
+              >
+                {copiedPrompt ? (
+                  <>
+                    <Check className="w-4 h-4 mr-1" />
+                    Copied!
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-4 h-4 mr-1" />
+                    Copy
+                  </>
+                )}
+              </Button>
+              {wizardData && (
+                <div className="flex-1 md:flex-none flex">
+                  <ShareAction
+                    wizardData={wizardData}
+                    pageSource="share"
+                    existingSlug={shareUrl ? shareUrl.split("/").pop() : undefined}
+                    buttonClassName="w-full"
+                  />
+                </div>
+              )}
+            </div>
             <Button
               onClick={handleTryWithChatGPT}
               size="sm"
-              className="uppercase font-bold bg-green-600 hover:bg-green-700 text-white"
+              className="uppercase font-bold bg-green-600 hover:bg-green-700 text-white w-full md:w-auto"
             >
               <Bot className="w-4 h-4 mr-1" />
               Open ChatGPT
@@ -380,43 +380,50 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
         {/* Header */}
         <div className="p-4 border-b-4 border-foreground flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <h3 className="font-black uppercase text-lg">Your Prompt</h3>
-          <div className="flex gap-2">
-            <Button
-              onClick={handleCopyPrompt}
-              size="sm"
-              variant="outline"
-              className="uppercase font-bold"
-            >
-              {copiedPrompt ? (
-                <>
-                  <Check className="w-4 h-4 mr-1" />
-                  Copied!
-                </>
-              ) : (
-                <>
-                  <Copy className="w-4 h-4 mr-1" />
-                  Copy
-                </>
-              )}
-            </Button>
-            <ShareAction wizardData={wizardData} pageSource="wizard" />
-            <Button
-              onClick={handleAnalyzeRequest}
-              size="sm"
-              variant="outline"
-              className="uppercase font-bold"
-            >
-              <Sparkles className="w-4 h-4 mr-1" />
-              Analyze with AI
-            </Button>
-            <Button
-              onClick={handleTryWithChatGPT}
-              size="sm"
-              className="uppercase font-bold bg-green-600 hover:bg-green-700 text-white"
-            >
-              <Bot className="w-4 h-4 mr-1" />
-              Open ChatGPT
-            </Button>
+          <div className="flex flex-col gap-2 md:flex-row md:items-center w-full md:w-auto">
+            <div className="flex gap-2 w-full md:w-auto">
+              <Button
+                onClick={handleCopyPrompt}
+                size="sm"
+                variant="outline"
+                className="uppercase font-bold flex-1 md:flex-none"
+              >
+                {copiedPrompt ? (
+                  <>
+                    <Check className="w-4 h-4 mr-1" />
+                    Copied!
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-4 h-4 mr-1" />
+                    Copy
+                  </>
+                )}
+              </Button>
+              <div className="flex-1 md:flex-none flex">
+                <ShareAction wizardData={wizardData} pageSource="wizard" buttonClassName="w-full" />
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-2 md:flex-row md:items-center w-full md:w-auto">
+              <Button
+                onClick={handleAnalyzeRequest}
+                size="sm"
+                variant="outline"
+                className="uppercase font-bold w-full md:w-auto"
+              >
+                <Sparkles className="w-4 h-4 mr-1" />
+                Analyze with AI
+              </Button>
+              <Button
+                onClick={handleTryWithChatGPT}
+                size="sm"
+                className="uppercase font-bold bg-green-600 hover:bg-green-700 text-white w-full md:w-auto"
+              >
+                <Bot className="w-4 h-4 mr-1" />
+                Open ChatGPT
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -570,41 +577,49 @@ function WizardPreviewForLandingPageV2(props: WizardPreviewPropsForLandingPageV2
       {/* Header */}
       <div className="p-4 border-b-4 border-foreground flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <h3 className="font-black uppercase text-lg">Your Prompt</h3>
-        <div className="flex gap-2">
-          {shareUrl && (
-            <Button
-              onClick={handleEdit}
-              variant="outline"
-              size="sm"
-              className="uppercase font-bold"
-            >
-              <EditOrOpenIcon className="w-4 h-4 mr-1" />
-              Edit
-            </Button>
-          )}
-          <Button
-            onClick={handleCopyPrompt}
-            size="sm"
-            variant="outline"
-            className="uppercase font-bold"
-          >
-            {copiedPrompt ? (
-              <>
-                <Check className="w-4 h-4 mr-1" />
-                Copied!
-              </>
-            ) : (
-              <>
-                <Copy className="w-4 h-4 mr-1" />
-                Copy
-              </>
+        <div className="flex flex-col gap-2 md:flex-row md:items-center w-full md:w-auto">
+          <div className="flex gap-2 w-full md:w-auto">
+            {shareUrl && (
+              <Button
+                onClick={handleEdit}
+                variant="outline"
+                size="sm"
+                className="uppercase font-bold flex-1 md:flex-none"
+              >
+                <EditOrOpenIcon className="w-4 h-4 mr-1" />
+                Edit
+              </Button>
             )}
-          </Button>
-          <ShareAction wizardData={wizardData} pageSource="landing_v2" />
+            <Button
+              onClick={handleCopyPrompt}
+              size="sm"
+              variant="outline"
+              className="uppercase font-bold flex-1 md:flex-none"
+            >
+              {copiedPrompt ? (
+                <>
+                  <Check className="w-4 h-4 mr-1" />
+                  Copied!
+                </>
+              ) : (
+                <>
+                  <Copy className="w-4 h-4 mr-1" />
+                  Copy
+                </>
+              )}
+            </Button>
+            <div className="flex-1 md:flex-none flex">
+              <ShareAction
+                wizardData={wizardData}
+                pageSource="landing_v2"
+                buttonClassName="w-full"
+              />
+            </div>
+          </div>
           <Button
             onClick={handleTryWithChatGPT}
             size="sm"
-            className="uppercase font-bold bg-green-600 hover:bg-green-700 text-white"
+            className="uppercase font-bold bg-green-600 hover:bg-green-700 text-white w-full md:w-auto"
           >
             <Bot className="w-4 h-4 mr-1" />
             Open ChatGPT
@@ -657,11 +672,13 @@ function ShareAction({
   openLabel = "Share",
   pageSource,
   existingSlug,
+  buttonClassName,
 }: {
   wizardData: PromptWizardData;
   openLabel?: string;
   pageSource: string;
   existingSlug?: string;
+  buttonClassName?: string;
 }) {
   const savePrompt = useMutation(api.prompts.savePrompt);
   const trackEvent = useTrackMixpanel();
@@ -725,7 +742,7 @@ function ShareAction({
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button size="sm" variant="outline" className="uppercase font-bold">
+        <Button size="sm" variant="outline" className={cn("uppercase font-bold", buttonClassName)}>
           <Share2 className="w-4 h-4 mr-1" />
           {openLabel}
         </Button>
