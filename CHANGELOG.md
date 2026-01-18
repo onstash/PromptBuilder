@@ -4,7 +4,21 @@
 
 ### Minor Changes
 
-- df6ed79: This PR integrates Google's Gemini AI for prompt analysis, replaces client-side storage with a Convex backend, and refactors the environment configuration for stability.
+- 0063aa6 feat: persist role suggestions to Convex
+- 9ca5f2e fix: mixpanel env var
+- 5366d92 RELEASING: Releasing 1 package(s)
+- df6ed79 docs(changeset): This PR integrates Google's Gemini AI for prompt analysis, replaces client-side storage with a Convex backend, and refactors the environment configuration for stability.
+- 79d6ae4 fix: mixpanel env var
+- 1c7f998 chore: update docs and disable initial animations
+- a5d93e9 refactor: split env vars into client and server modules
+- c9408f1 feat: add AI analysis feature request mechanism
+- 5394419 feat: add feature flags and type-safe env vars
+- 1c80ddc refactor: fix TypeScript strict mode errors and consolidate Convex client
+- b8e25b0 chore: add prettier:fix script
+- 736616f feat: migrate legacy share links to Convex and polish ChatGPT export
+- edac162 refactor: move share action to preview and cleanup
+- 6b46c56 feat: integrate Convex for prompt sharing and user analytics
+- ed17210 feat(ai): integrate Gemini for prompt analysis and generation
 
 ## 4.0.0
 
