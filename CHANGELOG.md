@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.2.0
+
+### Minor Changes
+
+- c834356: fix(seo): update OG image resolution path
+
 ## 4.1.0
 
 ### Minor Changes

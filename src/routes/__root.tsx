@@ -95,12 +95,12 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       {
         property: "og:image",
         content:
-          "https://raw.githubusercontent.com/hastons/PromptBuilder/98f90fe446313768707cc4a7359801d6357ffa8e/public/og_image_prompt_builder_1765481623702.png",
+          "https://prompt-builder-ten-xi.vercel.app/og_image_prompt_builder_1765481623702.png",
       },
       {
         name: "twitter:image",
         content:
-          "https://raw.githubusercontent.com/hastons/PromptBuilder/98f90fe446313768707cc4a7359801d6357ffa8e/public/og_image_prompt_builder_1765481623702.png",
+          "https://prompt-builder-ten-xi.vercel.app/og_image_prompt_builder_1765481623702.png",
       },
 
       // GenAI Engine Optimization
