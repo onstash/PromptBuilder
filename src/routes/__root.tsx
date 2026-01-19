@@ -2,6 +2,7 @@ import { HeadContent, Scripts, createRootRouteWithContext, Outlet } from "@tanst
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import { Toaster } from "sonner";
+import { Analytics } from "@vercel/analytics/react";
 import { MixpanelProvider } from "@/utils/analytics/MixpanelProvider";
 import { QueryClientProvider, QueryClient, useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -177,6 +178,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
             ]}
           />
         )}
+        <Analytics />
         <Scripts />
       </body>
     </html>
