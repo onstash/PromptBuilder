@@ -172,25 +172,25 @@ export type PromptWizardSearchParamsCompressed =
 // STEP DEFINITIONS (Expert 7-Step Structure)
 // ═══════════════════════════════════════════════════════════════════════════
 
-export const WIZARD_STEPS_REQUIRED = [
+export const WIZARD_STEPS_BASIC_REQUIRED = [
   { id: 1, key: "ai_role", title: "Act as...", required: true },
   { id: 2, key: "task_intent", title: "What do you want?", required: true },
   { id: 3, key: "context", title: "Give context", required: true },
+];
+
+export const WIZARD_STEPS_ADVANCED_OPTIONAL = [
   { id: 4, key: "constraints", title: "Set guardrails", required: true },
+  { id: 5, key: "output_format", title: "Output Format", required: true },
+  { id: 6, key: "reasoning_depth", title: "Reasoning mode", required: false },
+  { id: 7, key: "self_check", title: "Verification", required: false },
 ];
 
 export const WIZARD_STEPS = [
   // Required steps (1-4) (Basically Basic Mode)
-  ...WIZARD_STEPS_REQUIRED,
-  // Advanced / Optional steps (5-7)
-  { id: 5, key: "output_format", title: "Output Format", required: true },
-  { id: 6, key: "reasoning_depth", title: "Reasoning mode", required: false },
-  { id: 7, key: "self_check", title: "Verification", required: false },
+  ...WIZARD_STEPS_BASIC_REQUIRED,
+  ...WIZARD_STEPS_ADVANCED_OPTIONAL,
 ] as const;
 
-export const REQUIRED_STEPS = WIZARD_STEPS.filter((s) => s!.required);
-export const OPTIONAL_STEPS = WIZARD_STEPS.filter((s) => !s!.required);
-export const TOTAL_REQUIRED_STEPS = REQUIRED_STEPS.length;
 export const TOTAL_STEPS = WIZARD_STEPS.length;
 
 // ═══════════════════════════════════════════════════════════════════════════
