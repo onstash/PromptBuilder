@@ -8,13 +8,18 @@ interface WizardNavigationProps {
   onNext: () => void;
   onBack: () => void;
   onFinish: () => void;
+  isFirstStep: boolean;
   isLastStep: boolean;
 }
 
-export function WizardNavigation({ onNext, onBack, onFinish, isLastStep }: WizardNavigationProps) {
-  const currentStep = useWizardStore((state) => state.wizardData.step);
+export function WizardNavigation({
+  onNext,
+  onBack,
+  onFinish,
+  isFirstStep,
+  isLastStep,
+}: WizardNavigationProps) {
   const wizardData = useWizardStore((state) => state.wizardData);
-  const isFirstStep = currentStep === 1;
   const isPromptAvailable = generatePromptText(wizardData).trim().length > 0;
 
   return (

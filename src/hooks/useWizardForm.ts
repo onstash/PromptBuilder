@@ -4,6 +4,7 @@ import {
   type PromptWizardData,
   stepValidationSchemas,
   STEP_FIELDS,
+  WIZARD_STEPS_BASIC_REQUIRED,
   TOTAL_STEPS,
 } from "@/utils/prompt-wizard/schema";
 
@@ -38,7 +39,10 @@ export interface UseWizardFormReturn {
  *
  * @param wizardData - Current wizard data from Zustand store
  */
-export function useWizardForm(wizardData: PromptWizardData): UseWizardFormReturn {
+export function useWizardForm(
+  wizardData: PromptWizardData,
+  wizardType: "basic" | "advanced"
+): UseWizardFormReturn {
   /**
    * Get the field names for a specific step
    */
@@ -64,7 +68,7 @@ export function useWizardForm(wizardData: PromptWizardData): UseWizardFormReturn
       const result = schema.safeParse(values);
       return result.success;
     },
-    [wizardData]
+    [wizardData.updatedAt]
   );
 
   /**
@@ -83,7 +87,11 @@ export function useWizardForm(wizardData: PromptWizardData): UseWizardFormReturn
   const validateAllSteps = useCallback((): ValidationError[] => {
     const errors: ValidationError[] = [];
 
-    for (let step = 1; step <= TOTAL_STEPS; step++) {
+    for (
+      let step = 1;
+      step <= (wizardType === "basic" ? WIZARD_STEPS_BASIC_REQUIRED.length : TOTAL_STEPS);
+      step++
+    ) {
       const schema = stepValidationSchemas[step as keyof typeof stepValidationSchemas];
       if (!schema) continue;
 
@@ -110,7 +118,7 @@ export function useWizardForm(wizardData: PromptWizardData): UseWizardFormReturn
     }
 
     return errors;
-  }, [wizardData]);
+  }, [wizardData.updatedAt]);
 
   return {
     getStepFields,

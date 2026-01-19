@@ -94,6 +94,9 @@ const STEP_HINTS: Record<number, string> = {
 // MAIN COMPONENT
 // ═══════════════════════════════════════════════════════════════════════════
 
+// Define step groups
+const BASIC_STEPS = [1, 2, 3]; // Role, Task, Context
+const ADVANCED_STEPS = [1, 2, 3, 4, 5, 6, 7]; // All steps
 export const PromptWizard = memo(function PromptWizard() {
   const search = useSearch({ from: "/wizard" });
   const navigate = useNavigate({ from: "/wizard" });
@@ -112,23 +115,19 @@ export const PromptWizard = memo(function PromptWizard() {
   const [showOnboardingDialog, setShowOnboardingDialog] = useState(false);
 
   // ─────────────────────────────────────────────────────────────────────────
-  // Mode State (Basic vs Advanced)
-  // ─────────────────────────────────────────────────────────────────────────
-  const [mode, setMode] = useState<"basic" | "advanced">("basic");
-
-  // Define step groups
-  const BASIC_STEPS = [1, 2, 3]; // Role, Task, Context
-  const ADVANCED_STEPS = [1, 2, 3, 4, 5, 6, 7]; // All steps
-
-  // ─────────────────────────────────────────────────────────────────────────
   // Zustand Store
   // ─────────────────────────────────────────────────────────────────────────
   const wizardData = useWizardStore((state) => state.wizardData);
+  const wizardMode = useWizardStore((state) => state.wizardMode);
+  const setWizardMode = useWizardStore((state) => state.setWizardMode);
 
   // ─────────────────────────────────────────────────────────────────────────
   // Validation Hook (must be after wizardData)
   // ─────────────────────────────────────────────────────────────────────────
-  const { validateAllSteps, hasStepErrors } = useWizardForm(wizardData);
+  // ─────────────────────────────────────────────────────────────────────────
+  // Validation Hook (must be after wizardData)
+  // ─────────────────────────────────────────────────────────────────────────
+  const { validateAllSteps, hasStepErrors } = useWizardForm(wizardData, wizardMode);
 
   const storeWizardDataInLocalStorage = () => {
     upsertPromptV2(
@@ -165,17 +164,11 @@ export const PromptWizard = memo(function PromptWizard() {
     const searchParams = search as any; // Cast to access optional params until router types catch up
     const { d, vld, role, exampleId, wizardType } = searchParams;
 
-    // Set initial mode from URL if present
+    // Check for wizardType param to override stored preference
     if (wizardType === "advanced") {
-      setMode("advanced");
+      setWizardMode("advanced");
     } else if (wizardType === "basic") {
-      setMode("basic");
-    } else {
-      // Check for saved preference
-      const savedMode = localStorage.getItem("wizard_mode_preference");
-      if (savedMode === "advanced" || savedMode === "basic") {
-        setMode(savedMode);
-      }
+      setWizardMode("basic");
     }
 
     if (d && vld) {
@@ -251,88 +244,62 @@ export const PromptWizard = memo(function PromptWizard() {
     prevStepRef.current = wizardData.step;
   }, [wizardData.step]);
 
-  const modeRef = useRef(mode);
-  useEffect(() => {
-    modeRef.current = mode;
-  }, [mode]);
-
   // ─────────────────────────────────────────────────────────────────────────
   // Derived Values
   // ─────────────────────────────────────────────────────────────────────────
   const { step: currentStep } = wizardData;
 
+  const isBasicWizardType = wizardMode === "basic";
+  const isFirstStep = currentStep === 1;
+  const isLastStep = isBasicWizardType ? currentStep === 3 : currentStep === 7;
+
   // Ensure current step matches mode
   useEffect(() => {
-    if (mode === "basic" && !BASIC_STEPS.includes(currentStep)) {
+    if (isBasicWizardType && !BASIC_STEPS.includes(currentStep)) {
       goToStep(1); // Default to start of basic
-    } else if (mode === "advanced" && !ADVANCED_STEPS.includes(currentStep)) {
+    } else if (!isBasicWizardType && !ADVANCED_STEPS.includes(currentStep)) {
       // Now advanced includes all, so this condition is strictly "step > 7" or "step < 1" which shouldn't happen via normal UI.
       // But if we toggle from basic (e.g. step 3) to advanced, step 3 is valid in advanced.
       // So we don't need to force jump unless out of bounds.
     }
-  }, [mode]);
+  }, [isBasicWizardType]);
 
   // ─────────────────────────────────────────────────────────────────────────
   // Callbacks
   // ─────────────────────────────────────────────────────────────────────────
   // Free navigation - just go to next step
   const handleNext = useCallback(() => {
-    const currentMode = modeRef.current;
-    const currentStep = useWizardStore.getState().wizardData.step;
-
     // Basic Mode Logic
-    if (currentMode === "basic") {
-      if (currentStep < 3) {
-        goToStep(currentStep + 1);
-        trackEvent(`step_changed_${currentStep + 1}` as MixpanelDataEvent, {
-          page: "wizard",
-          timestamp: new Date().toISOString(),
-          step: currentStep + 1,
-        });
-      } else {
-        // End of Basic - Maybe prompt to switch to advanced?
-      }
+    if (isBasicWizardType && currentStep < 3) {
+      goToStep(currentStep + 1);
+      trackEvent(`step_changed_${currentStep + 1}` as MixpanelDataEvent, {
+        page: "wizard",
+        timestamp: new Date().toISOString(),
+        step: currentStep + 1,
+      });
     }
     // Advanced Mode Logic
-    else {
-      if (currentStep < 7) {
-        goToStep(currentStep + 1);
-        trackEvent(`step_changed_${currentStep + 1}` as MixpanelDataEvent, {
-          page: "wizard",
-          timestamp: new Date().toISOString(),
-          step: currentStep + 1,
-        });
-      }
+    else if (!isBasicWizardType && currentStep < 7) {
+      goToStep(currentStep + 1);
+      trackEvent(`step_changed_${currentStep + 1}` as MixpanelDataEvent, {
+        page: "wizard",
+        timestamp: new Date().toISOString(),
+        step: currentStep + 1,
+      });
     }
-  }, [goToStep, trackEvent]);
+  }, [goToStep, trackEvent, isBasicWizardType, currentStep]);
 
   const handleBack = useCallback(() => {
-    const currentMode = modeRef.current;
-    const currentStep = useWizardStore.getState().wizardData.step;
-
     // Basic Mode Logic
-    if (currentMode === "basic") {
-      if (currentStep > 1) {
-        goToStep(currentStep - 1);
-        trackEvent(`step_changed_${currentStep - 1}` as MixpanelDataEvent, {
-          page: "wizard",
-          timestamp: new Date().toISOString(),
-          step: currentStep - 1,
-        });
-      }
+    if (currentStep > 1) {
+      goToStep(currentStep - 1);
+      trackEvent(`step_changed_${currentStep - 1}` as MixpanelDataEvent, {
+        page: "wizard",
+        timestamp: new Date().toISOString(),
+        step: currentStep - 1,
+      });
     }
-    // Advanced Mode Logic
-    else {
-      if (currentStep > 1) {
-        goToStep(currentStep - 1);
-        trackEvent(`step_changed_${currentStep - 1}` as MixpanelDataEvent, {
-          page: "wizard",
-          timestamp: new Date().toISOString(),
-          step: currentStep - 1,
-        });
-      }
-    }
-  }, [goToStep, trackEvent]);
+  }, [goToStep, trackEvent, isBasicWizardType, currentStep]);
 
   const handleFinish = useCallback(() => {
     // Validate all steps before saving
@@ -342,9 +309,6 @@ export const PromptWizard = memo(function PromptWizard() {
       setShowValidationAlert(true);
       return;
     }
-
-    // Save Preference based on current mode
-    localStorage.setItem("wizard_mode_preference", mode);
 
     // First Time User Logic
     const hasCompletedFirstPrompt = localStorage.getItem("has_completed_first_prompt");
@@ -361,7 +325,7 @@ export const PromptWizard = memo(function PromptWizard() {
       page: "wizard",
       timestamp: new Date().toISOString(),
       data: wizardData,
-      mode: mode,
+      mode: wizardMode,
     });
     const dataCompressed = compressPrompt(wizardData);
     navigate({ to: "/wizard", search: { d: dataCompressed, vld: 1, partial: false } });
@@ -373,7 +337,7 @@ export const PromptWizard = memo(function PromptWizard() {
       setIsPreviewOpen(true);
     }
     storeWizardDataInLocalStorage();
-  }, [wizardData, validateAllSteps, finish, trackEvent, isMobile, navigate, mode]);
+  }, [wizardData, validateAllSteps, finish, trackEvent, isMobile, navigate]);
 
   const handleReset = () => {
     setIsResetCalled(true);
@@ -390,18 +354,19 @@ export const PromptWizard = memo(function PromptWizard() {
     reset();
     setValidationErrors([]);
     setShowValidationAlert(false);
+    setShowValidationAlert(false);
     // Also reset to basic mode
-    setMode("basic");
-  }, [wizardData, navigate, reset, trackEvent, goToStep]);
+    setWizardMode("basic");
+  }, [wizardData, navigate, reset, trackEvent, setWizardMode]);
 
   // Free navigation - no validation required to navigate between steps
   // RESTRICTED by Mode
   const handleStepClick = useCallback(
     (step: number) => {
       // Only allow clicking steps within current mode
-      if (mode === "basic" && BASIC_STEPS.includes(step)) {
+      if (isBasicWizardType && BASIC_STEPS.includes(step)) {
         goToStep(step);
-      } else if (mode === "advanced" && ADVANCED_STEPS.includes(step)) {
+      } else if (!isBasicWizardType && ADVANCED_STEPS.includes(step)) {
         goToStep(step);
       }
 
@@ -411,7 +376,7 @@ export const PromptWizard = memo(function PromptWizard() {
         step,
       });
     },
-    [goToStep, trackEvent, mode]
+    [goToStep, trackEvent, isBasicWizardType]
   );
 
   const handleViewPrompt = useCallback(() => {
@@ -420,7 +385,7 @@ export const PromptWizard = memo(function PromptWizard() {
 
   const isPromptAvailable = useMemo(() => {
     return generatePromptText(wizardData).trim().length > 0;
-  }, [wizardData]);
+  }, [wizardData.updatedAt]);
 
   // Get step component and props
   const StepComponent = STEP_COMPONENTS[currentStep] || RoleStep;
@@ -450,15 +415,15 @@ export const PromptWizard = memo(function PromptWizard() {
                 <div className="flex items-center gap-2">
                   <Switch
                     id="advanced-mode-toggle"
-                    checked={mode === "advanced"}
-                    onCheckedChange={(checked) => setMode(checked ? "advanced" : "basic")}
+                    checked={!isBasicWizardType}
+                    onCheckedChange={(checked) => setWizardMode(checked ? "advanced" : "basic")}
                     className="cursor-pointer"
                   />
                   <Label
                     htmlFor="advanced-mode-toggle"
                     className="font-bold uppercase text-sm cursor-pointer"
                   >
-                    {mode === "advanced" ? "Advanced" : "Basic"} Mode
+                    {!isBasicWizardType ? "Advanced" : "Basic"} Mode
                   </Label>
                 </div>
 
@@ -480,13 +445,13 @@ export const PromptWizard = memo(function PromptWizard() {
               <div className="relative overflow-hidden">
                 <AnimatePresence mode="wait" initial={false}>
                   <motion.div
-                    key={mode}
+                    key={wizardMode}
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: "auto" }}
                     exit={{ opacity: 0, height: 0 }}
                     transition={{ duration: 0.3 }}
                   >
-                    {mode === "advanced" ? (
+                    {!isBasicWizardType ? (
                       <WizardProgress
                         onStepClick={handleStepClick}
                         hasStepErrors={hasStepErrors}
@@ -517,7 +482,8 @@ export const PromptWizard = memo(function PromptWizard() {
                 onNext={handleNext}
                 onBack={handleBack}
                 onFinish={handleFinish}
-                isLastStep={mode === "basic" ? currentStep === 3 : currentStep === 7}
+                isFirstStep={isFirstStep}
+                isLastStep={isLastStep}
               />
             </div>
           </motion.div>
@@ -634,7 +600,7 @@ export const PromptWizard = memo(function PromptWizard() {
               />
             </div>
             <DialogFooter className="flex flex-col sm:flex-row gap-2 mt-4 items-center justify-between w-full">
-              {mode === "basic" ? (
+              {isBasicWizardType ? (
                 <>
                   <p className="text-sm text-muted-foreground text-center sm:text-left flex-1">
                     Want to unlock full control?
@@ -645,7 +611,7 @@ export const PromptWizard = memo(function PromptWizard() {
                     </Button>
                     <Button
                       onClick={() => {
-                        setMode("advanced");
+                        setWizardMode("advanced");
                         localStorage.setItem("wizard_mode_preference", "advanced");
                         setShowOnboardingDialog(false);
                         trackEvent("onboarding_switched_to_advanced", {
@@ -680,8 +646,8 @@ export const PromptWizard = memo(function PromptWizard() {
         onBack={handleBack}
         onFinish={handleFinish}
         onViewPrompt={handleViewPrompt}
-        isFirstStep={currentStep === 1}
-        isLastStep={mode === "basic" ? currentStep === 3 : currentStep === 7}
+        isFirstStep={isFirstStep}
+        isLastStep={isLastStep}
         isPromptAvailable={isPromptAvailable}
       />
     </div>

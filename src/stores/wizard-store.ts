@@ -3,7 +3,6 @@ import { subscribeWithSelector } from "zustand/middleware";
 import { distance } from "fastest-levenshtein";
 
 import type { PromptWizardData, StoredPrompt, PromptStorageV2 } from "@/utils/prompt-wizard/schema";
-// TOTAL_REQUIRED_STEPS removed
 import {
   compress,
   compressPrompt,
@@ -301,6 +300,8 @@ interface WizardState {
   shareUrl: string | null;
   showError: boolean;
   dataSource: "default" | "localStorage" | "url";
+  // UI State
+  wizardMode: "basic" | "advanced";
   completedSteps: Record<number, boolean>;
 
   // Derived (computed on demand)
@@ -313,6 +314,7 @@ interface WizardActions {
   // Actions
   updateData: (updates: Partial<PromptWizardData>) => void;
   goToStep: (step: number) => void;
+  setWizardMode: (mode: "basic" | "advanced") => void;
   setShowError: (show: boolean) => void;
   finish: () => void;
   reset: () => void;
@@ -334,6 +336,11 @@ export const useWizardStore = create<WizardStore>()(
     shareUrl: null,
     showError: false,
     dataSource: "default",
+    // Initialize mode from localStorage
+    wizardMode:
+      typeof window !== "undefined"
+        ? (localStorage.getItem("wizard_mode_preference") as "basic" | "advanced") || "basic"
+        : "basic",
     completedSteps: {},
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -408,6 +415,11 @@ export const useWizardStore = create<WizardStore>()(
           completedSteps: completedStepsUpdated,
         };
       });
+    },
+
+    setWizardMode: (mode) => {
+      localStorage.setItem("wizard_mode_preference", mode);
+      set({ wizardMode: mode });
     },
 
     setShowError: (show) => set({ showError: show }),
