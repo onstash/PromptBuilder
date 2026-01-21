@@ -37,7 +37,7 @@ export async function generateContentHash(data: Record<string, unknown>): Promis
 
 const savePromptLogger = Logger.createLogger({
   namespace: "savePrompt",
-  level: "DEBUG",
+  level: "INFO",
   enableConsoleLog: true,
 });
 

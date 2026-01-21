@@ -16,7 +16,7 @@ const version = packageJSON.version;
 
 const mixpanelLogger = Logger.createLogger({
   namespace: "mixpanel",
-  level: "DEBUG",
+  level: "INFO",
   enableConsoleLog: true,
 });
 

@@ -19,7 +19,8 @@ export function WizardNavigation({
   isLastStep,
 }: WizardNavigationProps) {
   const wizardData = useWizardStore((state) => state.wizardData);
-  const isPromptAvailable = generatePromptText(wizardData, "WizardNavigation").trim().length > 0;
+  const isPromptAvailable =
+    generatePromptText(wizardData, { source: "WizardNavigation" }).trim().length > 0;
 
   return (
     <div className="flex flex-col md:flex-row items-center justify-between gap-4 pt-6 border-t-4 border-foreground">

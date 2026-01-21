@@ -47,7 +47,7 @@ import {
 } from "@/utils/prompt-wizard";
 import { Link } from "@tanstack/react-router";
 import { useTrackMixpanel } from "@/utils/analytics/MixpanelProvider";
-import { generatePromptText } from "@/stores/wizard-store";
+import { generatePromptText, useWizardStore } from "@/stores/wizard-store";
 import { withLatencyLoggingSync } from "@/utils/function-utils";
 import { StoredPromptsSection } from "./StoredPromptsSection";
 import { NavigationActions } from "./NavigationActions";
@@ -95,7 +95,7 @@ type WizardPreviewProps =
   | WizardPreviewPropsForLandingPageV2;
 
 function generatePromptStringFromCompressed(wizardData: PromptWizardData): string {
-  return generatePromptText(wizardData, "generatePromptStringFromCompressed");
+  return generatePromptText(wizardData, { source: "generatePromptStringFromCompressed" });
 }
 
 export function WizardPreviewForSharePage(props: WizardPreviewPropsForSharePage) {
@@ -317,7 +317,7 @@ export function WizardPreviewForSharePage(props: WizardPreviewPropsForSharePage)
 
 const wizardPreviewLogger = Logger.createLogger({
   namespace: "WizardPreview",
-  level: "DEBUG",
+  level: "INFO",
   enableConsoleLog: true,
 });
 
@@ -343,7 +343,7 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
   const [promptText, wizardData, promptTextCompressed, isPromptValid] = useMemo(() => {
     let wizardData = data as PromptWizardData;
     wizardPreviewLogger.debug("wizardData", wizardData);
-    const promptText = generatePromptText(wizardData, "WizardPreviewForWizardPage");
+    const promptText = generatePromptText(wizardData, { source: "WizardPreviewForWizardPage" });
     let isPromptValid = promptText.length > 0;
     wizardPreviewLogger.debug("promptText", promptText);
     if (!promptText.length) {
@@ -441,6 +441,7 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
         data: {
           sessionId: getOrCreateSessionId(),
           promptData: wizardData,
+          wizardMode: useWizardStore.getState().wizardMode,
         },
       });
       setPromptAnalysisState("success");
@@ -840,7 +841,7 @@ function WizardPreviewForLandingPageV2(props: WizardPreviewPropsForLandingPageV2
   // KEY FIX: Use useMemo instead of useState(() => ...)
   // This ensures promptText re-computes whenever `data` changes
   const [[promptText, promptTextCompressed]] = useState(() => {
-    return [generatePromptText(wizardData, "WizardPreviewForLandingPageV2"), props.d];
+    return [generatePromptText(wizardData, { source: "WizardPreviewForLandingPageV2" }), props.d];
   });
 
   const hasUserInteracted = wizardData.updatedAt > -1;
