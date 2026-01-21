@@ -53,9 +53,15 @@ export function AnalysisPanel({ promptAnalysisResult }: AnalysisPanelProps) {
       <CardContent>
         <Tabs defaultValue="suggestions" className="w-full">
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="suggestions">Suggestions</TabsTrigger>
-            <TabsTrigger value="strengths">Strengths</TabsTrigger>
-            <TabsTrigger value="weaknesses">Weaknesses</TabsTrigger>
+            <TabsTrigger value="suggestions" className="cursor-pointer">
+              Suggestions
+            </TabsTrigger>
+            <TabsTrigger value="strengths" className="cursor-pointer">
+              Strengths
+            </TabsTrigger>
+            <TabsTrigger value="weaknesses" className="cursor-pointer">
+              Weaknesses
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="strengths" className="space-y-4 pt-4">
@@ -115,11 +121,13 @@ export function AnalysisPanel({ promptAnalysisResult }: AnalysisPanelProps) {
           </TabsContent>
         </Tabs>
       </CardContent>
-      {promptAnalysisResult.improved_version && (
+      {/* {promptAnalysisResult.improved_version && (
         <CardFooter className="flex-col items-start border-t pt-4 bg-muted/10">
           <p className="text-sm font-medium mb-2">Improved Version Idea:</p>
           <div className="text-xs bg-muted p-3 rounded-md w-full whitespace-pre-wrap font-mono relative group">
-            {generatePromptText(promptAnalysisResult.improvedPromptData, "AnalysisPanel")}
+            {generatePromptText(promptAnalysisResult.improvedPromptData, {
+              source: "AnalysisPanel",
+            })}
             <Button
               variant="secondary"
               size="sm"
@@ -132,7 +140,7 @@ export function AnalysisPanel({ promptAnalysisResult }: AnalysisPanelProps) {
             </Button>
           </div>
         </CardFooter>
-      )}
+      )} */}
     </Card>
   );
 }

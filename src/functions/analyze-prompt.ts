@@ -2,12 +2,19 @@ import { createServerFn } from "@tanstack/react-start";
 import { google } from "@ai-sdk/google";
 import { generateText, Output } from "ai";
 import { z } from "zod";
-import { type PromptWizardData, promptWizardSchema } from "@/utils/prompt-wizard/schema";
+import { promptWizardSchema } from "@/utils/prompt-wizard/schema";
 import { trackMixpanelInServer } from "@/utils/analytics/MixpanelProvider";
 import { Logger } from "@/utils/logger";
 import { env } from "@/utils/server/env";
 import { getConvexClient } from "@/utils/convex-client";
 import { api } from "../../convex/_generated/api";
+import { generatePromptText } from "@/stores/wizard-store";
+
+const analyzePromptLogger = Logger.createLogger({
+  namespace: "analyze-prompt",
+  level: "INFO",
+  enableConsoleLog: true,
+});
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Input Schema (Prompt to Analyze)
@@ -15,71 +22,86 @@ import { api } from "../../convex/_generated/api";
 const InputSchema = z.object({
   promptData: promptWizardSchema,
   sessionId: z.string(),
+  wizardMode: z.enum(["basic", "advanced"]),
 });
 
-const PromptEvaluationSchema = z.object({
-  overall_assessment: z.object({
-    summary: z.string().min(10, "Summary must be meaningful").max(500, "Summary should be concise"),
-    grade: z.enum(["Excellent", "Good", "Needs Improvement", "Weak"]),
-  }),
+const PromptEvaluationSchema = z
+  .object({
+    overall_assessment: z.object({
+      summary: z
+        .string()
+        .min(10, "Summary must be meaningful")
+        .max(500, "Summary should be concise"),
+      grade: z.enum(["Excellent", "Good", "Needs Improvement", "Weak"]),
+    }),
 
-  dimension_scores: z.object({
-    clarity: z.number().int().min(1).max(5),
-    specificity: z.number().int().min(1).max(5),
-    robustness: z.number().int().min(1).max(5),
-    structure: z.number().int().min(1).max(5),
-  }),
+    dimension_scores: z.object({
+      clarity: z.number().int().min(1).max(5),
+      specificity: z.number().int().min(1).max(5),
+      robustness: z.number().int().min(1).max(5),
+      structure: z.number().int().min(1).max(5),
+    }),
 
-  strengths: z
-    .array(
-      z.object({
-        point: z.string().min(5),
-        why_it_works: z.string().min(10),
-      })
-    )
-    .max(5),
+    strengths: z
+      .array(
+        z.object({
+          point: z.string().min(3),
+          why_it_works: z.string().min(10),
+        })
+      )
+      .max(5),
 
-  issues: z.array(
-    z.object({
-      severity: z.enum(["P0", "P1", "P2"]),
-      problem: z.string().min(10),
-      why_it_matters: z.string().min(10),
-      actionable_fix: z.string().min(10),
-    })
-  ),
+    issues: z
+      .array(
+        z.object({
+          severity: z.enum(["P0", "P1", "P2"]),
+          problem: z.string().min(10),
+          why_it_matters: z.string().min(10),
+          actionable_fix: z.string().min(10),
+        })
+      )
+      .max(5),
 
-  final_recommendation: z.enum([
-    "Ready for production",
-    "Suitable after revisions",
-    "Not recommended without major changes",
-  ]),
+    final_recommendation: z.enum([
+      "Ready for production",
+      "Suitable after revisions",
+      "Not recommended without major changes",
+    ]),
 
-  improved_version: z.string().refine((val) => {
-    try {
-      const parsed = JSON.parse(val);
-      analyzePromptLogger.info("Parsed improved version", { parsed });
-      // promptWizardSchema.parse(parsed);
-      return true;
-    } catch (e) {
-      analyzePromptLogger.error("Failed to parse improved version", { error: e });
-      return false;
-    }
-  }, "Improved version must be a valid JSON string"),
-});
+    improved_version: z
+      .string()
+      .optional()
+      .refine((val) => {
+        // if (typeof val === "string" && val) {
+        //   try {
+        //     const parsed = JSON.parse(val);
+        //     analyzePromptLogger.info("Parsed improved version", { parsed });
+        //     // promptWizardSchema.parse(parsed);
+        //     return true;
+        //   } catch (e) {
+        //     analyzePromptLogger.error("Failed to parse improved version", { error: e });
+        //     return false;
+        //   }
+        // }
+        return true;
+      }, "Improved version must be a valid JSON string"),
+  })
+  .superRefine((ctx, val) => {
+    analyzePromptLogger.debug("Refining", { ctx, val });
+  });
 
 export type PromptEvaluation = z.infer<typeof PromptEvaluationSchema>;
 // Export as AnalysisResult to match the import in AnalysisPanel
 export type AnalysisResult = PromptEvaluation;
 
 export type PromptEvaluationTransformed = PromptEvaluation & {
-  improvedPromptData: PromptWizardData;
+  // improvedPromptData: PromptWizardData;
   overallScore: number;
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// System Prompt
-// ─────────────────────────────────────────────────────────────────────────────
-const SYSTEM_PROMPT = `
+const SYSTEM_PROMPT_CONFIG = {
+  "1.0.0": {
+    systemPrompt: `
   You are an Expert Prompt Engineer and AI Optimization Specialist.
 
   Your task is to analyze a given structured prompt and provide precise, actionable, and high-impact feedback to improve its output quality, consistency, and robustness.
@@ -146,91 +168,162 @@ const SYSTEM_PROMPT = `
   - Do NOT add praise unless it explains a functional benefit.
   - Focus on high-impact issues first (P0 → P1 → P2).
   - Keep all strings concise and implementation-ready.
-`;
+`,
+    outputSchema: PromptEvaluationSchema,
+    systemPromptVersion: "1.0.0",
+    aiSDKConfig: {
+      temperature: undefined,
+      topP: undefined,
+      maxOutputTokens: undefined,
+    },
+  },
+  "1.1.0": {
+    systemPrompt: `
+      ## System Prompt — Prompt Evaluator
 
-export const SYSTEM_PROMPT_VERSION = "1.0.0";
+      You are an Expert Prompt Engineer and AI Optimization Specialist.
 
-const analyzePromptLogger = Logger.createLogger({
-  namespace: "analyze-prompt",
-  level: "DEBUG",
-  enableConsoleLog: true,
-});
+      Your task is to analyze a given structured prompt and return precise, actionable, high-impact feedback to improve its output quality, consistency, and robustness.
 
-// const dummyOutput: PromptEvaluation = {
-//   overall_assessment: {
-//     summary:
-//       "The prompt has a good structured format but suffers from significant vagueness in its core request, lack of crucial context, and an undefined output format. This will lead to inconsistent and likely unhelpful outputs.",
-//     grade: "Needs Improvement",
-//   },
-//   dimension_scores: {
-//     clarity: 2,
-//     specificity: 2,
-//     robustness: 2,
-//     structure: 4,
-//   },
-//   strengths: [
-//     {
-//       point: "Clearly defined AI role",
-//       why_it_works:
-//         "The 'ai_role' field is well-specified as 'Frontend Engineer', which helps the model adopt the correct persona and perspective for its recommendations.",
-//     },
-//     {
-//       point: "Effective use of disallowed content",
-//       why_it_works:
-//         "The 'disallowed_content' clearly defines undesirable patterns ('Deprecated APIs or patterns', 'div-button soup'), providing concrete guardrails for the Frontend Engineer role.",
-//     },
-//     {
-//       point: "Structured prompt fields",
-//       why_it_works:
-//         "The prompt utilizes a consistent structured format, which is a good foundation for organizing information and guiding the AI's response, even if some fields are currently empty or vague.",
-//     },
-//   ],
-//   issues: [
-//     {
-//       severity: "P0",
-//       problem: "Task intent 'Best & easy to use CMS' is subjective and lacks criteria.",
-//       why_it_matters:
-//         "Without defining what 'best' or 'easy to use' means from a 'Frontend Engineer' perspective (e.g., developer experience, integration with Astro, content editor ease, cost), the recommendations will be generic and may not meet the user's specific unstated needs.",
-//       actionable_fix:
-//         "Add explicit criteria for 'best' and 'easy to use' such as: 'headless-first, good Astro integration/plugins, self-hosting/SaaS options, clear developer experience, intuitive content editor interface, scalability, pricing model.'",
-//     },
-//     {
-//       severity: "P0",
-//       problem: "Output format 'mixed' is too vague and will lead to inconsistent responses.",
-//       why_it_matters:
-//         "The model will not know whether to provide a list, a comparison table, a prose summary, or a combination, making the output unpredictable and difficult to parse or use programmatically.",
-//       actionable_fix:
-//         "Specify a precise output format, e.g., 'A comparison table with CMS Name, Key Features, Pros (for Astro/FE), Cons, Maintainability, Price Tier. Followed by a concise recommendation paragraph.'",
-//     },
-//     {
-//       severity: "P1",
-//       problem: "The 'context' field is empty, missing crucial information for recommendations.",
-//       why_it_matters:
-//         "CMS recommendations are highly dependent on factors like budget, content editor's technical proficiency, preferred hosting, and specific features needed. Without this, recommendations will be broad and potentially irrelevant.",
-//       actionable_fix:
-//         "Populate the 'context' field with specific questions or details: 'Considerations: Budget (e.g., free, moderate, enterprise), Content Editor Technical Skill (e.g., non-technical, semi-technical, developer), Hosting Preference (e.g., self-hosted, cloud-based, serverless), Required Features (e.g., i18n, image optimization, real-time collaboration).'",
-//     },
-//     {
-//       severity: "P1",
-//       problem: "The 'examples' field is empty, hindering output consistency and quality.",
-//       why_it_matters:
-//         "Examples provide concrete demonstrations of the desired output structure, tone, and level of detail, helping the model align its response with user expectations.",
-//       actionable_fix:
-//         "Provide a brief, clear example of the desired output, especially if a structured format like a table or specific bullet points is expected for the CMS recommendations.",
-//     },
-//     {
-//       severity: "P2",
-//       problem: "The 'maintainability' constraint is good but could be more specific.",
-//       why_it_matters:
-//         "'Maintainability' can be interpreted in several ways (e.g., ease of updates, documentation, community support, simple data models). Clarifying this helps the AI prioritize recommendations.",
-//       actionable_fix:
-//         "Elaborate on 'Optimize for maintainability' by adding criteria like: 'meaning easy updates, clear documentation, strong community support, and straightforward content model management for a Frontend Engineer.'",
-//     },
-//   ],
-//   final_recommendation: "Suitable after revisions",
-//   improved_version:
-//     "{'ai_role': 'Frontend Engineer','task_intent': 'Recommend the best and easiest-to-use CMS for an Astro blog, portfolio, or personal website. Prioritize headless-first solutions with good Astro integration/plugins, clear developer experience, intuitive content editor interface, and reasonable pricing.','output_format': 'A comparison table with the following columns: CMS Name, Key Features, Pros (for Astro/FE), Cons, Maintainability Score (1-5), Price Tier (Free, Low, Medium, High). Follow this with a concise recommendation paragraph summarizing the top 2-3 options based on the provided context.','context': 'Considerations: Budget (e.g., free, < $50/month, > $50/month), Content Editor Technical Skill (e.g., non-technical, comfortable with markdown, developer), Hosting Preference (e.g., self-hosted, cloud-based SaaS, serverless), Required Features (e.g., i18n, rich text editor, image optimization, API for custom components, real-time collaboration).','examples': 'Example Output Table Row: | Strapi | Headless, self-hostable/cloud | GraphQL API, local dev, customizable | Initial setup complexity | 4 | Free/Medium |','constraints': 'Optimize for maintainability, meaning easy updates, clear documentation, strong community support, and straightforward content model management for a Frontend Engineer.','disallowed_content': 'Deprecated APIs or patterns\\ndiv-button soup','reasoning_depth': 'moderate','self_check': true}",
-// };
+      You must evaluate ONLY what is explicitly present in the prompt.
+      Do NOT infer intent, audience, domain, or requirements that are not stated.
+
+      ---
+
+      ## Analysis Dimensions
+
+      Evaluate the prompt across the following dimensions:
+
+      1. Clarity
+        - Is the task intent unambiguous and easy to understand?
+
+      2. Specificity
+        - Is the role, context, and expected behavior sufficiently constrained?
+
+      3. Robustness
+        - Are guardrails, negative constraints, and edge-case handling sufficient to reduce hallucination or drift?
+
+      4. Structure
+        - Are instructions, formatting, examples, and output expectations internally consistent?
+
+      ---
+
+      ## Output Format (STRICT JSON ONLY)
+
+      Return valid JSON only.
+      Do NOT include markdown, commentary, or extra text.
+
+      The JSON MUST match this schema exactly:
+
+      {
+        "overall_assessment": {
+          "summary": "string",
+          "grade": "Excellent | Good | Needs Improvement | Weak"
+        },
+        "dimension_scores": {
+          "clarity": 1,
+          "specificity": 1,
+          "robustness": 1,
+          "structure": 1
+        },
+        "strengths": [
+          {
+            "point": "string",
+            "why_it_works": "string"
+          }
+        ],
+        "issues": [
+          {
+            "severity": "P0 | P1 | P2",
+            "problem": "string",
+            "why_it_matters": "string",
+            "actionable_fix": "string"
+          }
+        ],
+        "final_recommendation": "Ready for production | Suitable after revisions | Not recommended without major changes"
+      }
+    `,
+    outputSchema: PromptEvaluationSchema,
+    systemPromptVersion: "1.1.0",
+    aiSDKConfig: {
+      temperature: 0.0,
+      topP: 1.0,
+      // maxOutputTokens: 2000,
+    },
+  },
+  "1.2.0": {
+    systemPrompt: `
+      ## System Prompt — Prompt Evaluator
+
+      You are an Expert Prompt Engineer and AI Optimization Specialist.
+
+      Your task is to analyze a given structured prompt and return precise, actionable, high-impact feedback to improve its output quality, consistency, and robustness.
+
+      You must evaluate ONLY what is explicitly present in the prompt.
+      Do NOT infer intent, audience, domain, or requirements that are not stated.
+
+      ---
+
+      ## Analysis Dimensions
+
+      Evaluate the prompt across the following dimensions:
+
+      1. Clarity
+        - Is the task intent unambiguous and easy to understand?
+
+      2. Specificity
+        - Is the role, context, and expected behavior sufficiently constrained?
+
+      3. Robustness
+        - Are guardrails, negative constraints, and edge-case handling sufficient to reduce hallucination or drift?
+
+      4. Structure
+        - Are instructions, formatting, examples, and output expectations internally consistent?
+
+      ---
+
+      ## Output Format (STRICT JSON ONLY)
+
+      Return valid JSON only.
+      Do NOT include markdown, commentary, or extra text.
+
+      Return a single JSON object with this structure:
+      - overall_assessment: object with
+        - summary: short string
+        - grade: one of ["Excellent", "Good", "Needs Improvement", "Weak"]
+
+      - dimension_scores: object with numeric scores 1–5 for
+        - clarity
+        - specificity
+        - robustness
+        - structure
+
+      - strengths: array (1–3 items), each with
+        - point
+        - why_it_works
+
+      - issues: array (1–5 items), each with
+        - severity: "P0" | "P1" | "P2"
+        - problem
+        - why_it_matters
+        - actionable_fix
+
+      - final_recommendation: one of
+        ["Ready for production", "Suitable after revisions", "Not recommended without major changes"]
+
+      Return JSON only. No extra text.
+    `,
+    outputSchema: PromptEvaluationSchema,
+    systemPromptVersion: "1.2.0",
+    aiSDKConfig: {
+      temperature: 0.0,
+      topP: 1.0,
+      // maxOutputTokens: 2000,
+    },
+  },
+};
+
+const CURRENT_SYSTEM_PROMPT_VERSION: keyof typeof SYSTEM_PROMPT_CONFIG = "1.2.0";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Server Function
@@ -239,6 +332,7 @@ export const analyzePrompt = createServerFn({ method: "POST" })
   .inputValidator(InputSchema)
   .handler(async ({ data }) => {
     analyzePromptLogger.debug("Analyzing prompt", data);
+    const { promptData, sessionId, wizardMode } = data;
 
     // Feature Flag: Check if analysis is enabled
     // Default to false if not explicitly set to "true"
@@ -255,11 +349,11 @@ export const analyzePrompt = createServerFn({ method: "POST" })
     try {
       // 1. Check Rate Limit
       const rateLimitCheck = await convexClient.query(api.prompts.checkRateLimit, {
-        sessionId: data.sessionId,
+        sessionId,
       });
 
       if (!rateLimitCheck.allowed) {
-        analyzePromptLogger.warn("Rate limit exceeded", { sessionId: data.sessionId });
+        analyzePromptLogger.warn("Rate limit exceeded", { sessionId });
         throw new Error("RATE_LIMIT_EXCEEDED"); // Custom error code to be caught by frontend
       }
 
@@ -280,22 +374,31 @@ export const analyzePrompt = createServerFn({ method: "POST" })
             },
           },
         }).catch((err) => console.error("Failed to track mixpanel event", err));
+        const { analysisOutput, overallScore } = cachedAnalysis;
         return {
-          ...cachedAnalysis.analysisOutput,
-          improvedPromptData: JSON.parse(
-            cachedAnalysis.analysisOutput.improved_version!
-          ) as PromptWizardData,
-          overallScore: cachedAnalysis.overallScore,
+          ...(analysisOutput as PromptEvaluation), // type casting is needed as the convex type is any :/
+          overallScore,
         } as PromptEvaluationTransformed;
       }
 
+      const promptText = generatePromptText(promptData, {
+        source: "analyze-prompt",
+        mode: wizardMode,
+      });
+      analyzePromptLogger.debug("Prompt Text", { promptText });
+
+      const { systemPrompt, systemPromptVersion, aiSDKConfig } =
+        SYSTEM_PROMPT_CONFIG[CURRENT_SYSTEM_PROMPT_VERSION];
+
       // 3. Run Analysis (Cache Miss)
-      const { output } = await generateText({
+      const { output, text, request, response } = await generateText({
         model: google("gemini-2.5-flash"),
         output: Output.object({ schema: PromptEvaluationSchema }),
-        system: SYSTEM_PROMPT,
-        prompt: JSON.stringify(data.promptData, null, 2),
+        system: systemPrompt,
+        prompt: promptText,
+        ...aiSDKConfig,
       });
+      analyzePromptLogger.debug("Analysis Output", { output, text, request, response });
       const overallScore = Math.round(
         ((output.dimension_scores.clarity +
           output.dimension_scores.specificity +
@@ -307,7 +410,7 @@ export const analyzePrompt = createServerFn({ method: "POST" })
       // const output = { ...dummyOutput };
       const outputTransformed: PromptEvaluationTransformed = {
         ...output,
-        improvedPromptData: JSON.parse(output.improved_version!) as PromptWizardData,
+        // improvedPromptData: JSON.parse(output.improved_version!) as PromptWizardData,
         overallScore,
       };
       const endTime = performance.now();
@@ -325,8 +428,8 @@ export const analyzePrompt = createServerFn({ method: "POST" })
         structure: output.dimension_scores.structure,
         analysisOutput: output,
         latency,
-        systemPrompt: SYSTEM_PROMPT,
-        systemPromptVersion: SYSTEM_PROMPT_VERSION,
+        systemPrompt,
+        systemPromptVersion,
       });
 
       // Fire-and-forget tracking (don't await to avoid slowing down response)

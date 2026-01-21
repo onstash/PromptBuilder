@@ -11,6 +11,7 @@ import {
 } from "@/utils/prompt-wizard/url-compression";
 import { WIZARD_DEFAULTS } from "@/utils/prompt-wizard/search-params";
 import { getOrCreateSessionId } from "@/utils/session";
+import { Logger } from "@/utils/logger";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // CONSTANTS
@@ -220,20 +221,33 @@ const depthMap: Record<string, string> = {
   thorough: "Provide thorough, in-depth analysis.",
 };
 
+const generatePromptTextLogger = Logger.createLogger({
+  namespace: "generatePromptText",
+  level: "INFO",
+  enableConsoleLog: true,
+});
+
 export function generatePromptText(
   finalData: PromptWizardData,
-  source:
-    | "WizardPreview"
-    | "AnalysisPanel"
-    | "generatePromptStringFromCompressed"
-    | "PromptWizard"
-    | "WizardNavigation"
-    | "WizardPreviewForWizardPage"
-    | "WizardPreviewForLandingPageV2"
+  opts: {
+    source:
+      | "WizardPreview"
+      | "AnalysisPanel"
+      | "generatePromptStringFromCompressed"
+      | "PromptWizard"
+      | "WizardNavigation"
+      | "WizardPreviewForWizardPage"
+      | "WizardPreviewForLandingPageV2"
+      | "analyze-prompt";
+    mode?: "basic" | "advanced";
+  }
 ): string {
+  generatePromptTextLogger.debug(finalData, { opts });
   if (finalData.updatedAt === -1) {
+    generatePromptTextLogger.debug("Prompt is empty");
     return "";
   }
+  const { source, mode } = opts;
   const sections: string[] = [];
 
   // 1. Role (Who)
@@ -254,9 +268,18 @@ export function generatePromptText(
   if (finalData.examples) {
     sections.push(`## Examples\n${finalData.examples}`);
   }
+  generatePromptTextLogger.debug("[basic] Sections: ", sections);
 
-  const wizardMode = useWizardStore.getState().wizardMode;
-  if (source === "WizardPreviewForLandingPageV2" || wizardMode === "advanced") {
+  if (
+    source === "WizardPreviewForLandingPageV2" ||
+    mode === "advanced" ||
+    useWizardStore.getState().wizardMode === "advanced"
+  ) {
+    generatePromptTextLogger.debug("Advanced mode", {
+      source,
+      mode,
+      wizardMode: useWizardStore.getState().wizardMode,
+    });
     // 4. Guardrails (How NOT to do it)
     if (finalData.constraints) {
       sections.push(`## Constraints\n${finalData.constraints}`);
@@ -284,6 +307,7 @@ export function generatePromptText(
       );
     }
   }
+  generatePromptTextLogger.debug("[all] Sections: ", sections);
 
   return sections.join("\n\n");
 }
