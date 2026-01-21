@@ -428,7 +428,7 @@ export const PromptWizard = memo(function PromptWizard() {
   }, []);
 
   const isPromptAvailable = useMemo(() => {
-    return generatePromptText(wizardData).trim().length > 0;
+    return generatePromptText(wizardData, "PromptWizard").trim().length > 0;
   }, [wizardData.updatedAt]);
 
   // Get step component and props

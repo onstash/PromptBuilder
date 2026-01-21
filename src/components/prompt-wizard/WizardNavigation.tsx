@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { ArrowLeft, ArrowRight, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 import { useWizardStore, generatePromptText } from "@/stores/wizard-store";
@@ -15,12 +15,11 @@ interface WizardNavigationProps {
 export function WizardNavigation({
   onNext,
   onBack,
-  onFinish,
   isFirstStep,
   isLastStep,
 }: WizardNavigationProps) {
   const wizardData = useWizardStore((state) => state.wizardData);
-  const isPromptAvailable = generatePromptText(wizardData).trim().length > 0;
+  const isPromptAvailable = generatePromptText(wizardData, "WizardNavigation").trim().length > 0;
 
   return (
     <div className="flex flex-col md:flex-row items-center justify-between gap-4 pt-6 border-t-4 border-foreground">

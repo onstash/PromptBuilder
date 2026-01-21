@@ -220,7 +220,17 @@ const depthMap: Record<string, string> = {
   thorough: "Provide thorough, in-depth analysis.",
 };
 
-export function generatePromptText(finalData: PromptWizardData): string {
+export function generatePromptText(
+  finalData: PromptWizardData,
+  source:
+    | "WizardPreview"
+    | "AnalysisPanel"
+    | "generatePromptStringFromCompressed"
+    | "PromptWizard"
+    | "WizardNavigation"
+    | "WizardPreviewForWizardPage"
+    | "WizardPreviewForLandingPageV2"
+): string {
   if (finalData.updatedAt === -1) {
     return "";
   }
@@ -245,31 +255,34 @@ export function generatePromptText(finalData: PromptWizardData): string {
     sections.push(`## Examples\n${finalData.examples}`);
   }
 
-  // 4. Guardrails (How NOT to do it)
-  if (finalData.constraints) {
-    sections.push(`## Constraints\n${finalData.constraints}`);
-  }
+  const wizardMode = useWizardStore.getState().wizardMode;
+  if (source === "WizardPreviewForLandingPageV2" || wizardMode === "advanced") {
+    // 4. Guardrails (How NOT to do it)
+    if (finalData.constraints) {
+      sections.push(`## Constraints\n${finalData.constraints}`);
+    }
 
-  if (finalData.disallowed_content) {
-    sections.push(`## Avoid\n${finalData.disallowed_content}`);
-  }
+    if (finalData.disallowed_content) {
+      sections.push(`## Avoid\n${finalData.disallowed_content}`);
+    }
 
-  // 5. Format (How to present it)
-  if (finalData.output_format) {
-    sections.push(
-      `## Output Format\n${formatMap[finalData.output_format] || finalData.output_format}`
-    );
-  }
+    // 5. Format (How to present it)
+    if (finalData.output_format) {
+      sections.push(
+        `## Output Format\n${formatMap[finalData.output_format] || finalData.output_format}`
+      );
+    }
 
-  // 6. Refinements (Optional extras)
-  if (finalData.reasoning_depth && finalData.reasoning_depth !== "brief") {
-    sections.push(`## Reasoning\n${depthMap[finalData.reasoning_depth]}`);
-  }
+    // 6. Refinements (Optional extras)
+    if (finalData.reasoning_depth && finalData.reasoning_depth !== "brief") {
+      sections.push(`## Reasoning\n${depthMap[finalData.reasoning_depth]}`);
+    }
 
-  if (finalData.self_check) {
-    sections.push(
-      `## Self-Check\nBefore finalizing, verify your response is accurate and complete.`
-    );
+    if (finalData.self_check) {
+      sections.push(
+        `## Self-Check\nBefore finalizing, verify your response is accurate and complete.`
+      );
+    }
   }
 
   return sections.join("\n\n");

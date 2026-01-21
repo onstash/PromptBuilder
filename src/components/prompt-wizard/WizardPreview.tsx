@@ -65,6 +65,7 @@ export type WizardPreviewPropsForSharePage = {
   source: "share";
   onClickCallback?: () => void;
   isReadOnly?: boolean; // added based on usage
+  onSave?: () => void;
 };
 
 type WizardPreviewPropsForWizardPage = {
@@ -73,6 +74,9 @@ type WizardPreviewPropsForWizardPage = {
   compressed: false;
   source: "wizard";
   onClickCallback?: () => void;
+  onSave?: () => void;
+  savedSlug?: string | null;
+  isSaving?: boolean;
 };
 
 type WizardPreviewPropsForLandingPageV2 = {
@@ -82,6 +86,7 @@ type WizardPreviewPropsForLandingPageV2 = {
   compressed: true;
   source: "landing_v2";
   onClickCallback?: () => void;
+  onSave?: () => void;
 };
 
 type WizardPreviewProps =
@@ -90,7 +95,7 @@ type WizardPreviewProps =
   | WizardPreviewPropsForLandingPageV2;
 
 function generatePromptStringFromCompressed(wizardData: PromptWizardData): string {
-  return generatePromptText(wizardData);
+  return generatePromptText(wizardData, "generatePromptStringFromCompressed");
 }
 
 export function WizardPreviewForSharePage(props: WizardPreviewPropsForSharePage) {
@@ -338,7 +343,7 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
   const [promptText, wizardData, promptTextCompressed, isPromptValid] = useMemo(() => {
     let wizardData = data as PromptWizardData;
     wizardPreviewLogger.debug("wizardData", wizardData);
-    const promptText = generatePromptText(wizardData);
+    const promptText = generatePromptText(wizardData, "WizardPreviewForWizardPage");
     let isPromptValid = promptText.length > 0;
     wizardPreviewLogger.debug("promptText", promptText);
     if (!promptText.length) {
@@ -503,9 +508,6 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
             data: wizardData,
             slug: result.slug,
           });
-          if (!silent) {
-            toast.success("Prompt saved!");
-          }
           return result;
         }
       } catch (error) {
@@ -571,7 +573,13 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
             {/* Added: SAVE BUTTON */}
             <div className="shrink-0">
               <Button
-                onClick={() => handleSavePrompt(false)}
+                onClick={async () => {
+                  const result = await handleSavePrompt();
+                  if (result) {
+                    setIsLockedAlertOpen(false);
+                    props.onSave!();
+                  }
+                }}
                 size="sm"
                 className={cn(
                   "uppercase font-bold bg-indigo-600 hover:bg-indigo-700 text-white whitespace-nowrap cursor-pointer",
@@ -683,7 +691,7 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
           open={isLockedAlertOpen}
           onOpenChange={setIsLockedAlertOpen}
           onSave={async () => {
-            const result = await handleSavePrompt(false);
+            const result = await handleSavePrompt();
             if (result) {
               setIsLockedAlertOpen(false);
             }
@@ -832,7 +840,7 @@ function WizardPreviewForLandingPageV2(props: WizardPreviewPropsForLandingPageV2
   // KEY FIX: Use useMemo instead of useState(() => ...)
   // This ensures promptText re-computes whenever `data` changes
   const [[promptText, promptTextCompressed]] = useState(() => {
-    return [generatePromptText(wizardData), props.d];
+    return [generatePromptText(wizardData, "WizardPreviewForLandingPageV2"), props.d];
   });
 
   const hasUserInteracted = wizardData.updatedAt > -1;
