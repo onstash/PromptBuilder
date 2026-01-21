@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.6.0
+
+### Minor Changes
+
+- e2be894: feat: add system prompt versioning to analysis
+
 ## 4.5.0
 
 ### Minor Changes

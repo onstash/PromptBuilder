@@ -70,6 +70,8 @@ export default defineSchema({
     createdAt: v.number(),
     latency: v.number(),
     contentHash: v.optional(v.string()),
+    systemPrompt: v.optional(v.string()),
+    systemPromptVersion: v.optional(v.string()),
   })
     .index("by_sessionId", ["sessionId"])
     .index("by_score", ["overallScore"])
