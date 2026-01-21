@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.6.1
+
+### Patch Changes
+
+- 20019bf: fix: revert commit ef9aa067005123c0fbbefbb9a98388a039477f7a for ChatLandingPage.tsx
+
 ## 4.6.0
 
 ### Minor Changes
