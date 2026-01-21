@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.7.0
+
+### Minor Changes
+
+- 7f7103e: feat: introduce versioned system prompts and AI config in analysis
+
 ## 4.6.1
 
 ### Patch Changes
