@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.5.0
+
+### Minor Changes
+
+- 801fede: This PR introduces the "Save-to-Unlock" pattern, ensuring key features like Copy, Share, and ChatGPT integration are locked until the prompt is saved. It also consolidates the save logic into the value of truth components.
+
 ## 4.4.0
 
 ### Minor Changes

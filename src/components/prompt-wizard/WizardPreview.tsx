@@ -1,7 +1,17 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 
 import { motion } from "motion/react";
-import { Copy, Check, ExternalLink, FilePen, Bot, Share2, Loader2, Sparkles } from "lucide-react";
+import {
+  Copy,
+  Check,
+  ExternalLink,
+  FilePen,
+  Bot,
+  Share2,
+  Loader2,
+  Sparkles,
+  Save,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -29,7 +39,12 @@ import { useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { getOrCreateSessionId } from "@/utils/session";
 import type { PromptWizardData } from "@/utils/prompt-wizard/schema";
-import { compressPrompt, decompressPrompt } from "@/utils/prompt-wizard";
+import {
+  compressPrompt,
+  decompressPrompt,
+  partialPromptWizardSchema,
+  promptWizardSchema,
+} from "@/utils/prompt-wizard";
 import { Link } from "@tanstack/react-router";
 import { useTrackMixpanel } from "@/utils/analytics/MixpanelProvider";
 import { generatePromptText } from "@/stores/wizard-store";
@@ -39,6 +54,8 @@ import { NavigationActions } from "./NavigationActions";
 import { useServerFn } from "@tanstack/react-start";
 import { analyzePrompt, type PromptEvaluationTransformed } from "@/functions/analyze-prompt";
 import { AnalysisPanel } from "./AnalysisPanel";
+import { env } from "@/utils/client/env";
+import { Logger } from "@/utils/logger";
 
 export type WizardPreviewPropsForSharePage = {
   shareUrl?: string; // made optional
@@ -48,6 +65,7 @@ export type WizardPreviewPropsForSharePage = {
   source: "share";
   onClickCallback?: () => void;
   isReadOnly?: boolean; // added based on usage
+  onSave?: () => void;
 };
 
 type WizardPreviewPropsForWizardPage = {
@@ -56,6 +74,9 @@ type WizardPreviewPropsForWizardPage = {
   compressed: false;
   source: "wizard";
   onClickCallback?: () => void;
+  onSave?: () => void;
+  savedSlug?: string | null;
+  isSaving?: boolean;
 };
 
 type WizardPreviewPropsForLandingPageV2 = {
@@ -65,6 +86,7 @@ type WizardPreviewPropsForLandingPageV2 = {
   compressed: true;
   source: "landing_v2";
   onClickCallback?: () => void;
+  onSave?: () => void;
 };
 
 type WizardPreviewProps =
@@ -73,7 +95,7 @@ type WizardPreviewProps =
   | WizardPreviewPropsForLandingPageV2;
 
 function generatePromptStringFromCompressed(wizardData: PromptWizardData): string {
-  return generatePromptText(wizardData);
+  return generatePromptText(wizardData, "generatePromptStringFromCompressed");
 }
 
 export function WizardPreviewForSharePage(props: WizardPreviewPropsForSharePage) {
@@ -293,6 +315,12 @@ export function WizardPreviewForSharePage(props: WizardPreviewPropsForSharePage)
   );
 }
 
+const wizardPreviewLogger = Logger.createLogger({
+  namespace: "WizardPreview",
+  level: "DEBUG",
+  enableConsoleLog: true,
+});
+
 function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
   const { data } = props;
   const trackEvent = useTrackMixpanel();
@@ -312,9 +340,38 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
 
   // KEY FIX: Use useMemo instead of useState(() => ...)
   // This ensures promptText re-computes whenever `data` changes
-  const [promptText, wizardData, promptTextCompressed] = useMemo(() => {
-    const wizardData = data as PromptWizardData;
-    return [generatePromptText(wizardData), wizardData, compressPrompt(wizardData)];
+  const [promptText, wizardData, promptTextCompressed, isPromptValid] = useMemo(() => {
+    let wizardData = data as PromptWizardData;
+    wizardPreviewLogger.debug("wizardData", wizardData);
+    const promptText = generatePromptText(wizardData, "WizardPreviewForWizardPage");
+    let isPromptValid = promptText.length > 0;
+    wizardPreviewLogger.debug("promptText", promptText);
+    if (!promptText.length) {
+      wizardPreviewLogger.debug("isPromptValid", isPromptValid);
+      return ["", wizardData, "", false];
+    }
+    if (!wizardData.output_format) {
+      wizardPreviewLogger.debug("wizardData.output_format before", wizardData.output_format);
+      wizardData = {
+        ...wizardData,
+        output_format: "bullet-list",
+      };
+      wizardPreviewLogger.debug("wizardData.output_format after", wizardData.output_format);
+    }
+    const result1 = promptWizardSchema.safeParse(wizardData);
+    isPromptValid = result1.success;
+    wizardPreviewLogger.debug("isPromptValid", isPromptValid);
+    if (!isPromptValid) {
+      const result2 = partialPromptWizardSchema.safeParse(wizardData);
+      wizardPreviewLogger.debug("result2", result2);
+      isPromptValid = result2.success;
+    }
+    wizardPreviewLogger.debug("isPromptValid", isPromptValid);
+    wizardPreviewLogger.debug("result1", result1);
+    if (!isPromptValid) {
+      return ["", wizardData, "", false];
+    }
+    return [promptText, wizardData, compressPrompt(wizardData), isPromptValid];
   }, [data]);
 
   const hasUserInteracted = wizardData.updatedAt > -1;
@@ -322,6 +379,10 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
   const handleCopyPrompt = useCallback(async () => {
     if (!hasUserInteracted) {
       toast.error("Please interact with the wizard before copying the prompt");
+      return;
+    }
+    if (!isPromptValid) {
+      toast.error("Please fill in all the required fields");
       return;
     }
     try {
@@ -336,14 +397,17 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
     } catch {
       toast.error("Failed to copy");
     }
-  }, [promptText, promptTextCompressed, wizardData, hasUserInteracted, trackEvent]);
+  }, [promptText, promptTextCompressed, wizardData, hasUserInteracted, isPromptValid]);
 
   const handleTryWithChatGPT = useCallback(() => {
     if (!hasUserInteracted) {
       toast.error("Please interact with the wizard before trying seamlessly");
       return;
     }
-
+    if (!isPromptValid) {
+      toast.error("Please fill in all the required fields");
+      return;
+    }
     const encodedPrompt = encodeURIComponent(promptText);
     // 2000 is a safe limit for most browsers/servers
     if (encodedPrompt.length < 2000) {
@@ -359,13 +423,17 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
         result: "dialog_shown",
       });
     }
-  }, [hasUserInteracted, promptText, wizardData, trackEvent]);
+  }, [hasUserInteracted, promptText, wizardData]);
 
   const handleAnalyzeRequest = useCallback(async () => {
-    // setIsFeatureRequestAlertOpen(true); // Disable feature request dialog for now
     trackEvent("cta_clicked_analyze_with_ai", {
       data: wizardData,
     });
+
+    if (!env.VITE_ENABLE_PROMPT_ANALYSIS) {
+      setIsFeatureRequestAlertOpen(true); // Disable feature request dialog for now
+      return;
+    }
 
     try {
       setPromptAnalysisState("loading");
@@ -388,7 +456,7 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
         toast.error("Failed to analyze prompt. Please try again.");
       }
     }
-  }, [wizardData, trackEvent, analyzePromptFn]);
+  }, [wizardData, analyzePromptFn]);
 
   const confirmFeatureRequest = async () => {
     try {
@@ -404,6 +472,93 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
     }
   };
 
+  // ─────────────────────────────────────────────────────────────────────────────
+  // FEATURE LOCK LOGIC
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  // State
+  const [savedSlug, setSavedSlug] = useState<string | null>(props.shareUrl || null);
+  const [isLockedAlertOpen, setIsLockedAlertOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const savePrompt = useMutation(api.prompts.savePrompt);
+
+  const isLocked = !savedSlug;
+
+  const handleSavePrompt = useCallback(
+    async (silent?: boolean) => {
+      if (!hasUserInteracted) {
+        toast.error("Add some content to your prompt first!");
+        return null;
+      }
+      if (!isPromptValid) {
+        toast.error("Please fill in all the required fields");
+        return null;
+      }
+      try {
+        setIsSaving(true);
+        const sessionId = getOrCreateSessionId();
+        const result = await savePrompt({
+          promptData: wizardData,
+          sessionId,
+        });
+
+        if (result) {
+          setSavedSlug(result.slug);
+          trackEvent("prompt_saved_background", {
+            data: wizardData,
+            slug: result.slug,
+          });
+          return result;
+        }
+      } catch (error) {
+        console.error(error);
+        toast.error("Failed to save prompt");
+      } finally {
+        setIsSaving(false);
+      }
+      return null;
+    },
+    [wizardData, hasUserInteracted, savePrompt, isPromptValid]
+  );
+
+  const handleLockedAction = useCallback(
+    (featureName: string, action: () => void) => {
+      if (isLocked) {
+        trackEvent("feature_locked_click", {
+          feature: featureName,
+        });
+        setIsLockedAlertOpen(true);
+      } else {
+        action();
+      }
+    },
+    [isLocked, trackEvent]
+  );
+
+  // Unsaved changes warning
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      // If locked and has content, warn user
+      if (isLocked && hasUserInteracted) {
+        e.preventDefault();
+        e.returnValue = ""; // Chrome requires returnValue to be set
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [isLocked, hasUserInteracted]);
+
+  const savePromptDisabled = isSaving || !hasUserInteracted || !isPromptValid;
+  let savedPromptLabel = "Save Prompt";
+  if (isSaving) {
+    savedPromptLabel = "Saving...";
+  } else if (savedSlug) {
+    savedPromptLabel = "Saved";
+  }
+
   return (
     <div className="space-y-8">
       <motion.div
@@ -415,9 +570,37 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
         <div className="p-4 border-b-4 border-foreground flex flex-row gap-3 items-center justify-between">
           <h3 className="font-black uppercase text-lg hidden md:block">Your Prompt</h3>
           <div className="flex flex-row gap-2 overflow-x-auto pb-2 -mb-2 w-full md:w-auto md:pb-0 md:mb-0 no-scrollbar items-center">
+            {/* Added: SAVE BUTTON */}
+            <div className="shrink-0">
+              <Button
+                onClick={async () => {
+                  const result = await handleSavePrompt();
+                  if (result) {
+                    setIsLockedAlertOpen(false);
+                    props.onSave!();
+                  }
+                }}
+                size="sm"
+                className={cn(
+                  "uppercase font-bold bg-indigo-600 hover:bg-indigo-700 text-white whitespace-nowrap cursor-pointer",
+                  !isLocked && "bg-green-600 hover:bg-green-700" // Visual cue that it's saved
+                )}
+                disabled={savePromptDisabled}
+              >
+                {isSaving ? (
+                  <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                ) : !isLocked ? (
+                  <Check className="w-4 h-4 mr-1" />
+                ) : (
+                  <Save className="w-4 h-4 mr-1" />
+                )}
+                {savedPromptLabel}
+              </Button>
+            </div>
+
             <div className="flex gap-2 shrink-0">
               <Button
-                onClick={handleCopyPrompt}
+                onClick={() => handleLockedAction("copy", handleCopyPrompt)}
                 size="sm"
                 variant="outline"
                 className="uppercase font-bold whitespace-nowrap cursor-pointer"
@@ -436,13 +619,27 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
                 )}
               </Button>
               <div className="shrink-0">
-                <ShareAction
-                  wizardData={wizardData}
-                  pageSource="wizard"
-                  buttonClassName="w-auto px-4 cursor-pointer"
-                  openLabel="Share"
-                  disabled={promptText.trim().length === 0}
-                />
+                {/* ShareAction needs to be wrapped or handle locked state */}
+                <div
+                  onClickCapture={(e) => {
+                    if (isLocked) {
+                      e.stopPropagation();
+                      handleLockedAction("share", () => {}); // No-op action, just triggers alert
+                    }
+                  }}
+                >
+                  <ShareAction
+                    wizardData={wizardData}
+                    pageSource="wizard"
+                    buttonClassName={cn(
+                      "w-auto px-4 cursor-pointer",
+                      isLocked && "opacity-50 pointer-events-none"
+                    )} // Visual disabled state but captured by parent
+                    openLabel="Share"
+                    disabled={promptText.trim().length === 0}
+                    existingSlug={savedSlug || undefined}
+                  />
+                </div>
               </div>
             </div>
 
@@ -472,7 +669,7 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
                 </span>
               </Button>
               <Button
-                onClick={handleTryWithChatGPT}
+                onClick={() => handleLockedAction("chatgpt", handleTryWithChatGPT)}
                 size="sm"
                 className="uppercase font-bold bg-green-600 hover:bg-green-700 text-white whitespace-nowrap cursor-pointer"
                 disabled={promptText.trim().length === 0}
@@ -488,6 +685,20 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
         <div className="p-4 max-h-[400px] overflow-y-auto">
           <pre className="whitespace-pre-wrap font-mono text-sm leading-relaxed">{promptText}</pre>
         </div>
+
+        {/* Locked Feature Alert Dialog */}
+        <LockedFeatureAlertDialog
+          open={isLockedAlertOpen}
+          onOpenChange={setIsLockedAlertOpen}
+          onSave={async () => {
+            const result = await handleSavePrompt();
+            if (result) {
+              setIsLockedAlertOpen(false);
+            }
+          }}
+          isSaving={isSaving}
+        />
+
         {/* ChatGPT Alert Dialog */}
         <AlertDialog open={isChatGPTAlertOpen} onOpenChange={setIsChatGPTAlertOpen}>
           <AlertDialogContent>
@@ -578,6 +789,47 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
   );
 }
 
+function LockedFeatureAlertDialog({
+  open,
+  onOpenChange,
+  onSave,
+  isSaving,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSave: () => void;
+  isSaving: boolean;
+}) {
+  return (
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Save to Unlock Features</AlertDialogTitle>
+          <AlertDialogDescription>
+            Please save your prompt to copy, share, or use it with ChatGPT.
+            <br />
+            <br />
+            This helps you keep track of your best prompts and ensures you don't lose your work.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={isSaving}>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={(e) => {
+              e.preventDefault(); // Prevent closing immediately
+              onSave();
+            }}
+            disabled={isSaving}
+          >
+            {isSaving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+            {isSaving ? "Saving..." : "Save Prompt"}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+}
+
 function WizardPreviewForLandingPageV2(props: WizardPreviewPropsForLandingPageV2) {
   const { data: wizardData, shareUrl, onClickCallback } = props;
   const trackEvent = useTrackMixpanel();
@@ -588,7 +840,7 @@ function WizardPreviewForLandingPageV2(props: WizardPreviewPropsForLandingPageV2
   // KEY FIX: Use useMemo instead of useState(() => ...)
   // This ensures promptText re-computes whenever `data` changes
   const [[promptText, promptTextCompressed]] = useState(() => {
-    return [generatePromptText(wizardData), props.d];
+    return [generatePromptText(wizardData, "WizardPreviewForLandingPageV2"), props.d];
   });
 
   const hasUserInteracted = wizardData.updatedAt > -1;
@@ -784,7 +1036,15 @@ function ShareAction({
   // Consider a prompt active if it has at least user interaction
   const hasContent = wizardData.updatedAt > 0;
 
+  // New prop: savedSlug. If passed, we use it directly instead of creating a new one?
+  // Current logic creates a new link if !shareLink.
+  // If we have existingSlug, we use it.
+
   const handleOpenChange = (open: boolean) => {
+    // If disabled (locked), this shouldn't be callable normally, but just in case
+    if (disabled) {
+      return;
+    }
     setIsOpen(open);
     if (open && !shareLink) {
       handleCreateLink();

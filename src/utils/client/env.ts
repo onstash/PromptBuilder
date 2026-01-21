@@ -12,6 +12,7 @@ export const env = createEnv({
     VITE_APP_TITLE: z.string().min(1).optional(),
     VITE_PUBLIC_MIXPANEL_PROJECT_TOKEN: z.string(),
     VITE_CONVEX_URL: z.string(),
+    VITE_ENABLE_PROMPT_ANALYSIS: z.enum(["true", "false"]).optional().default("false"),
   },
 
   /**

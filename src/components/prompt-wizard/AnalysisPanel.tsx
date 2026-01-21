@@ -119,7 +119,7 @@ export function AnalysisPanel({ promptAnalysisResult }: AnalysisPanelProps) {
         <CardFooter className="flex-col items-start border-t pt-4 bg-muted/10">
           <p className="text-sm font-medium mb-2">Improved Version Idea:</p>
           <div className="text-xs bg-muted p-3 rounded-md w-full whitespace-pre-wrap font-mono relative group">
-            {generatePromptText(promptAnalysisResult.improvedPromptData)}
+            {generatePromptText(promptAnalysisResult.improvedPromptData, "AnalysisPanel")}
             <Button
               variant="secondary"
               size="sm"

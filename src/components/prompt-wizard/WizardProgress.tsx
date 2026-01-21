@@ -2,7 +2,6 @@ import { motion, AnimatePresence } from "motion/react";
 import { Check } from "lucide-react";
 import { WIZARD_STEPS } from "@/utils/prompt-wizard/schema";
 import { useWizardStore } from "@/stores/wizard-store";
-import { Logger } from "@/utils/logger";
 
 interface WizardProgressProps {
   onStepClick: (step: number) => void;

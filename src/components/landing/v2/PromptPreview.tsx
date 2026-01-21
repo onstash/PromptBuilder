@@ -84,7 +84,12 @@ function EmptyState({ onSelectExampleClick }: { onSelectExampleClick?: () => voi
           Select Example
         </button>
 
-        <Link to="/wizard" search={{ d: null, vld: 0, partial: false }} className="block w-full">
+        <Link
+          to="/wizard"
+          search={{ d: null, vld: 0, partial: false }}
+          reloadDocument
+          className="block w-full"
+        >
           <div
             className={cn(
               "flex items-center justify-center gap-2 px-8 py-4 bg-primary text-primary-foreground",
@@ -102,6 +107,7 @@ function EmptyState({ onSelectExampleClick }: { onSelectExampleClick?: () => voi
       <Link
         to="/wizard"
         search={{ d: null, vld: 0, partial: false }}
+        reloadDocument
         className="hidden md:inline-block"
       >
         <div
