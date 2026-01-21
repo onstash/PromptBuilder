@@ -123,6 +123,8 @@ export const savePromptAnalysis = mutation({
     analysisOutput: v.any(),
     latency: v.number(),
     contentHash: v.optional(v.string()), // Added contentHash
+    systemPrompt: v.optional(v.string()),
+    systemPromptVersion: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     // Generate hash if not provided (though server fn should ideally provide it to match getAnalysis)

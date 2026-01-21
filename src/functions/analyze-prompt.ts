@@ -148,6 +148,8 @@ const SYSTEM_PROMPT = `
   - Keep all strings concise and implementation-ready.
 `;
 
+export const SYSTEM_PROMPT_VERSION = "1.0.0";
+
 const analyzePromptLogger = Logger.createLogger({
   namespace: "analyze-prompt",
   level: "DEBUG",
@@ -323,6 +325,8 @@ export const analyzePrompt = createServerFn({ method: "POST" })
         structure: output.dimension_scores.structure,
         analysisOutput: output,
         latency,
+        systemPrompt: SYSTEM_PROMPT,
+        systemPromptVersion: SYSTEM_PROMPT_VERSION,
       });
 
       // Fire-and-forget tracking (don't await to avoid slowing down response)
