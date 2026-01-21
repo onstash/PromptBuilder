@@ -199,3 +199,16 @@ export const getPromptBySlug = query({
     return prompt;
   },
 });
+
+export const getPromptsBySessionId = query({
+  args: { sessionId: v.string() },
+  handler: async (ctx, args) => {
+    const prompts = await ctx.db
+      .query("prompts")
+      .withIndex("by_session_hash", (q) => q.eq("sessionId", args.sessionId))
+      .order("desc")
+      .collect();
+
+    return prompts;
+  },
+});

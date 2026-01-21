@@ -12,7 +12,9 @@ export function NotFound() {
             The page you are looking for does not exist or has been moved.
           </p>
           <Button asChild size="lg" className="w-full uppercase font-bold text-md">
-            <Link to="/">Go Home</Link>
+            <Link to="/" reloadDocument>
+              Go Home
+            </Link>
           </Button>
         </div>
       </div>

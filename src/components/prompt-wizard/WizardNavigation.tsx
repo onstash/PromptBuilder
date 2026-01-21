@@ -43,26 +43,14 @@ export function WizardNavigation({
 
       {/* Next / Finish button */}
       <div className="flex flex-col md:flex-row items-center justify-between gap-3 w-full md:w-auto">
-        {!isLastStep && (
-          <motion.div whileHover={{ x: 4 }} whileTap={{ scale: 0.98 }} className="w-full md:w-auto">
-            <Button onClick={onNext} className="uppercase font-bold w-full md:w-auto">
-              Next
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
-          </motion.div>
-        )}
-        <motion.div
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          className="w-full md:w-auto"
-        >
+        <motion.div whileHover={{ x: 4 }} whileTap={{ scale: 0.98 }} className="w-full md:w-auto">
           <Button
-            onClick={onFinish}
+            onClick={onNext}
+            disabled={isLastStep || !isPromptAvailable}
             className="uppercase font-bold w-full md:w-auto"
-            disabled={!isPromptAvailable}
           >
-            <Sparkles className="w-4 h-4 mr-2" />
-            Save Prompt
+            Next
+            <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
         </motion.div>
       </div>

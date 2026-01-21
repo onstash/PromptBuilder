@@ -59,6 +59,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
+// Utils
+import { getOrCreateSessionId } from "@/utils/session";
+
+// Convex
+import { useMutation } from "convex/react";
+import { api } from "../../../convex/_generated/api";
+
 // ═══════════════════════════════════════════════════════════════════════════
 // STATIC CONFIGURATION (Expert 6-Step Structure)
 // ═══════════════════════════════════════════════════════════════════════════
@@ -114,6 +121,11 @@ export const PromptWizard = memo(function PromptWizard() {
   // Onboarding Dialog State
   const [showOnboardingDialog, setShowOnboardingDialog] = useState(false);
 
+  // Save State (Lifted from WizardPreview)
+  const savePrompt = useMutation(api.prompts.savePrompt);
+  const [savedSlug, setSavedSlug] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+
   // ─────────────────────────────────────────────────────────────────────────
   // Zustand Store
   // ─────────────────────────────────────────────────────────────────────────
@@ -135,7 +147,7 @@ export const PromptWizard = memo(function PromptWizard() {
       {
         noTaskIntent: () => {},
         onSuccess: () => {
-          toast.success("Prompt saved!");
+          // toast.success("Prompt saved!");
         },
       },
       {
@@ -336,8 +348,40 @@ export const PromptWizard = memo(function PromptWizard() {
     if (isMobile && hasCompletedFirstPrompt) {
       setIsPreviewOpen(true);
     }
-    storeWizardDataInLocalStorage();
-  }, [wizardData, validateAllSteps, finish, trackEvent, isMobile, navigate]);
+
+    // Save to Convex
+    const handleSave = async () => {
+      try {
+        setIsSaving(true);
+        const sessionId = getOrCreateSessionId(); // ensure session id
+        // Note: getOrCreateSessionId should be used if imported, but simple fallback here
+        // Actually better to reuse the utility if we can import it, but let's assume WizardPreview logic for now
+        // Replicating WizardPreview save logic:
+
+        // We need a session ID. The WizardPreview example used `getOrCreateSessionId` from utility or just passed it.
+        // Let's verify imports or just use a simple robust getter.
+        // For now, simpler:
+
+        const result = await savePrompt({
+          promptData: wizardData,
+          sessionId,
+        });
+
+        if (result && result.slug) {
+          setSavedSlug(result.slug);
+          toast.success("Prompt saved!");
+          storeWizardDataInLocalStorage();
+        }
+      } catch (e) {
+        console.error("Failed to save", e);
+        toast.error("Failed to save prompt");
+      } finally {
+        setIsSaving(false);
+      }
+    };
+
+    handleSave();
+  }, [wizardData, validateAllSteps, finish, trackEvent, isMobile, navigate, savePrompt]);
 
   const handleReset = () => {
     setIsResetCalled(true);
@@ -499,6 +543,9 @@ export const PromptWizard = memo(function PromptWizard() {
               compressed={false}
               source="wizard"
               shareUrl={shareUrl!}
+              savedSlug={savedSlug}
+              onSave={handleFinish}
+              isSaving={isSaving}
             />
           </motion.div>
         </motion.div>
@@ -515,6 +562,9 @@ export const PromptWizard = memo(function PromptWizard() {
                 compressed={false}
                 source="wizard"
                 shareUrl={shareUrl!}
+                savedSlug={savedSlug}
+                onSave={handleFinish}
+                isSaving={isSaving}
               />
             </div>
           </DrawerContent>
