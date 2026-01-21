@@ -111,6 +111,26 @@ export const savePrompt = mutation({
   },
 });
 
+export const savePromptAnalysis = mutation({
+  args: {
+    promptData: promptDataValidator,
+    sessionId: v.string(),
+    overallScore: v.number(),
+    clarity: v.number(),
+    specificity: v.number(),
+    robustness: v.number(),
+    structure: v.number(),
+    analysisOutput: v.any(),
+    latency: v.number(),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.insert("prompts_analysis", {
+      ...args,
+      createdAt: Date.now(),
+    });
+  },
+});
+
 // ─────────────────────────────────────────────────────────────────────────────
 // QUERIES
 // ─────────────────────────────────────────────────────────────────────────────

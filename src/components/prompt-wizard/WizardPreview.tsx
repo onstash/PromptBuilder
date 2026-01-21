@@ -36,6 +36,9 @@ import { generatePromptText } from "@/stores/wizard-store";
 import { withLatencyLoggingSync } from "@/utils/function-utils";
 import { StoredPromptsSection } from "./StoredPromptsSection";
 import { NavigationActions } from "./NavigationActions";
+// import { useServerFn } from "@tanstack/react-start";
+// import { analyzePrompt, PromptEvaluation } from "@/functions/analyze-prompt";
+// import { AnalysisPanel } from "./AnalysisPanel";
 
 export type WizardPreviewPropsForSharePage = {
   shareUrl?: string; // made optional
@@ -302,6 +305,8 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
   const [copiedPrompt, setCopiedPrompt] = useState(false);
   const [isChatGPTAlertOpen, setIsChatGPTAlertOpen] = useState(false);
   const [isFeatureRequestAlertOpen, setIsFeatureRequestAlertOpen] = useState(false);
+  // const [promptAnalysisResult, setPromptAnalysisResult] = useState<PromptEvaluation | null>(null);
+  // const analyzePromptFn = useServerFn(analyzePrompt);
 
   // KEY FIX: Use useMemo instead of useState(() => ...)
   // This ensures promptText re-computes whenever `data` changes
@@ -354,11 +359,24 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
     }
   }, [hasUserInteracted, promptText, wizardData, trackEvent]);
 
-  const handleAnalyzeRequest = useCallback(() => {
+  const handleAnalyzeRequest = useCallback(async () => {
     setIsFeatureRequestAlertOpen(true);
     trackEvent("cta_clicked_analyze_with_ai", {
       data: wizardData,
     });
+    // try {
+    //   const analyzePromptResult = await analyzePromptFn({
+    //     data: {
+    //       sessionId: getOrCreateSessionId(),
+    //       promptData: wizardData,
+    //     },
+    //   });
+    //   setPromptAnalysisResult(analyzePromptResult);
+    // } catch (err) {
+    //   const error = err as Error;
+    //   console.error(error);
+    //   toast.error("Failed to analyze prompt");
+    // }
   }, [wizardData, trackEvent]);
 
   const confirmFeatureRequest = async () => {
@@ -504,13 +522,13 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
       </motion.div>
 
       {/* Helper to Analyze Prompt */}
-      {/* {hasUserInteracted && (
+      {/* {promptAnalysisResult && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <AnalysisPanel wizardData={wizardData} />
+          <AnalysisPanel promptAnalysisResult={promptAnalysisResult} />
         </motion.div>
       )} */}
     </div>

@@ -58,4 +58,18 @@ export default defineSchema({
     description: v.string(),
     createdAt: v.number(),
   }),
+  prompts_analysis: defineTable({
+    sessionId: v.string(),
+    promptData: promptDataValidator,
+    overallScore: v.number(),
+    clarity: v.number(),
+    specificity: v.number(),
+    robustness: v.number(),
+    structure: v.number(),
+    analysisOutput: v.any(),
+    createdAt: v.number(),
+    latency: v.number(),
+  })
+    .index("by_sessionId", ["sessionId"])
+    .index("by_score", ["overallScore"]),
 });

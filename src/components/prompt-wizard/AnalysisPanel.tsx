@@ -1,5 +1,3 @@
-import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Loader2, Sparkles, CheckCircle2, AlertTriangle, Lightbulb } from "lucide-react";
 import {
@@ -14,66 +12,27 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getOrCreateSessionId } from "@/utils/session";
-import { type AnalysisResult, analyzePrompt } from "@/functions/analyze-prompt"; // Define types properly if exporting
-import type { PromptWizardData } from "@/utils/prompt-wizard/schema";
+import { type PromptEvaluation } from "@/functions/analyze-prompt";
 
 interface AnalysisPanelProps {
-  wizardData: PromptWizardData;
+  promptAnalysisResult: PromptEvaluation;
 }
 
-export function AnalysisPanel({ wizardData }: AnalysisPanelProps) {
-  const analyzeFn = useServerFn(analyzePrompt);
-  const [result, setResult] = useState<AnalysisResult | null>(null);
-
-  const mutation = useMutation({
-    mutationFn: async () => {
-      const sessionId = getOrCreateSessionId();
-      const data = await analyzeFn({ data: { promptData: wizardData, sessionId } });
-      return data;
-    },
-    onSuccess: (data) => {
-      setResult(data);
-    },
-  });
-
-  if (!result) {
-    return (
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-indigo-500" />
-            AI Prompt Analysis
-          </CardTitle>
-          <CardDescription>
-            Get expert feedback on your prompt structure and quality.
-          </CardDescription>
-        </CardHeader>
-        <CardFooter>
-          <Button
-            onClick={() => mutation.mutate()}
-            disabled={mutation.isPending}
-            className="w-full"
-            variant="outline"
-          >
-            {mutation.isPending ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Analyzing...
-              </>
-            ) : (
-              "Analyze Prompt"
-            )}
-          </Button>
-        </CardFooter>
-      </Card>
-    );
-  }
+export function AnalysisPanel({ promptAnalysisResult }: AnalysisPanelProps) {
+  // Calculate overall score from dimensions (1-5 scale to 0-100 scale)
+  const overallScore = Math.round(
+    ((promptAnalysisResult.dimension_scores.clarity +
+      promptAnalysisResult.dimension_scores.specificity +
+      promptAnalysisResult.dimension_scores.robustness +
+      promptAnalysisResult.dimension_scores.structure) /
+      20) *
+      100
+  );
 
   const scoreColor =
-    result.score >= 80 ? "text-green-600" : result.score >= 60 ? "text-yellow-600" : "text-red-600";
+    overallScore >= 80 ? "text-green-600" : overallScore >= 60 ? "text-yellow-600" : "text-red-600";
   const scoreBg =
-    result.score >= 80 ? "bg-green-600" : result.score >= 60 ? "bg-yellow-600" : "bg-red-600";
+    overallScore >= 80 ? "bg-green-600" : overallScore >= 60 ? "bg-yellow-600" : "bg-red-600";
 
   return (
     <Card className="w-full">
@@ -83,22 +42,27 @@ export function AnalysisPanel({ wizardData }: AnalysisPanelProps) {
             <Sparkles className="h-5 w-5 text-indigo-500" />
             Analysis Results
           </CardTitle>
-          <Button
+          {/* <Button
             variant="ghost"
             size="sm"
             onClick={() => setResult(null)}
             className="text-muted-foreground"
           >
             Reset
-          </Button>
+          </Button> */}
         </div>
         <div className="flex items-center gap-4 pt-2">
           <div className="flex-1">
             <div className="flex justify-between mb-1 text-sm font-medium">
-              <span>Quality Score</span>
-              <span className={scoreColor}>{result.score}/100</span>
+              <span>
+                Quality Score{" "}
+                <span className="text-muted-foreground">
+                  ({promptAnalysisResult.overall_assessment.grade})
+                </span>
+              </span>
+              <span className={scoreColor}>{overallScore}/100</span>
             </div>
-            <Progress value={result.score} className="h-2" indicatorClassName={scoreBg} />
+            <Progress value={overallScore} className="h-2" indicatorClassName={scoreBg} />
           </div>
         </div>
       </CardHeader>
@@ -111,46 +75,54 @@ export function AnalysisPanel({ wizardData }: AnalysisPanelProps) {
           </TabsList>
 
           <TabsContent value="strengths" className="space-y-4 pt-4">
-            {result.strengths.map((str, i) => (
+            {promptAnalysisResult.strengths.map((str, i) => (
               <div key={i} className="flex items-start gap-3">
                 <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5" />
-                <p className="text-sm text-foreground">{str}</p>
+                <div>
+                  <p className="text-sm font-medium text-foreground">{str.point}</p>
+                  <p className="text-xs text-muted-foreground">{str.why_it_works}</p>
+                </div>
               </div>
             ))}
           </TabsContent>
 
           <TabsContent value="weaknesses" className="space-y-4 pt-4">
-            {result.weaknesses.map((wk, i) => (
+            {promptAnalysisResult.issues.map((issue, i) => (
               <div key={i} className="flex items-start gap-3">
                 <AlertTriangle className="h-5 w-5 text-yellow-500 mt-0.5" />
-                <p className="text-sm text-foreground">{wk}</p>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-foreground">{issue.problem}</span>
+                    <Badge variant="outline" className="text-[10px] h-5">
+                      {issue.severity}
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground">{issue.why_it_matters}</p>
+                </div>
               </div>
             ))}
           </TabsContent>
 
           <TabsContent value="suggestions" className="space-y-4 pt-4">
-            {result.suggestions.length === 0 ? (
+            {promptAnalysisResult.issues.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-4">
                 No suggestions found! Your prompt looks great.
               </p>
             ) : (
-              result.suggestions.map((suggestion, i) => (
+              promptAnalysisResult.issues.map((issue, i) => (
                 <div key={i} className="rounded-lg border p-4 bg-muted/30">
                   <div className="flex items-center gap-2 mb-2">
-                    <Badge variant="outline" className="capitalize">
-                      {suggestion.field.replace("_", " ")}
+                    <Badge variant="outline" className="">
+                      {issue.severity} Fix
                     </Badge>
-                    <span className="text-sm font-medium text-foreground">{suggestion.issue}</span>
+                    <span className="text-sm font-medium text-foreground">
+                      {issue.actionable_fix}
+                    </span>
                   </div>
                   <div className="flex items-start gap-3 mt-3">
                     <Lightbulb className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
                     <div className="space-y-2">
-                      <p className="text-sm text-muted-foreground">{suggestion.recommendation}</p>
-                      {suggestion.example_fix && (
-                        <div className="text-xs bg-muted p-2 rounded border font-mono">
-                          {suggestion.example_fix}
-                        </div>
-                      )}
+                      <p className="text-sm text-muted-foreground">{issue.why_it_matters}</p>
                     </div>
                   </div>
                 </div>
@@ -159,16 +131,18 @@ export function AnalysisPanel({ wizardData }: AnalysisPanelProps) {
           </TabsContent>
         </Tabs>
       </CardContent>
-      {result.improved_version && (
+      {promptAnalysisResult.improved_version && (
         <CardFooter className="flex-col items-start border-t pt-4 bg-muted/10">
           <p className="text-sm font-medium mb-2">Improved Version Idea:</p>
           <div className="text-xs bg-muted p-3 rounded-md w-full whitespace-pre-wrap font-mono relative group">
-            {result.improved_version}
+            {promptAnalysisResult.improved_version}
             <Button
               variant="secondary"
               size="sm"
               className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-              onClick={() => navigator.clipboard.writeText(result.improved_version || "")}
+              onClick={() =>
+                navigator.clipboard.writeText(promptAnalysisResult.improved_version || "")
+              }
             >
               Copy
             </Button>
