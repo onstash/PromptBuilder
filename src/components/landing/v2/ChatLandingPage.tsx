@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useSearch, useNavigate } from "@tanstack/react-router";
 import { motion, AnimatePresence } from "motion/react";
-import { Menu, X, User, Heart, FileText, ChevronLeft, Loader2, PanelLeft } from "lucide-react";
+import { Menu, X, User, Heart, FileText, ChevronLeft, Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -348,7 +348,7 @@ export function ChatLandingPage() {
           )}
         >
           {/* MOBILE HEADER - Only visible on mobile */}
-          <div className="flex items-center justify-between p-4 border-b h-16 flex-shrink-0">
+          <div className="md:hidden flex items-center justify-between p-4 border-b h-16 flex-shrink-0">
             <div className="flex items-center gap-2">
               {selectedRole ? (
                 <Button
@@ -367,12 +367,7 @@ export function ChatLandingPage() {
               </span>
             </div>
             <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(false)}>
-              <div className="md:hidden">
-                <X size={24} />
-              </div>
-              <div className="hidden md:block">
-                <PanelLeft size={24} />
-              </div>
+              <X size={24} />
             </Button>
           </div>
 
