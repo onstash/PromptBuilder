@@ -1,5 +1,12 @@
 # Changelog
 
+## 4.4.0
+
+### Minor Changes
+
+- 38a1066: refactor(wizard): move mode state to store & fix validation; Migrated wizard mode state to global store for better persistence and access. Fixed SSR error by safe-guarding localStorage access. Corrected useWizardForm validation loop to cover all advanced steps.
+- 52c7df4: Implements caching and rate limiting for the AI Prompt Analysis feature to optimize performance and manage costs. Also updates the OG image and includes minor fixes.
+
 ## 4.3.0
 
 ### Minor Changes
