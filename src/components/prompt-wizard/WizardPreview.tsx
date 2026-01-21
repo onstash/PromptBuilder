@@ -36,9 +36,9 @@ import { generatePromptText } from "@/stores/wizard-store";
 import { withLatencyLoggingSync } from "@/utils/function-utils";
 import { StoredPromptsSection } from "./StoredPromptsSection";
 import { NavigationActions } from "./NavigationActions";
-// import { useServerFn } from "@tanstack/react-start";
-// import { analyzePrompt, PromptEvaluation } from "@/functions/analyze-prompt";
-// import { AnalysisPanel } from "./AnalysisPanel";
+import { useServerFn } from "@tanstack/react-start";
+import { analyzePrompt, type PromptEvaluationTransformed } from "@/functions/analyze-prompt";
+import { AnalysisPanel } from "./AnalysisPanel";
 
 export type WizardPreviewPropsForSharePage = {
   shareUrl?: string; // made optional
@@ -293,10 +293,6 @@ export function WizardPreviewForSharePage(props: WizardPreviewPropsForSharePage)
   );
 }
 
-// import { AnalysisPanel } from "./AnalysisPanel";
-
-// ... existing code ...
-
 function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
   const { data } = props;
   const trackEvent = useTrackMixpanel();
@@ -305,8 +301,14 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
   const [copiedPrompt, setCopiedPrompt] = useState(false);
   const [isChatGPTAlertOpen, setIsChatGPTAlertOpen] = useState(false);
   const [isFeatureRequestAlertOpen, setIsFeatureRequestAlertOpen] = useState(false);
-  // const [promptAnalysisResult, setPromptAnalysisResult] = useState<PromptEvaluation | null>(null);
-  // const analyzePromptFn = useServerFn(analyzePrompt);
+  const [isRateLimitAlertOpen, setIsRateLimitAlertOpen] = useState(false);
+
+  const [promptAnalysisState, setPromptAnalysisState] = useState<
+    "idle" | "loading" | "success" | "error"
+  >("idle");
+  const [promptAnalysisResult, setPromptAnalysisResult] =
+    useState<PromptEvaluationTransformed | null>(null);
+  const analyzePromptFn = useServerFn(analyzePrompt);
 
   // KEY FIX: Use useMemo instead of useState(() => ...)
   // This ensures promptText re-computes whenever `data` changes
@@ -334,7 +336,7 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
     } catch {
       toast.error("Failed to copy");
     }
-  }, [promptText, promptTextCompressed, wizardData]);
+  }, [promptText, promptTextCompressed, wizardData, hasUserInteracted, trackEvent]);
 
   const handleTryWithChatGPT = useCallback(() => {
     if (!hasUserInteracted) {
@@ -360,24 +362,33 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
   }, [hasUserInteracted, promptText, wizardData, trackEvent]);
 
   const handleAnalyzeRequest = useCallback(async () => {
-    setIsFeatureRequestAlertOpen(true);
+    // setIsFeatureRequestAlertOpen(true); // Disable feature request dialog for now
     trackEvent("cta_clicked_analyze_with_ai", {
       data: wizardData,
     });
-    // try {
-    //   const analyzePromptResult = await analyzePromptFn({
-    //     data: {
-    //       sessionId: getOrCreateSessionId(),
-    //       promptData: wizardData,
-    //     },
-    //   });
-    //   setPromptAnalysisResult(analyzePromptResult);
-    // } catch (err) {
-    //   const error = err as Error;
-    //   console.error(error);
-    //   toast.error("Failed to analyze prompt");
-    // }
-  }, [wizardData, trackEvent]);
+
+    try {
+      setPromptAnalysisState("loading");
+      const analyzePromptResult = await analyzePromptFn({
+        data: {
+          sessionId: getOrCreateSessionId(),
+          promptData: wizardData,
+        },
+      });
+      setPromptAnalysisState("success");
+      setPromptAnalysisResult(analyzePromptResult);
+      // Determine if we should scroll to analysis panel? For now standard flow.
+    } catch (err) {
+      setPromptAnalysisState("error");
+      const error = err as Error;
+      console.error(error);
+      if (error.message.includes("RATE_LIMIT_EXCEEDED")) {
+        setIsRateLimitAlertOpen(true);
+      } else {
+        toast.error("Failed to analyze prompt. Please try again.");
+      }
+    }
+  }, [wizardData, trackEvent, analyzePromptFn]);
 
   const confirmFeatureRequest = async () => {
     try {
@@ -409,7 +420,7 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
                 onClick={handleCopyPrompt}
                 size="sm"
                 variant="outline"
-                className="uppercase font-bold whitespace-nowrap"
+                className="uppercase font-bold whitespace-nowrap cursor-pointer"
                 disabled={promptText.trim().length === 0}
               >
                 {copiedPrompt ? (
@@ -428,7 +439,7 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
                 <ShareAction
                   wizardData={wizardData}
                   pageSource="wizard"
-                  buttonClassName="w-auto px-4"
+                  buttonClassName="w-auto px-4 cursor-pointer"
                   openLabel="Share"
                   disabled={promptText.trim().length === 0}
                 />
@@ -440,18 +451,30 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
                 onClick={handleAnalyzeRequest}
                 size="sm"
                 variant="outline"
-                className="uppercase font-bold whitespace-nowrap"
+                className="uppercase font-bold whitespace-nowrap cursor-pointer"
                 title="Analyze with AI"
-                disabled={promptText.trim().length === 0}
+                disabled={
+                  promptText.trim().length === 0 ||
+                  !!promptAnalysisResult ||
+                  promptAnalysisState === "loading"
+                }
               >
-                <Sparkles className="w-4 h-4 mr-1 md:mr-0" />
-                <span className="md:hidden">Analyze</span>
-                <span className="hidden md:inline">Analyze with AI</span>
+                {promptAnalysisState === "loading" ? (
+                  <Loader2 className="w-4 h-4 animate-spin mr-1 md:mr-0" />
+                ) : (
+                  <Sparkles className="w-4 h-4 mr-1 md:mr-0 text-amber-500 fill-amber-500" />
+                )}
+                <span className="md:hidden">
+                  {promptAnalysisState === "loading" ? "Analyzing..." : "Analyze"}
+                </span>
+                <span className="hidden md:inline">
+                  {promptAnalysisState === "loading" ? "Analyzing..." : "Analyze with AI"}
+                </span>
               </Button>
               <Button
                 onClick={handleTryWithChatGPT}
                 size="sm"
-                className="uppercase font-bold bg-green-600 hover:bg-green-700 text-white whitespace-nowrap"
+                className="uppercase font-bold bg-green-600 hover:bg-green-700 text-white whitespace-nowrap cursor-pointer"
                 disabled={promptText.trim().length === 0}
               >
                 <Bot className="w-4 h-4 mr-1" />
@@ -498,7 +521,7 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
           </AlertDialogContent>
         </AlertDialog>
 
-        {/* Feature Request Alert Dialog */}
+        {/* Feature Request Alert Dialog - KEPT BUT UNUSED FOR NOW */}
         <AlertDialog open={isFeatureRequestAlertOpen} onOpenChange={setIsFeatureRequestAlertOpen}>
           <AlertDialogContent>
             <AlertDialogHeader>
@@ -519,10 +542,30 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+
+        {/* Rate Limit Alert Dialog */}
+        <AlertDialog open={isRateLimitAlertOpen} onOpenChange={setIsRateLimitAlertOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Daily limit reached 🛑</AlertDialogTitle>
+              <AlertDialogDescription>
+                You have used your 3 free daily AI analyses.
+                <br />
+                <br />
+                Please come back tomorrow or manually review your prompt using our guide properly.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogAction onClick={() => setIsRateLimitAlertOpen(false)}>
+                Got it
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </motion.div>
 
       {/* Helper to Analyze Prompt */}
-      {/* {promptAnalysisResult && (
+      {promptAnalysisResult && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -530,7 +573,7 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
         >
           <AnalysisPanel promptAnalysisResult={promptAnalysisResult} />
         </motion.div>
-      )} */}
+      )}
     </div>
   );
 }

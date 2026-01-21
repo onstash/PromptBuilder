@@ -69,7 +69,13 @@ export default defineSchema({
     analysisOutput: v.any(),
     createdAt: v.number(),
     latency: v.number(),
+    contentHash: v.optional(v.string()),
   })
     .index("by_sessionId", ["sessionId"])
-    .index("by_score", ["overallScore"]),
+    .index("by_score", ["overallScore"])
+    .index("by_content_hash", ["contentHash"])
+    // Index for rate limiting: query by sessionId and filter by createdAt
+    // Compound index helps if we had many users, but for simple rate limiting by sessionId, "by_sessionId" is often enough.
+    // However, including createdAt allows efficient range queries for "last 24 hours".
+    .index("by_session_created", ["sessionId", "createdAt"]),
 });

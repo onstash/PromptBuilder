@@ -1,34 +1,18 @@
-import { useServerFn } from "@tanstack/react-start";
-import { Loader2, Sparkles, CheckCircle2, AlertTriangle, Lightbulb } from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Sparkles, CheckCircle2, AlertTriangle, Lightbulb } from "lucide-react";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { type PromptEvaluation } from "@/functions/analyze-prompt";
+import { type PromptEvaluationTransformed } from "@/functions/analyze-prompt";
+import { generatePromptText } from "@/stores/wizard-store";
 
 interface AnalysisPanelProps {
-  promptAnalysisResult: PromptEvaluation;
+  promptAnalysisResult: PromptEvaluationTransformed;
 }
 
 export function AnalysisPanel({ promptAnalysisResult }: AnalysisPanelProps) {
-  // Calculate overall score from dimensions (1-5 scale to 0-100 scale)
-  const overallScore = Math.round(
-    ((promptAnalysisResult.dimension_scores.clarity +
-      promptAnalysisResult.dimension_scores.specificity +
-      promptAnalysisResult.dimension_scores.robustness +
-      promptAnalysisResult.dimension_scores.structure) /
-      20) *
-      100
-  );
-
+  const { overallScore } = promptAnalysisResult;
   const scoreColor =
     overallScore >= 80 ? "text-green-600" : overallScore >= 60 ? "text-yellow-600" : "text-red-600";
   const scoreBg =
@@ -135,7 +119,7 @@ export function AnalysisPanel({ promptAnalysisResult }: AnalysisPanelProps) {
         <CardFooter className="flex-col items-start border-t pt-4 bg-muted/10">
           <p className="text-sm font-medium mb-2">Improved Version Idea:</p>
           <div className="text-xs bg-muted p-3 rounded-md w-full whitespace-pre-wrap font-mono relative group">
-            {promptAnalysisResult.improved_version}
+            {generatePromptText(promptAnalysisResult.improvedPromptData)}
             <Button
               variant="secondary"
               size="sm"

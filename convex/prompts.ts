@@ -26,7 +26,7 @@ const stableKeys = [
   "disallowed_content",
   "output_format",
 ];
-async function generateContentHash(data: Record<string, unknown>): Promise<string> {
+export async function generateContentHash(data: Record<string, unknown>): Promise<string> {
   const payload = stableKeys.map((k) => String(data[k] ?? "")).join("||");
 
   const msgBuffer = new TextEncoder().encode(payload);
@@ -122,12 +122,65 @@ export const savePromptAnalysis = mutation({
     structure: v.number(),
     analysisOutput: v.any(),
     latency: v.number(),
+    contentHash: v.optional(v.string()), // Added contentHash
   },
   handler: async (ctx, args) => {
+    // Generate hash if not provided (though server fn should ideally provide it to match getAnalysis)
+    let contentHash = args.contentHash;
+    if (!contentHash) {
+      contentHash = await generateContentHash(args.promptData);
+    }
+
     await ctx.db.insert("prompts_analysis", {
       ...args,
+      contentHash,
       createdAt: Date.now(),
     });
+  },
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// QUERIES
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const checkRateLimit = query({
+  args: { sessionId: v.string() },
+  handler: async (ctx, args) => {
+    const { sessionId } = args;
+    const limit = 3;
+    const windowMs = 24 * 60 * 60 * 1000; // 24 hours
+    const threshold = Date.now() - windowMs;
+
+    // Filter by sessionId and creation time
+    // Note: This iterates over all analysis records for the user.
+    // If a user has thousands, this might be slow, but with a limit of 3/day it's unlikely to grow huge quickly unless abused.
+    // The index "by_session_created" helps optimize this range query.
+    const recentAnalyses = await ctx.db
+      .query("prompts_analysis")
+      .withIndex("by_session_created", (q) =>
+        q.eq("sessionId", sessionId).gt("createdAt", threshold)
+      )
+      .collect();
+
+    if (recentAnalyses.length >= limit) {
+      return { allowed: false, reason: "Daily limit of 3 free analyses reached." };
+    }
+
+    return { allowed: true };
+  },
+});
+
+export const getAnalysis = query({
+  args: { promptData: promptDataValidator },
+  handler: async (ctx, args) => {
+    const contentHash = await generateContentHash(args.promptData);
+    const existing = await ctx.db
+      .query("prompts_analysis")
+      .withIndex("by_content_hash", (q) => q.eq("contentHash", contentHash))
+      .order("desc") // Get latest if duplicates exist
+      .first();
+
+    return existing;
   },
 });
 
