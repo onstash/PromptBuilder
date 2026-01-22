@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.8.0
+
+### Minor Changes
+
+- b6cc24f: feat: implement markdown prompt import route
+
 ## 4.7.0
 
 ### Minor Changes
