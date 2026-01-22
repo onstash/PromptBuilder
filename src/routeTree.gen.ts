@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as WizardRouteImport } from './routes/wizard'
 import { Route as ShareRouteImport } from './routes/share'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PromptsImportRouteImport } from './routes/prompts/import'
 import { Route as PromptsSlugRouteImport } from './routes/prompts/$slug'
 import { Route as LlmsTxtRouteImport } from './routes/llms.txt'
 import { Route as ApiSentryExampleRouteImport } from './routes/api/sentry-example'
@@ -31,6 +32,11 @@ const ShareRoute = ShareRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PromptsImportRoute = PromptsImportRouteImport.update({
+  id: '/prompts/import',
+  path: '/prompts/import',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PromptsSlugRoute = PromptsSlugRouteImport.update({
@@ -66,6 +72,7 @@ export interface FileRoutesByFullPath {
   '/api/sentry-example': typeof ApiSentryExampleRoute
   '/llms/txt': typeof LlmsTxtRoute
   '/prompts/$slug': typeof PromptsSlugRoute
+  '/prompts/import': typeof PromptsImportRoute
   '/api/ai/generate': typeof ApiAiGenerateRoute
   '/api/sentry/tunnel': typeof ApiSentryTunnelRoute
 }
@@ -76,6 +83,7 @@ export interface FileRoutesByTo {
   '/api/sentry-example': typeof ApiSentryExampleRoute
   '/llms/txt': typeof LlmsTxtRoute
   '/prompts/$slug': typeof PromptsSlugRoute
+  '/prompts/import': typeof PromptsImportRoute
   '/api/ai/generate': typeof ApiAiGenerateRoute
   '/api/sentry/tunnel': typeof ApiSentryTunnelRoute
 }
@@ -87,6 +95,7 @@ export interface FileRoutesById {
   '/api/sentry-example': typeof ApiSentryExampleRoute
   '/llms/txt': typeof LlmsTxtRoute
   '/prompts/$slug': typeof PromptsSlugRoute
+  '/prompts/import': typeof PromptsImportRoute
   '/api/ai/generate': typeof ApiAiGenerateRoute
   '/api/sentry/tunnel': typeof ApiSentryTunnelRoute
 }
@@ -99,6 +108,7 @@ export interface FileRouteTypes {
     | '/api/sentry-example'
     | '/llms/txt'
     | '/prompts/$slug'
+    | '/prompts/import'
     | '/api/ai/generate'
     | '/api/sentry/tunnel'
   fileRoutesByTo: FileRoutesByTo
@@ -109,6 +119,7 @@ export interface FileRouteTypes {
     | '/api/sentry-example'
     | '/llms/txt'
     | '/prompts/$slug'
+    | '/prompts/import'
     | '/api/ai/generate'
     | '/api/sentry/tunnel'
   id:
@@ -119,6 +130,7 @@ export interface FileRouteTypes {
     | '/api/sentry-example'
     | '/llms/txt'
     | '/prompts/$slug'
+    | '/prompts/import'
     | '/api/ai/generate'
     | '/api/sentry/tunnel'
   fileRoutesById: FileRoutesById
@@ -130,6 +142,7 @@ export interface RootRouteChildren {
   ApiSentryExampleRoute: typeof ApiSentryExampleRoute
   LlmsTxtRoute: typeof LlmsTxtRoute
   PromptsSlugRoute: typeof PromptsSlugRoute
+  PromptsImportRoute: typeof PromptsImportRoute
   ApiAiGenerateRoute: typeof ApiAiGenerateRoute
   ApiSentryTunnelRoute: typeof ApiSentryTunnelRoute
 }
@@ -155,6 +168,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/prompts/import': {
+      id: '/prompts/import'
+      path: '/prompts/import'
+      fullPath: '/prompts/import'
+      preLoaderRoute: typeof PromptsImportRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/prompts/$slug': {
@@ -202,6 +222,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiSentryExampleRoute: ApiSentryExampleRoute,
   LlmsTxtRoute: LlmsTxtRoute,
   PromptsSlugRoute: PromptsSlugRoute,
+  PromptsImportRoute: PromptsImportRoute,
   ApiAiGenerateRoute: ApiAiGenerateRoute,
   ApiSentryTunnelRoute: ApiSentryTunnelRoute,
 }

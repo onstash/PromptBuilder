@@ -71,7 +71,7 @@ const PromptEvaluationSchema = z
     improved_version: z
       .string()
       .optional()
-      .refine((val) => {
+      .refine(() => {
         // if (typeof val === "string" && val) {
         //   try {
         //     const parsed = JSON.parse(val);

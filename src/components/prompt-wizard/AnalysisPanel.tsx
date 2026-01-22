@@ -1,11 +1,11 @@
 import { Sparkles, CheckCircle2, AlertTriangle, Lightbulb } from "lucide-react";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+// import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { type PromptEvaluationTransformed } from "@/functions/analyze-prompt";
-import { generatePromptText } from "@/stores/wizard-store";
+// import { generatePromptText } from "@/stores/wizard-store";
 
 interface AnalysisPanelProps {
   promptAnalysisResult: PromptEvaluationTransformed;
