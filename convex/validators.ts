@@ -24,5 +24,5 @@ export const promptDataValidator = v.object({
   role: v.optional(v.string()),
   exampleId: v.optional(v.string()),
   wizardType: v.optional(v.string()), // "basic" | "advanced"
-  total_steps: v.optional(v.number()), // Frontend state often includes this
+  total_steps: v.optional(v.number()),
 });

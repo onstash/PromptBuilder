@@ -223,7 +223,7 @@ const depthMap: Record<string, string> = {
 
 const generatePromptTextLogger = Logger.createLogger({
   namespace: "generatePromptText",
-  level: "INFO",
+  level: "DEBUG",
   enableConsoleLog: true,
 });
 
@@ -298,7 +298,9 @@ export function generatePromptText(
 
     // 6. Refinements (Optional extras)
     if (finalData.reasoning_depth && finalData.reasoning_depth !== "brief") {
-      sections.push(`## Reasoning\n${depthMap[finalData.reasoning_depth]}`);
+      sections.push(
+        `## Reasoning\n${depthMap[finalData.reasoning_depth] || finalData.reasoning_depth}`
+      );
     }
 
     if (finalData.self_check) {

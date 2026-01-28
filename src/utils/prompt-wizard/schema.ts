@@ -97,16 +97,18 @@ export const promptWizardSchema = z.object({
   ai_role: z.string().default(""), // Step 1: Act as...
   task_intent: z.string().default(""), // Step 2: Task
   output_format: z
-    .enum([
-      "bullet-list",
-      "1-paragraph",
-      "2-paragraphs",
-      "3-plus-paragraphs",
-      "numbered-list",
-      "table",
-      "mixed",
+    .union([
+      z.enum([
+        "bullet-list",
+        "1-paragraph",
+        "2-paragraphs",
+        "3-plus-paragraphs",
+        "numbered-list",
+        "table",
+        "mixed",
+      ]),
+      z.string(),
     ])
-    // @ts-expect-error
     .default(""), // Step 2: Format
   context: z.string().default(""), // Step 3: Context
   examples: z.string().default(""), // Step 3: Few-shot examples (new)
@@ -116,7 +118,7 @@ export const promptWizardSchema = z.object({
   // ─────────────────────────────────────────────────────────────────────────
   // Optional (Enhancements) - Steps 5-6
   // ─────────────────────────────────────────────────────────────────────────
-  reasoning_depth: z.enum(["brief", "moderate", "thorough"]).default("brief"), // Step 5: Reasoning mode - default to brief
+  reasoning_depth: z.union([z.enum(["brief", "moderate", "thorough"]), z.string()]).default(""), // Step 5: Reasoning mode - default to brief
   self_check: z.boolean().default(true), // Step 6: Verification - default to enabled
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -204,41 +206,30 @@ export const TOTAL_STEPS = WIZARD_STEPS.length;
 export const stepValidationSchemas = {
   // Step 1: Act as... (Role)
   1: z.object({
-    ai_role: z.string().min(3, "Please describe the AI's role (at least 3 characters)"),
+    ai_role: promptWizardSchema.shape.ai_role,
   }),
   // Step 2: What do you want? (Task)
   2: z.object({
-    task_intent: z.string().min(10, "Please describe what you want (at least 10 characters)"),
+    task_intent: promptWizardSchema.shape.task_intent,
   }),
   // Step 3: Give context (Context + Examples)
   3: z.object({
-    context: z.string().optional(),
-    examples: z.string().optional(),
+    context: promptWizardSchema.shape.context,
+    examples: promptWizardSchema.shape.examples,
   }),
   // Step 4: Set guardrails (Constraints + Avoid)
   4: z.object({
-    constraints: z.string().optional(),
-    disallowed_content: z.string().optional(),
+    constraints: promptWizardSchema.shape.constraints,
+    disallowed_content: promptWizardSchema.shape.disallowed_content,
   }),
   // Step 5: Output Format
   5: z.object({
-    output_format: z.enum(
-      [
-        "bullet-list",
-        "1-paragraph",
-        "2-paragraphs",
-        "3-plus-paragraphs",
-        "numbered-list",
-        "table",
-        "mixed",
-      ],
-      { message: "Please select an output format" }
-    ),
+    output_format: promptWizardSchema.shape.output_format,
   }),
   // Step 6: Reasoning mode
-  6: z.object({ reasoning_depth: z.enum(["brief", "moderate", "thorough"]).optional() }),
+  6: z.object({ reasoning_depth: promptWizardSchema.shape.reasoning_depth }),
   // Step 7: Verification
-  7: z.object({ self_check: z.boolean().optional() }),
+  7: z.object({ self_check: promptWizardSchema.shape.self_check }),
 } as const;
 
 /** Maps step number to its field name(s) */

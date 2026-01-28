@@ -485,42 +485,39 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
 
   const isLocked = !savedSlug;
 
-  const handleSavePrompt = useCallback(
-    async (silent?: boolean) => {
-      if (!hasUserInteracted) {
-        toast.error("Add some content to your prompt first!");
-        return null;
-      }
-      if (!isPromptValid) {
-        toast.error("Please fill in all the required fields");
-        return null;
-      }
-      try {
-        setIsSaving(true);
-        const sessionId = getOrCreateSessionId();
-        const result = await savePrompt({
-          promptData: wizardData,
-          sessionId,
-        });
-
-        if (result) {
-          setSavedSlug(result.slug);
-          trackEvent("prompt_saved_background", {
-            data: wizardData,
-            slug: result.slug,
-          });
-          return result;
-        }
-      } catch (error) {
-        console.error(error);
-        toast.error("Failed to save prompt");
-      } finally {
-        setIsSaving(false);
-      }
+  const handleSavePrompt = useCallback(async () => {
+    if (!hasUserInteracted) {
+      toast.error("Add some content to your prompt first!");
       return null;
-    },
-    [wizardData, hasUserInteracted, savePrompt, isPromptValid]
-  );
+    }
+    if (!isPromptValid) {
+      toast.error("Please fill in all the required fields");
+      return null;
+    }
+    try {
+      setIsSaving(true);
+      const sessionId = getOrCreateSessionId();
+      const result = await savePrompt({
+        promptData: wizardData,
+        sessionId,
+      });
+
+      if (result) {
+        setSavedSlug(result.slug);
+        trackEvent("prompt_saved_background", {
+          data: wizardData,
+          slug: result.slug,
+        });
+        return result;
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to save prompt");
+    } finally {
+      setIsSaving(false);
+    }
+    return null;
+  }, [wizardData, hasUserInteracted, savePrompt, isPromptValid]);
 
   const handleLockedAction = useCallback(
     (featureName: string, action: () => void) => {

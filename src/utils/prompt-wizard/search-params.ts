@@ -32,7 +32,6 @@ export const WIZARD_DEFAULTS: PromptWizardData = {
   ai_role: "",
   // Step 2: Task + Format
   task_intent: "",
-  // @ts-expect-error
   output_format: "",
   // Step 3: Context + Examples
   context: "",
