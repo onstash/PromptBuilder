@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.9.0
+
+### Minor Changes
+
+- 2b9b6ad: fix: role examples scroll issue
+
 ## 4.8.0
 
 ### Minor Changes
