@@ -305,7 +305,7 @@ export function ChatLandingPage() {
         items={roleItems}
         selectedId={selectedRole || null}
         onSelect={handleRoleSelect}
-        className="h-full border-none"
+        className="flex-1 min-h-0 border-none"
         footer={
           <div className="flex flex-col gap-2">
             <SuggestRoleDialog />
