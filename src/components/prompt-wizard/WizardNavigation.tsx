@@ -25,35 +25,32 @@ export function WizardNavigation({
   return (
     <div className="flex flex-col md:flex-row items-center justify-between gap-4 pt-6 border-t-4 border-foreground">
       {/* Back button */}
-      <motion.div
-        whileHover={isFirstStep ? {} : { x: -4 }}
-        whileTap={isFirstStep ? {} : { scale: 0.98 }}
-        className="w-full md:w-auto"
-      >
-        <Button
-          variant="outline"
-          disabled={isFirstStep}
-          onClick={onBack}
-          className="uppercase font-bold w-full md:w-auto"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back
-        </Button>
-      </motion.div>
-
-      {/* Next / Finish button */}
-      <div className="flex flex-col md:flex-row items-center justify-between gap-3 w-full md:w-auto">
-        <motion.div whileHover={{ x: 4 }} whileTap={{ scale: 0.98 }} className="w-full md:w-auto">
+      {isFirstStep ? (
+        <div />
+      ) : (
+        <motion.div whileHover={{ x: -4 }} whileTap={{ scale: 0.98 }} className="w-full md:w-auto">
           <Button
-            onClick={onNext}
-            disabled={isLastStep || !isPromptAvailable}
+            variant="outline"
+            onClick={onBack}
             className="uppercase font-bold w-full md:w-auto"
           >
-            Next
-            <ArrowRight className="w-4 h-4 ml-2" />
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back
           </Button>
         </motion.div>
-      </div>
+      )}
+
+      {/* Next / Finish button */}
+      {isLastStep || !isPromptAvailable ? null : (
+        <div className="flex flex-col md:flex-row items-center justify-between gap-3 w-full md:w-auto">
+          <motion.div whileHover={{ x: 4 }} whileTap={{ scale: 0.98 }} className="w-full md:w-auto">
+            <Button onClick={onNext} className="uppercase font-bold w-full md:w-auto">
+              Next
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }
