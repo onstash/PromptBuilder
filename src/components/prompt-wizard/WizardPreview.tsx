@@ -459,20 +459,6 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
     }
   }, [wizardData, analyzePromptFn]);
 
-  const confirmFeatureRequest = async () => {
-    try {
-      const sessionId = getOrCreateSessionId();
-      // @ts-ignore - API type might not be updated yet
-      await submitFeatureRequest({ sessionId });
-      toast.success("Thanks for your interest! We've recorded your vote.");
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to record request");
-    } finally {
-      setIsFeatureRequestAlertOpen(false);
-    }
-  };
-
   // ─────────────────────────────────────────────────────────────────────────────
   // FEATURE LOCK LOGIC
   // ─────────────────────────────────────────────────────────────────────────────
@@ -559,6 +545,118 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
 
   return (
     <div className="space-y-8">
+      <div className="p-4">
+        <div className="flex flex-wrap gap-2 overflow-x-auto no-scrollbar">
+          {/* Added: SAVE BUTTON */}
+          <div className="shrink-0">
+            <Button
+              onClick={async () => {
+                const result = await handleSavePrompt();
+                if (result) {
+                  setIsLockedAlertOpen(false);
+                  props.onSave!();
+                }
+              }}
+              size="sm"
+              className={cn(
+                "uppercase font-bold bg-indigo-600 hover:bg-indigo-700 text-white whitespace-nowrap cursor-pointer",
+                !isLocked && "bg-green-600 hover:bg-green-700" // Visual cue that it's saved
+              )}
+              disabled={savePromptDisabled}
+            >
+              {isSaving ? (
+                <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+              ) : !isLocked ? (
+                <Check className="w-4 h-4 mr-1" />
+              ) : (
+                <Save className="w-4 h-4 mr-1" />
+              )}
+              {savedPromptLabel}
+            </Button>
+          </div>
+
+          <div className="flex gap-2 shrink-0">
+            <Button
+              onClick={() => handleLockedAction("copy", handleCopyPrompt)}
+              size="sm"
+              variant="outline"
+              className="uppercase font-bold whitespace-nowrap cursor-pointer"
+              disabled={promptText.trim().length === 0}
+            >
+              {copiedPrompt ? (
+                <>
+                  <Check className="w-4 h-4 mr-1" />
+                  Copied!
+                </>
+              ) : (
+                <>
+                  <Copy className="w-4 h-4 mr-1" />
+                  Copy
+                </>
+              )}
+            </Button>
+            <div className="shrink-0">
+              {/* ShareAction needs to be wrapped or handle locked state */}
+              <div
+                onClickCapture={(e) => {
+                  if (isLocked) {
+                    e.stopPropagation();
+                    handleLockedAction("share", () => {}); // No-op action, just triggers alert
+                  }
+                }}
+              >
+                <ShareAction
+                  wizardData={wizardData}
+                  pageSource="wizard"
+                  buttonClassName={cn(
+                    "w-auto px-4 cursor-pointer",
+                    isLocked && "opacity-50 pointer-events-none"
+                  )} // Visual disabled state but captured by parent
+                  openLabel="Share"
+                  disabled={promptText.trim().length === 0}
+                  existingSlug={savedSlug || undefined}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="flex gap-2 shrink-0">
+            <Button
+              onClick={handleAnalyzeRequest}
+              size="sm"
+              variant="outline"
+              className="uppercase font-bold whitespace-nowrap cursor-pointer"
+              title="Analyze with AI"
+              disabled={
+                promptText.trim().length === 0 ||
+                !!promptAnalysisResult ||
+                promptAnalysisState === "loading"
+              }
+            >
+              {promptAnalysisState === "loading" ? (
+                <Loader2 className="w-4 h-4 animate-spin mr-1 md:mr-0" />
+              ) : (
+                <Sparkles className="w-4 h-4 mr-1 md:mr-0 text-amber-500 fill-amber-500" />
+              )}
+              <span className="md:hidden">
+                {promptAnalysisState === "loading" ? "Analyzing..." : "Analyze"}
+              </span>
+              <span className="hidden md:inline">
+                {promptAnalysisState === "loading" ? "Analyzing..." : "Analyze with AI"}
+              </span>
+            </Button>
+            <Button
+              onClick={() => handleLockedAction("chatgpt", handleTryWithChatGPT)}
+              size="sm"
+              className="uppercase font-bold bg-green-600 hover:bg-green-700 text-white whitespace-nowrap cursor-pointer"
+              disabled={promptText.trim().length === 0}
+            >
+              <Bot className="w-4 h-4 mr-1" />
+              Open ChatGPT
+            </Button>
+          </div>
+        </div>
+      </div>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -567,116 +665,6 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
         {/* Header */}
         <div className="p-4 border-b-4 border-foreground flex flex-row gap-3 items-center justify-between">
           <h3 className="font-black uppercase text-lg hidden md:block">Your Prompt</h3>
-          <div className="flex flex-row gap-2 overflow-x-auto pb-2 -mb-2 w-full md:w-auto md:pb-0 md:mb-0 no-scrollbar items-center">
-            {/* Added: SAVE BUTTON */}
-            <div className="shrink-0">
-              <Button
-                onClick={async () => {
-                  const result = await handleSavePrompt();
-                  if (result) {
-                    setIsLockedAlertOpen(false);
-                    props.onSave!();
-                  }
-                }}
-                size="sm"
-                className={cn(
-                  "uppercase font-bold bg-indigo-600 hover:bg-indigo-700 text-white whitespace-nowrap cursor-pointer",
-                  !isLocked && "bg-green-600 hover:bg-green-700" // Visual cue that it's saved
-                )}
-                disabled={savePromptDisabled}
-              >
-                {isSaving ? (
-                  <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-                ) : !isLocked ? (
-                  <Check className="w-4 h-4 mr-1" />
-                ) : (
-                  <Save className="w-4 h-4 mr-1" />
-                )}
-                {savedPromptLabel}
-              </Button>
-            </div>
-
-            <div className="flex gap-2 shrink-0">
-              <Button
-                onClick={() => handleLockedAction("copy", handleCopyPrompt)}
-                size="sm"
-                variant="outline"
-                className="uppercase font-bold whitespace-nowrap cursor-pointer"
-                disabled={promptText.trim().length === 0}
-              >
-                {copiedPrompt ? (
-                  <>
-                    <Check className="w-4 h-4 mr-1" />
-                    Copied!
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-4 h-4 mr-1" />
-                    Copy
-                  </>
-                )}
-              </Button>
-              <div className="shrink-0">
-                {/* ShareAction needs to be wrapped or handle locked state */}
-                <div
-                  onClickCapture={(e) => {
-                    if (isLocked) {
-                      e.stopPropagation();
-                      handleLockedAction("share", () => {}); // No-op action, just triggers alert
-                    }
-                  }}
-                >
-                  <ShareAction
-                    wizardData={wizardData}
-                    pageSource="wizard"
-                    buttonClassName={cn(
-                      "w-auto px-4 cursor-pointer",
-                      isLocked && "opacity-50 pointer-events-none"
-                    )} // Visual disabled state but captured by parent
-                    openLabel="Share"
-                    disabled={promptText.trim().length === 0}
-                    existingSlug={savedSlug || undefined}
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="flex gap-2 shrink-0">
-              <Button
-                onClick={handleAnalyzeRequest}
-                size="sm"
-                variant="outline"
-                className="uppercase font-bold whitespace-nowrap cursor-pointer"
-                title="Analyze with AI"
-                disabled={
-                  promptText.trim().length === 0 ||
-                  !!promptAnalysisResult ||
-                  promptAnalysisState === "loading"
-                }
-              >
-                {promptAnalysisState === "loading" ? (
-                  <Loader2 className="w-4 h-4 animate-spin mr-1 md:mr-0" />
-                ) : (
-                  <Sparkles className="w-4 h-4 mr-1 md:mr-0 text-amber-500 fill-amber-500" />
-                )}
-                <span className="md:hidden">
-                  {promptAnalysisState === "loading" ? "Analyzing..." : "Analyze"}
-                </span>
-                <span className="hidden md:inline">
-                  {promptAnalysisState === "loading" ? "Analyzing..." : "Analyze with AI"}
-                </span>
-              </Button>
-              <Button
-                onClick={() => handleLockedAction("chatgpt", handleTryWithChatGPT)}
-                size="sm"
-                className="uppercase font-bold bg-green-600 hover:bg-green-700 text-white whitespace-nowrap cursor-pointer"
-                disabled={promptText.trim().length === 0}
-              >
-                <Bot className="w-4 h-4 mr-1" />
-                Open ChatGPT
-              </Button>
-            </div>
-          </div>
         </div>
 
         {/* Prompt content */}
@@ -725,28 +713,6 @@ function WizardPreviewForWizardPage(props: WizardPreviewPropsForWizardPage) {
                 }}
               >
                 Copy & Open ChatGPT
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-
-        {/* Feature Request Alert Dialog - KEPT BUT UNUSED FOR NOW */}
-        <AlertDialog open={isFeatureRequestAlertOpen} onOpenChange={setIsFeatureRequestAlertOpen}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Deep AI Analysis (Coming Soon!)</AlertDialogTitle>
-              <AlertDialogDescription>
-                We're currently testing demand for a deep, 10-point heuristic analysis of your
-                prompt using Gemini Pro.
-                <br />
-                <br />
-                If enough users are interested, we'll enable this feature. Would you use it?
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>No thanks</AlertDialogCancel>
-              <AlertDialogAction onClick={confirmFeatureRequest}>
-                Yes, I want this!
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

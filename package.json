@@ -2,7 +2,7 @@
   "name": "builder-prompt-ai",
   "private": true,
   "type": "module",
-  "version": "4.9.0",
+  "version": "4.10.0",
   "scripts": {
     "dev": "NODE_OPTIONS='--import ./instrument.server.mjs' vite dev --port 3000",
     "build": "vite build && cp instrument.server.mjs .vercel/output/server",

@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.10.0
+
+### Minor Changes
+
+- 3520a6a: fix: hide back button & next button instead of disabling & chore: remove AI analysis alert
+
 ## 4.9.0
 
 ### Minor Changes
